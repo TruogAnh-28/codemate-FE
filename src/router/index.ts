@@ -28,6 +28,12 @@ const StudentRoutes = [
     props: true,
   },
   {
+    path: '/lessonRecommend',
+    name: 'LessonRecommend',
+    component: () => import('@/pages/Lesson/LessonRecommend/index.vue'),
+    props: true,
+  },
+  {
     path: '/',
     name: '',
     component: () => import('@/pages/Dashboard/index.vue'),
