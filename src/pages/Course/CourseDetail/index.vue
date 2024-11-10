@@ -1,7 +1,7 @@
 <template>
-  <Sidebar />
+Course Detail
 </template>
 
 <script lang="ts" setup>
-  //
+//
 </script>
