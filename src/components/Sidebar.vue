@@ -16,8 +16,6 @@
           <v-list-item prepend-icon="mdi-school" title="Course" value="course" :to="'/courselist'" router></v-list-item>
         </v-list>
       </v-navigation-drawer>
-
-      <v-main style="height: 250px"></v-main>
 </template>
 <script setup lang="ts">
 
