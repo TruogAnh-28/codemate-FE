@@ -8,6 +8,12 @@ const config = {
   ],
   theme: {
     extend: {
+      zIndex:{
+        '-10': '-1'
+      },
+      fontSize: {
+        'xxs': '0.625rem', // 10px
+      },
       colors: {
         primary: 'hsl(var(--primary) / <alpha-value>)',
         'primary-variant': 'hsl(var(--primary-variant) / <alpha-value>)',
