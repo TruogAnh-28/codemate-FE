@@ -37,6 +37,8 @@
     --border: 0 0% 80%; /* Light border color */
     --input: 210 12% 95%; /* Light blue-gray for inputs */
     --ring: 210 100% 50%; /* Bright blue */
+
+    --radius: 0.5rem;
   }
 
   .dark {
@@ -64,9 +66,12 @@
     --input: 210 12% 25%; /* Dark blue-gray for inputs */
     --ring: 210 100% 70%; /* Bright blue */
   }
-
-  /* Apply background and text color */
+}
+@layer base {
+  * {
+    @apply border-border;
+  }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-text-primary;
   }
 }
