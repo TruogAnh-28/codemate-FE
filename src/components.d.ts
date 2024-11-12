@@ -12,6 +12,7 @@ declare module 'vue' {
     AvatarStack: typeof import('./components/AvatarStack.vue')['default']
     Cards: typeof import('./components/CourseList/Cards.vue')['default']
     CourseItem: typeof import('./components/CourseList/CourseItem.vue')['default']
+    DialogLearningType: typeof import('./components/DialogLearningType.vue')['default']
     HelloWorld: typeof import('./components/HelloWorld.vue')['default']
     LearningOutcomes: typeof import('./components/LearningOutcomes.vue')['default']
     RecentCourses: typeof import('./components/CourseList/RecentCourses.vue')['default']

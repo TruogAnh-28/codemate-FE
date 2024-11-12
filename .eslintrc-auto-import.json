@@ -17,6 +17,8 @@
     "customRef": true,
     "defineAsyncComponent": true,
     "defineComponent": true,
+    "defineProps": true,
+    "defineEmits": true,
     "effectScope": true,
     "getCurrentInstance": true,
     "getCurrentScope": true,

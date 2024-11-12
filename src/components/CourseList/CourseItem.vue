@@ -73,7 +73,7 @@
 </template>
 
 <script lang="ts">
-import { ref } from 'vue';
+
 import { CourseReviewData } from '@/constants/course';
 import { CourseReview } from '@/types/Course';
 

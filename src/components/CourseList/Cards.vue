@@ -68,7 +68,6 @@
 </template>
 
 <script lang="ts">
-import { ref } from 'vue';
 import { CourseRecent } from '@/types/Course';
 import { CourseRecentData } from '@/constants/course';
 

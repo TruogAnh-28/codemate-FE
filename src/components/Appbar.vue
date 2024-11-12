@@ -1,5 +1,5 @@
 <template>
-  <v-app-bar :elevation="0">
+  <v-app-bar :elevation="0" color="secondary variant">
     <!-- <template v-slot:prepend>
        <v-text-field
       :loading="loading"

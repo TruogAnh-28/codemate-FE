@@ -36,7 +36,6 @@
 </template>
 
 <script lang="ts">
-import { ref, computed } from 'vue';
 import LearningOutcomesModal from '@/modals/LearningOutcomesModal.vue';
 
 export default {
@@ -50,7 +49,7 @@ export default {
       required: true
     }
   },
-  setup(props) {
+  setup(props: { outcomes: string[] }) {
     const maxDisplay = 2;
     const isModalOpen = ref(false);
 
