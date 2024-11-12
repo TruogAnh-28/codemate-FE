@@ -1,10 +1,9 @@
 const config = {
+  purge: ['./src/**/*.html', './src/**/*.vue', './src/**/*.jsx'],
   darkMode: ['class'],
   content: [
-    './pages/**/*.{vue,ts}',
-    './components/**/*.{vue,ts}',
-    './app/**/*.{vue,ts}',
-    './src/**/*.{vue,ts}',
+    './public/**/*.html',
+    './src/**/*.{js,jsx,ts,tsx,vue}'
   ],
   theme: {
     fontFamily: {
@@ -12,6 +11,7 @@ const config = {
       mono: ['Public Sans Mono', 'monospace']
     },
     borderRadius: {
+      full: '100%',
       lg: 'var(--radius)',
       md: 'calc(var(--radius) - 2px)',
       sm: 'calc(var(--radius) - 4px)'
