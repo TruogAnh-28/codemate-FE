@@ -74,7 +74,7 @@
   </v-container>
 </template>
 
-<script setup lang="ts">
+<script lang="ts" setup>
 import { ref } from "vue";
 import AvatarStack from "@/components/AvatarStack.vue";
 import LearningOutcomes from "@/components/LearningOutcomes.vue";
@@ -82,4 +82,7 @@ import { CourseReviewData } from "@/constants/course";
 import { CourseReview } from "@/types/Course";
 
 const courses = ref<CourseReview[]>(CourseReviewData);
+export default {
+  name: "CourseItem",
+ };
 </script>
