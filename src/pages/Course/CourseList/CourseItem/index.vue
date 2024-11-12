@@ -2,7 +2,7 @@
   <v-container>
     <v-row>
       <v-col v-for="course in courses" :key="course.id" cols="12" class="mb-6">
-        <v-card class="rounded-lg shadow-md z-0">
+        <v-card class="rounded-lg shadow-md">
           <div class="d-flex p-4 gap-4">
             <!-- Course Image -->
             <v-img
@@ -60,7 +60,7 @@
               </div>
 
               <v-btn
-                color="secondary z--1"
+                color="secondary"
                 :to="`/course-detail/${course.id}`"
                 rounded
               >

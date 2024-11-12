@@ -1,60 +1,39 @@
 <template>
-  <v-app>
-    <!-- Sidebar and Appbar components -->
-    <Sidebar />
-    <Appbar />
-
-    <v-main class="pt-0 pb-2 pl-4 pr-4">
-      <!-- Recent Courses -->
-      <RecentCourses />
-
-      <!-- My Courses Section -->
-      <section class="ml-14">
-        <h2 class="text-xl font-semibold">My Courses</h2>
-
-        <!-- Vuetify TextField for search with Tailwind styling -->
-        <v-text-field
-          v-model="searchQuery"
-          placeholder="Search"
-          class="mt-4 w-full"
-          solo
-          append-inner-icon="mdi-magnify"
-          outlined
-          dense
-          hide-details
-        />
-
-        <!-- Course Items -->
-        <div class="space-y-4 mt-6">
-          <CourseItem />
-        </div>
-      </section>
-    </v-main>
-  </v-app>
+  <Sidebar />
+  <Appbar />
+  <v-main class="pt-0 pb-2 pl-4 pr-4">
+    <!-- Recent Courses -->
+    <RecentCourses />
+    <!-- My Courses -->
+    <section>
+      <h2 class="text-xl font-semibold">My Courses</h2>
+      <input
+        type="text"
+        placeholder="Search"
+        class="w-full mt-4 p-2 border rounded bg-input text-on-surface"
+      />
+      <div class="space-y-4 mt-6">
+        <!-- Course Item -->
+        <CourseItem />
+      </div>
+    </section>
+  </v-main>
 </template>
 
-<script lang="ts">
-import { ref } from 'vue';
+<script>
 import Sidebar from "@/components/Sidebar.vue";
 import Appbar from "@/components/Appbar.vue";
-import RecentCourses from "@/pages/Course/CourseList/RecentCourses/index.vue";
-import CourseItem from "@/pages/Course/CourseList/CourseItem/index.vue";
-
+import RecentCourses from "./RecentCourses/index.vue";
+import CourseItem from "./CourseItem/index.vue";
 export default {
-  name: 'CourseList',
+  name: "CoursesList",
   components: {
     Sidebar,
     Appbar,
     RecentCourses,
-    CourseItem
+    CourseItem,
   },
-  setup() {
-    const searchQuery = ref<string>("");
 
-    return {
-      searchQuery
-    };
-  }
 };
 </script>
 

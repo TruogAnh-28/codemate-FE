@@ -9,12 +9,12 @@
   >
     <div
       v-if="show"
-      class="fixed inset-0 z-500 overflow-y-auto"
+      class="fixed inset-0 z-50 overflow-y-auto"
       @click="closeModal"
     >
       <!-- Overlay -->
       <div
-        class="fixed inset-0 bg-black z-450"
+        class="fixed inset-0 bg-black "
       ></div>
       <!-- Modal -->
       <div class="flex min-h-full items-center justify-center p-4">
