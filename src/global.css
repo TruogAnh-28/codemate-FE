@@ -1,0 +1,67 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Light theme colors */
+    --background: 0 0% 100%;
+    --foreground: 0 0% 0%;
+
+    --primary: 265 100% 56.9%; /* #6200EE */
+    --primary-variant: 260 100% 30.9%; /* #3700B3 */
+    --secondary: 174 100% 55.3%; /* #03DAC6 */
+    --secondary-variant: 175 100% 34.5%; /* #018786 */
+    --surface: 0 0% 100%; /* #FFFFFF */
+    --error: 348 83.3% 37.6%; /* #B00020 */
+
+    --on-primary: 0 0% 100%; /* White */
+    --on-secondary: 0 0% 0%; /* Black */
+    --on-background: 0 0% 0%; /* Black */
+    --on-surface: 0 0% 0%; /* Black */
+    --on-error: 0 0% 100%; /* White */
+
+    --text-primary: 0 0% 0%; /* Black */
+    --text-secondary: 0 0% 100%; /* White */
+    --text-tetiary: 0 0% 60%; /* Light gray */
+    --border: 0 0% 80%; /* Light border color */
+    --input: 210 12% 95%; /* Light blue-gray for inputs */
+    --ring: 210 100% 50%; /* Bright blue */
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    /* Dark theme colors */
+    --background: 0 0% 7.1%; /* #121212 */
+    --foreground: 0 0% 100%;
+
+    --primary: 262.2 88.4% 76.1%; /* #BB86FC */
+    --primary-variant: 260 100% 30.9%; /* #3700B3 */
+    --secondary: 174 100% 55.3%; /* #03DAC6 */
+    --surface: 0 0% 7.1%; /* #121212 */
+    --error: 348 63.4% 66.9%; /* #CF6679 */
+
+    --on-primary: 0 0% 0%; /* Black */
+    --on-secondary: 0 0% 0%; /* Black */
+    --on-background: 0 0% 100%; /* White */
+    --on-surface: 0 0% 100%; /* White */
+    --on-error: 0 0% 0%; /* Black */
+
+    /* New color variables */
+    --text-primary: 0 0% 100%; /* White */
+    --text-secondary: 0 0% 70%; /* Light gray */
+    --text-tetiary: 0 0% 50%; /* Darker gray */
+    --border: 0 0% 50%; /* Dark border color */
+    --input: 210 12% 25%; /* Dark blue-gray for inputs */
+    --ring: 210 100% 70%; /* Bright blue */
+  }
+}
+/* // @layer base {
+//   * {
+//     @apply border-border;
+//   }
+//   body {
+//     @apply bg-background text-text-primary;
+//   }
+// } */
