@@ -15,7 +15,7 @@
     ></v-text-field>
 
     </template> -->
-<!-- 
+<!--
     <v-text-field
       :loading="loading"
       append-inner-icon="mdi-magnify"
@@ -34,7 +34,7 @@
       <v-btn icon="mdi-bell-outline"></v-btn>
       <v-btn icon="mdi-email-box"></v-btn>
       <v-list-item
-                prepend-avatar="@/assets/logo.png"
+                prepend-avatar="@/assets/codemate.png"
                 subtitle="nat_nhom6dacn"
                 title="NAT"
       ></v-list-item>

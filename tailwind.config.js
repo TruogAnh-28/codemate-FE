@@ -1,10 +1,9 @@
 const config = {
+  purge: ['./src/**/*.html', './src/**/*.vue', './src/**/*.jsx'],
   darkMode: ['class'],
   content: [
-    './pages/**/*.{vue,ts}',
-    './components/**/*.{vue,ts}',
-    './app/**/*.{vue,ts}',
-    './src/**/*.{vue,ts}',
+    './public/**/*.html',
+    './src/**/*.{js,jsx,ts,tsx,vue}'
   ],
   theme: {
     fontFamily: {
@@ -12,6 +11,7 @@ const config = {
       mono: ['Public Sans Mono', 'monospace']
     },
     borderRadius: {
+      full: '100%',
       lg: 'var(--radius)',
       md: 'calc(var(--radius) - 2px)',
       sm: 'calc(var(--radius) - 4px)'
@@ -31,6 +31,12 @@ const config = {
       'accordion-up': 'accordion-up 0.2s ease-out'
     },
     extend: {
+      zIndex:{
+        '-10': '-1'
+      },
+      fontSize: {
+        'xxs': '0.625rem', // 10px
+      },
       colors: {
         primary: 'hsl(var(--primary) / <alpha-value>)',
         'primary-variant': 'hsl(var(--primary-variant) / <alpha-value>)',
