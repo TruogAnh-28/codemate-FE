@@ -11,13 +11,13 @@
     </v-row>
 
     <!-- Details Section -->
-    <v-col cols="3" class="text-gray-500">
+    <v-col cols="3" class="text-gray-500 mb-4">
       <v-row><v-icon class="mr-2">mdi-clock-outline</v-icon> Recommend Time: "1.5 hours"</v-row>
       <v-row><v-icon class="mr-2">mdi-book-open-outline</v-icon> 4 Modules</v-row>
     </v-col>
 
     <!-- Recommend Content & Learning Outcomes -->
-    <v-row class="mb-8">
+    <v-row class="mb-4">
       <v-col cols="8">
         <v-card flat class="pa-0">
           <v-card-title class="font-weight-semibold text-h6 pa-0">
@@ -33,8 +33,8 @@
     </v-row>
 
     <!-- Explain Section -->
-    <v-row class="mb-8">
-      <v-col cols="12">
+    <v-row class="mb-4">
+      <v-col cols="8">
         <v-card flat class="pa-0">
           <v-card-title class="font-weight-semibold text-h6 pa-0">
             Explain
@@ -56,7 +56,7 @@
       <v-col cols="4" v-for="module in modules" :key="module">
         <v-card
           class="p-4 text-center bg-green-100 hover:bg-green-200 cursor-pointer"
-          @click="openDialog(module)"
+          @click="showDialog = true"
         >
           <v-card-text class="font-weight-semibold">{{ module }}</v-card-text>
         </v-card>
@@ -64,7 +64,11 @@
     </v-row>
 
     <!-- Dialog Component -->
-    <dialog-learning-type v-if="dialogVisible" :module="selectedModule" @close="closeDialog" />
+    <DialogLearningType
+      :dialog="showDialog"
+      @update:dialog="showDialog = $event"
+      @confirm="handleConfirm"
+    />
   </v-container>
 </template>
 
@@ -77,7 +81,7 @@ const modules: string[] = [
   "Ensure followed scope rules",
   "Create and manage symbol tables"
 ];
-
+const showDialog = ref(false);
 // State to control dialog visibility and selected module
 const dialogVisible = ref(false);
 const selectedModule = ref<string | null>(null);

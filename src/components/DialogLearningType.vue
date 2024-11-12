@@ -70,27 +70,31 @@
 </template>
 
 <script lang="ts">
-
-
 export default defineComponent({
-  setup() {
-    const dialog = ref(true); // Set true to open dialog by default
+  name: 'DialogLearningType',
+  props: {
+    dialog: Boolean
+  },
+  emits: ['update:dialog', 'confirm'],
+  setup(props: { dialog: boolean }, { emit }: { emit: (event: string, ...args: any[]) => void }) {
     const selectedOption = ref('');
+    const closeDialog = () => {
+      emit('update:dialog', false);
+    };
 
     const confirmSelection = () => {
-      console.log('Selected option:', selectedOption.value);
-      dialog.value = false;
+      emit('confirm', selectedOption.value);
+      emit('update:dialog', false);
     };
 
     return {
-      dialog,
       selectedOption,
+      closeDialog,
       confirmSelection
     };
   }
 });
 </script>
-
 <style scoped>
 .v-radio {
   margin-top: 16px;
