@@ -33,8 +33,11 @@
 </template>
 
 <script lang="ts">
-import { StudentReview } from '@/types/Course'
+import { computed } from 'vue';
+import { StudentReview } from '@/types/Course';
+
 export default {
+  name: 'AvatarStack',
   props: {
     students: {
       type: Array as () => StudentReview[],
@@ -46,23 +49,29 @@ export default {
       default: 3
     }
   },
-  computed: {
-    visibleStudents() {
-      return this.students.slice(0, this.maxVisible)
-    },
-    remainingCount() {
-      return Math.max(0, this.students.length - this.maxVisible)
-    }
-  },
-  methods: {
-    getInitials(name: string) {
+  setup(props) {
+    const visibleStudents = computed(() => {
+      return props.students.slice(0, props.maxVisible);
+    });
+
+    const remainingCount = computed(() => {
+      return Math.max(0, props.students.length - props.maxVisible);
+    });
+
+    const getInitials = (name: string) => {
       return name
         .split(' ')
         .map(word => word[0])
         .join('')
         .toUpperCase()
-        .slice(0, 2)
-    }
+        .slice(0, 2);
+    };
+
+    return {
+      visibleStudents,
+      remainingCount,
+      getInitials
+    };
   }
-}
+};
 </script>

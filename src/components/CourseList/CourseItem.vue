@@ -16,7 +16,7 @@
                 <v-img
                   :max-width="300"
                   :max-height="200"
-                  src="../../../../assets/default-course-avt.svg"
+                  src="../../assets/default-course-avt.svg"
                   alt="Course Avatar"
                   cover
                 />
@@ -41,9 +41,7 @@
 
             <!-- Learning Outcomes -->
             <div class="flex-shrink-0 min-w-[200px]">
-              <LearningOutcomes
-                :outcomes="course.learningOutcomes"
-              />
+              <LearningOutcomes :outcomes="course.learningOutcomes" />
             </div>
 
             <!-- Right Side Content -->
@@ -61,7 +59,7 @@
 
               <v-btn
                 color="secondary"
-                :to="`/course-detail/${course.id}`"
+                :to="`/courselist/course/${course.id}`"
                 rounded
               >
                 View Course
@@ -74,15 +72,19 @@
   </v-container>
 </template>
 
-<script lang="ts" setup>
-import { ref } from "vue";
-import AvatarStack from "@/components/AvatarStack.vue";
-import LearningOutcomes from "@/components/LearningOutcomes.vue";
-import { CourseReviewData } from "@/constants/course";
-import { CourseReview } from "@/types/Course";
+<script lang="ts">
+import { ref } from 'vue';
+import { CourseReviewData } from '@/constants/course';
+import { CourseReview } from '@/types/Course';
 
-const courses = ref<CourseReview[]>(CourseReviewData);
 export default {
-  name: "CourseItem",
- };
+  name: 'CourseList',
+  setup() {
+    const courses = ref<CourseReview[]>(CourseReviewData);
+
+    return {
+      courses
+    };
+  }
+};
 </script>

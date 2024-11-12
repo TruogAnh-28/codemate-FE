@@ -1,7 +1,8 @@
 <template>
   <v-app>
-    <!-- <Siderbar /> -->
     <v-main>
+      <Sidebar/>
+      <Appbar/>
       <router-view />
     </v-main>
   </v-app>

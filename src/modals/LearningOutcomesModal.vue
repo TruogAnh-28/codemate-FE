@@ -1,76 +1,74 @@
 <template>
-  <transition
-    enter-active-class="transition ease-out duration-300"
-    enter-from-class="opacity-0"
-    enter-to-class="opacity-100"
-    leave-active-class="transition ease-in duration-200"
-    leave-from-class="opacity-100"
-    leave-to-class="opacity-0"
+  <v-dialog
+    v-model="localShow"
+    max-width="600px"
+    persistent
+    scrollable
   >
-    <div
-      v-if="show"
-      class="fixed inset-0 z-50 overflow-y-auto"
-      @click="closeModal"
-    >
-      <!-- Overlay -->
-      <div
-        class="fixed inset-0 bg-black "
-      ></div>
-      <!-- Modal -->
-      <div class="flex min-h-full items-center justify-center p-4">
-        <div
-          class="relative transform overflow-hidden rounded-lg bg-white shadow-xl transition-all sm:max-w-lg w-full"
-          @click.stop
+    <v-card class="rounded-lg shadow-xl bg-white">
+      <!-- Header -->
+      <v-card-title class="text-lg font-semibold">
+        Learning Outcomes
+      </v-card-title>
+
+      <!-- Body -->
+      <v-card-text class="p-6 max-h-[60vh] overflow-y-auto">
+        <ul class="list-disc pl-6 space-y-2">
+          <li
+            v-for="(outcome, index) in outcomes"
+            :key="index"
+            class="text-sm text-gray-600"
+          >
+            {{ outcome }}
+          </li>
+        </ul>
+      </v-card-text>
+
+      <!-- Footer -->
+      <v-card-actions class="justify-end">
+        <v-btn
+          @click="closeModal"
+          color="primary"
+          class="text-on-primary"
+          variant="outlined"
         >
-          <!-- Header -->
-          <div class="border-b border-gray-200 p-4">
-            <h3 class="text-lg font-semibold text-gray-900">
-              Learning Outcomes
-            </h3>
-          </div>
-
-          <!-- Body -->
-          <div class="p-6 max-h-[60vh] overflow-y-auto">
-            <ul class="list-disc pl-6 space-y-2">
-              <li
-                v-for="(outcome, index) in outcomes"
-                :key="index"
-                class="text-sm text-gray-600"
-              >
-                {{ outcome }}
-              </li>
-            </ul>
-          </div>
-
-          <!-- Footer -->
-          <div class="border-t border-gray-200 p-4 flex justify-end">
-            <button
-              class="px-4 py-2 bg-primary text-on-primary rounded-md text-sm font-medium hover:opacity-90 transition-opacity"
-              @click="closeModal"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </transition>
+          Close
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
-
-export default defineComponent({
-  name: "LearningOutcomesModal",
+export default {
+  name: 'LearningOutcomesModal',
   props: {
-    show: Boolean,
-    outcomes: Array as () => string[],
+    show: {
+      type: Boolean,
+      required: true,
+    },
+    outcomes: {
+      type: Array,
+      required: true,
+    },
   },
-  emits: ['update:show'],
+  data() {
+    return {
+      localShow: this.show,
+    };
+  },
+  watch: {
+    show(newVal) {
+      this.localShow = newVal;
+    },
+    localShow(newVal) {
+      this.$emit('update:show', newVal);
+    },
+  },
   methods: {
     closeModal() {
-      this.$emit('update:show', false);
-    }
-  }
-});
+      this.localShow = false;
+    },
+  },
+};
 </script>

@@ -67,36 +67,40 @@
   </v-container>
 </template>
 
-<script setup lang="ts">
+<script lang="ts">
 import { ref } from 'vue';
-import LearningOutcomes from '@/components/LearningOutcomes.vue';
 import { CourseRecent } from '@/types/Course';
 import { CourseRecentData } from '@/constants/course';
 
-const response = ref<CourseRecent[]>(CourseRecentData);
+export default {
+  name: 'Cards',
+  setup() {
+    const response = ref<CourseRecent[]>(CourseRecentData);
 
-const formatDate = (dateString: string): string => {
-  try {
-    if (!dateString) return 'N/A';
+    // Format date to DD/MM/YYYY
+    const formatDate = (dateString: string): string => {
+      try {
+        if (!dateString) return 'N/A';
 
-    const date = new Date(dateString);
+        const date = new Date(dateString);
 
-    if (isNaN(date.getTime())) return 'Invalid Date';
+        if (isNaN(date.getTime())) return 'Invalid Date';
 
-    const day = date.getDate().toString().padStart(2, '0');
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const year = date.getFullYear();
+        const day = date.getDate().toString().padStart(2, '0');
+        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+        const year = date.getFullYear();
 
-    return `${day}/${month}/${year}`;
-  } catch (error) {
-    console.error('Error formatting date:', error);
-    return 'Error';
+        return `${day}/${month}/${year}`;
+      } catch (error) {
+        console.error('Error formatting date:', error);
+        return 'Error';
+      }
+    };
+
+    return {
+      response,
+      formatDate
+    };
   }
 };
 </script>
-
-<style scoped>
-.text-wrap {
-  word-break: break-word;
-}
-</style>

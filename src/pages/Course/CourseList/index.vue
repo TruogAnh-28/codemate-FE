@@ -1,18 +1,14 @@
 <template>
   <v-app>
-    <!-- Sidebar and Appbar components -->
-    <Sidebar />
-    <Appbar />
 
     <v-main class="pt-0 pb-2 pl-4 pr-4">
       <!-- Recent Courses -->
       <RecentCourses />
 
       <!-- My Courses Section -->
-      <section class="ml-14 ">
+      <section >
         <h2 class="text-xl font-semibold">My Courses</h2>
-
-        <!-- Vuetify TextField for search with Tailwind styling -->
+        <!-- Search Bar -->
         <v-text-field
           v-model="searchQuery"
           placeholder="Search"
@@ -34,22 +30,15 @@
 </template>
 
 <script lang="ts">
-import Sidebar from "@/components/Sidebar.vue";
-import Appbar from "@/components/Appbar.vue";
-import RecentCourses from "./RecentCourses/index.vue";
-import CourseItem from "./CourseItem/index.vue";
+import { ref } from 'vue';
 
 export default {
-  name: "CoursesList",
-  components: {
-    Sidebar,
-    Appbar,
-    RecentCourses,
-    CourseItem,
-  },
-  data() {
+  name: 'CourseList',
+  setup() {
+    const searchQuery = ref<string>("");
+
     return {
-      searchQuery: ""  // for binding with v-text-field
+      searchQuery
     };
   }
 };
