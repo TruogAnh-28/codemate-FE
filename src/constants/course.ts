@@ -1,4 +1,4 @@
-import { CourseRecent, CourseReview } from "@/types/Course"
+import { CourseDetail, CourseRecent, CourseReview } from "@/types/Course"
 export const CourseReviewData: CourseReview[] = [
   {
     id: "CS101",
@@ -165,3 +165,232 @@ export const CourseRecentData: CourseRecent[] = [
     status: "active"
   }
 ]
+
+export const CourseDetailData: CourseDetail = {
+  "id": "CS101",
+  "name": "Introduction to Computer Science",
+  "learningOutcomes": [
+    "Understand fundamental programming concepts",
+    "Develop problem-solving skills",
+    "Familiarity with algorithms and data structures",
+    "Ability to write and debug code in Python",
+    "Understanding of computer systems and software engineering principles"
+  ],
+  "professor": "Dr. Alice Johnson",
+  "startDate": "2024-01-10",
+  "endDate": "2024-06-10",
+  "status": "ACTIVE",
+  "percentageComplete": "75%",
+  "image": "https://example.com/images/cs101.png",
+  "lastAccessed": "2024-04-20",
+  "studentList": [
+    {
+      "studentId": "s001",
+      "name": "John Doe",
+      "review": "Great introduction to computer science!"
+    },
+    {
+      "studentId": "s002",
+      "name": "Jane Smith",
+      "review": "Challenging but rewarding."
+    }
+  ],
+  "lessons": [
+    {
+      "id": "CS101_LS1",
+      "name": "Introduction to Programming",
+      "description": "An overview of programming basics and syntax.",
+      "documents": [
+        {
+          "id": "doc1",
+          "name": "Python Basics",
+          "type": "PDF",
+          "documentUrl": "https://example.com/docs/python_basics.pdf"
+        },
+        {
+          "id": "doc2",
+          "name": "Setting Up Python",
+          "type": "VIDEO",
+          "documentUrl": "https://example.com/videos/setup_python.mp4"
+        }
+      ]
+    },
+    {
+      "id": "CS101_LS2",
+      "name": "Data Types and Variables",
+      "description": "Understanding data types and variables in Python.",
+      "documents": [
+        {
+          "id": "doc3",
+          "name": "Data Types Overview",
+          "type": "PDF",
+          "documentUrl": "https://example.com/docs/data_types.pdf"
+        }
+      ]
+    },
+    {
+      "id": "CS101_LS3",
+      "name": "Control Structures",
+      "description": "Learning about conditional statements and loops.",
+      "documents": [
+        {
+          "id": "doc4",
+          "name": "Control Structures in Python",
+          "type": "PDF",
+          "documentUrl": "https://example.com/docs/control_structures.pdf"
+        },
+        {
+          "id": "doc5",
+          "name": "Looping Tutorial",
+          "type": "VIDEO",
+          "documentUrl": "https://example.com/videos/loops.mp4"
+        }
+      ]
+    },
+    {
+      "id": "CS101_LS4",
+      "name": "Functions",
+      "description": "An introduction to defining and using functions.",
+      "documents": [
+        {
+          "id": "doc6",
+          "name": "Functions in Python",
+          "type": "PDF",
+          "documentUrl": "https://example.com/docs/functions.pdf"
+        }
+      ]
+    },
+    {
+      "id": "CS101_LS5",
+      "name": "Data Structures",
+      "description": "Exploring lists, tuples, and dictionaries in Python.",
+      "documents": [
+        {
+          "id": "doc7",
+          "name": "Introduction to Lists",
+          "type": "PDF",
+          "documentUrl": "https://example.com/docs/lists.pdf"
+        }
+      ]
+    }
+  ],
+  "exercises": [
+    {
+      "id": "CS101_EX1",
+      "name": "Python Basics Quiz",
+      "description": "A quiz covering basic Python concepts.",
+      "questions": [
+        {
+          "id": "q1",
+          "question": "What is the correct syntax for a Python function?",
+          "options": ["def functionName():", "function functionName()", "def functionName[]", "function() functionName"],
+          "correctAnswer": "def functionName():"
+        },
+        {
+          "id": "q2",
+          "question": "What is the output of print(2 + 2)?",
+          "options": ["22", "4", "None", "Error"],
+          "correctAnswer": "4"
+        },
+        {
+          "id": "q3",
+          "question": "Which keyword is used to start a loop in Python?",
+          "options": ["if", "def", "while", "return"],
+          "correctAnswer": "while"
+        }
+      ]
+    },
+    {
+      "id": "CS101_EX2",
+      "name": "Data Types and Variables Quiz",
+      "description": "A quiz on data types and variable handling.",
+      "questions": [
+        {
+          "id": "q4",
+          "question": "Which of these is a valid variable name in Python?",
+          "options": ["2var", "var_1", "var-name", "var name"],
+          "correctAnswer": "var_1"
+        },
+        {
+          "id": "q5",
+          "question": "What is the data type of 3.14 in Python?",
+          "options": ["int", "float", "str", "bool"],
+          "correctAnswer": "float"
+        },
+        {
+          "id": "q6",
+          "question": "Which of the following is a mutable data type?",
+          "options": ["tuple", "str", "int", "list"],
+          "correctAnswer": "list"
+        }
+      ]
+    },
+    {
+      "id": "CS101_EX3",
+      "name": "Control Structures Quiz",
+      "description": "A quiz covering control structures like if statements and loops.",
+      "questions": [
+        {
+          "id": "q7",
+          "question": "What is the purpose of an if statement?",
+          "options": ["To define a function", "To repeat code", "To execute code conditionally", "To store data"],
+          "correctAnswer": "To execute code conditionally"
+        },
+        {
+          "id": "q8",
+          "question": "Which keyword is used to skip an iteration in a loop?",
+          "options": ["skip", "continue", "pass", "break"],
+          "correctAnswer": "continue"
+        }
+      ]
+    },
+    {
+      "id": "CS101_EX4",
+      "name": "Functions Quiz",
+      "description": "A quiz on defining and using functions.",
+      "questions": [
+        {
+          "id": "q9",
+          "question": "How do you call a function named myFunction in Python?",
+          "options": ["call myFunction()", "execute myFunction()", "myFunction()", "function myFunction()"],
+          "correctAnswer": "myFunction()"
+        },
+        {
+          "id": "q10",
+          "question": "What keyword is used to define a function in Python?",
+          "options": ["func", "define", "def", "function"],
+          "correctAnswer": "def"
+        }
+      ]
+    },
+    {
+      "id": "CS101_EX5",
+      "name": "Data Structures Quiz",
+      "description": "A quiz on data structures like lists, tuples, and dictionaries.",
+      "questions": [
+        {
+          "id": "q11",
+          "question": "Which data structure is ordered and mutable?",
+          "options": ["tuple", "set", "list", "dictionary"],
+          "correctAnswer": "list"
+        },
+        {
+          "id": "q12",
+          "question": "How do you access the value associated with a key in a dictionary?",
+          "options": ["dict.key", "dict[key]", "dict(key)", "dict->key"],
+          "correctAnswer": "dict[key]"
+        }
+      ]
+    }
+  ],
+  "recommendedLessons": [
+    {
+      "id": "r1",
+      "lessonId": "CS101_LS3"
+    },
+    {
+      "id": "r2",
+      "lessonId": "CS101_LS4"
+    }
+  ]
+}
