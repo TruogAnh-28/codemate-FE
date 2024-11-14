@@ -112,7 +112,7 @@
             </v-avatar>
           </div>
           <div class="text-center mt-4">
-            <h3 class="font-semibold text-xl">Join our Recommend Learning</h3>
+            <h3 class="font-semibold text-heading-4">Join our Recommend Learning</h3>
             <p class="text-text-tetiary mt-2">
               Tailored lessons to reach your goals, one step at a time.
             </p>

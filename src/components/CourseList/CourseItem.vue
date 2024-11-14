@@ -27,7 +27,7 @@
             <div class="flex-grow-1 min-w-0">
               <!-- Course Title and Date -->
               <div class="mb-4">
-                <h3 class="text-lg font-bold text-wrap mb-1">
+                <h3 class="text-body-large-1 font-bold text-wrap mb-1">
                   {{ course.name }}
                 </h3>
                 <p class="text-sm text-grey-darken-1">
