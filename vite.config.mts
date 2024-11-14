@@ -41,13 +41,13 @@ export default defineConfig({
     Vuetify({
       autoImport: true,
       styles: {
-        configFile: 'src/styles/settings.scss',
+        configFile: 'src/global.css',
       },
     }),
     Fonts({
       google: {
         families: [ {
-          name: 'Roboto',
+          name: 'Public Sans',
           styles: 'wght@100;300;400;500;700;900',
         }],
       },

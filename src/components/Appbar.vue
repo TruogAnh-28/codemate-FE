@@ -42,8 +42,10 @@
   </v-app-bar>
 </template>
 
-<script lang="ts" setup>
-  //
+<script lang="ts">
+  export default {
+    name: "Appbar",
+  };
 </script>
 <style scoped>
 .search-bar {

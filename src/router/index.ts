@@ -5,7 +5,7 @@
  */
 
 // Composables
-import { createRouter, createWebHistory } from 'vue-router/auto'
+import { createRouter, createWebHistory } from 'vue-router'
 import { setupLayouts } from 'virtual:generated-layouts'
 import { routes as autoRoutes} from 'vue-router/auto-routes'
 
@@ -15,7 +15,7 @@ const StudentRoutes = [
     name: 'Dashboard',
     component: () => import('@/pages/Dashboard/index.vue'),
   },
-  
+
   {
     path: '/courselist',
     name: 'CourseList',

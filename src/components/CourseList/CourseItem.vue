@@ -16,7 +16,7 @@
                 <v-img
                   :max-width="300"
                   :max-height="200"
-                  src="../../../../assets/default-course-avt.svg"
+                  src="../../assets/default-course-avt.svg"
                   alt="Course Avatar"
                   cover
                 />
@@ -41,9 +41,7 @@
 
             <!-- Learning Outcomes -->
             <div class="flex-shrink-0 min-w-[200px]">
-              <LearningOutcomes
-                :outcomes="course.learningOutcomes"
-              />
+              <LearningOutcomes :outcomes="course.learningOutcomes" />
             </div>
 
             <!-- Right Side Content -->
@@ -53,7 +51,12 @@
                   <strong>Professor:</strong> {{ course.professor }}
                 </p>
                 <p
-                  :class="[ 'text-sm', course.status === 'Completed' ? 'text-success' : 'text-warning' ]"
+                  :class="[
+                    'text-sm',
+                    course.status === 'Completed'
+                      ? 'text-success'
+                      : 'text-warning',
+                  ]"
                 >
                   {{ course.status }}
                 </p>
@@ -61,7 +64,7 @@
 
               <v-btn
                 color="secondary"
-                :to="`/course-detail/${course.id}`"
+                :to="`/courselist/course/${course.id}`"
                 rounded
               >
                 View Course
@@ -74,12 +77,8 @@
   </v-container>
 </template>
 
-<script setup lang="ts">
-import { ref } from "vue";
-import AvatarStack from "@/components/AvatarStack.vue";
-import LearningOutcomes from "@/components/LearningOutcomes.vue";
+<script lang="ts" setup>
 import { CourseReviewData } from "@/constants/course";
 import { CourseReview } from "@/types/Course";
-
 const courses = ref<CourseReview[]>(CourseReviewData);
 </script>
