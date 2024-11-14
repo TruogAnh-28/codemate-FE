@@ -32,45 +32,29 @@
   </div>
 </template>
 
-<script lang="ts">
+<script lang="ts" setup>
+
 import { StudentReview } from '@/types/Course';
+const props = defineProps<{
+  students: StudentReview[];
+  maxVisible: number;
+}>();
 
-export default {
-  name: 'AvatarStack',
-  props: {
-    students: {
-      type: Array as () => StudentReview[],
-      required: true,
-      default: () => []
-    },
-    maxVisible: {
-      type: Number,
-      default: 3
-    }
-  },
-  setup(props: { students: StudentReview[], maxVisible: number }) {
-    const visibleStudents = computed(() => {
-      return props.students.slice(0, props.maxVisible);
-    });
+const visibleStudents = computed(() => {
+  return props.students.slice(0, props.maxVisible);
+});
 
-    const remainingCount = computed(() => {
-      return Math.max(0, props.students.length - props.maxVisible);
-    });
+const remainingCount = computed(() => {
+  return Math.max(0, props.students.length - props.maxVisible);
+});
 
-    const getInitials = (name: string) => {
-      return name
-        .split(' ')
-        .map(word => word[0])
-        .join('')
-        .toUpperCase()
-        .slice(0, 2);
-    };
-
-    return {
-      visibleStudents,
-      remainingCount,
-      getInitials
-    };
-  }
+const getInitials = (name: string) => {
+  return name
+    .split(' ')
+    .map(word => word[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
 };
+
 </script>
