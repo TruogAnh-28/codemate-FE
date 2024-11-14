@@ -13,7 +13,7 @@
             class="w-full h-full"
           >
             <template v-slot:error>
-              <div class="w-full h-full rounded-full flex items-center justify-center bg-primary text-white text-xs font-medium">
+              <div class="w-full h-full rounded-full flex items-center justify-center bg-primary text-white text-body-small-1 font-medium">
                 {{ getInitials(student.name) }}
               </div>
             </template>
@@ -25,7 +25,7 @@
     <!-- Display remaining students count -->
     <div
       v-if="remainingCount > 0"
-      class="relative -ml-1 flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 border-2 border-white text-xs font-medium text-text-tetiary"
+      class="relative -ml-1 flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 border-2 border-white text-body-small-1 font-medium text-text-tetiary"
     >
       +{{ remainingCount }}
     </div>

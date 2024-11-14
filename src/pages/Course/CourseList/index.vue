@@ -7,7 +7,7 @@
 
       <!-- My Courses Section -->
       <section >
-        <h2 class="text-xl font-semibold">My Courses</h2>
+        <h2 class="text-heading-4 font-semibold">My Courses</h2>
         <!-- Search Bar -->
         <v-text-field
           v-model="searchQuery"
