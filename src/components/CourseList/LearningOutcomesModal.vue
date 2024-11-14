@@ -1,6 +1,7 @@
 <template>
   <v-dialog
-    v-model="localShow"
+    :value="localShow"
+    @update:value="updateShow"
     max-width="600px"
     persistent
     scrollable
@@ -17,7 +18,7 @@
           <li
             v-for="(outcome, index) in outcomes"
             :key="index"
-            class="text-sm text-gray-600"
+            class="text-sm text-text-tetiary"
           >
             {{ outcome }}
           </li>
@@ -39,36 +40,30 @@
   </v-dialog>
 </template>
 
-<script lang="ts">
-export default {
-  name: 'LearningOutcomesModal',
-  props: {
-    show: {
-      type: Boolean,
-      required: true,
-    },
-    outcomes: {
-      type: Array,
-      required: true,
-    },
-  },
-  data() {
-    return {
-      localShow: this.show,
-    };
-  },
-  watch: {
-    show(newVal) {
-      this.localShow = newVal;
-    },
-    localShow(newVal) {
-      this.$emit('update:show', newVal);
-    },
-  },
-  methods: {
-    closeModal() {
-      this.localShow = false;
-    },
-  },
+<script lang="ts" setup>
+const props = defineProps({
+  show: Boolean,
+  outcomes: Array,
+});
+
+const localShow = ref(props.show);
+
+watch(
+  () => props.show,
+  (newVal: boolean) => {
+    localShow.value = newVal;
+  }
+);
+
+const emit = defineEmits();
+
+const closeModal = () => {
+  localShow.value = false;
+  emit("update:show", false);
+};
+
+const updateShow = (value: boolean) => {
+  localShow.value = value;
+  emit("update:show", value);
 };
 </script>

@@ -29,19 +29,10 @@
   </v-app>
 </template>
 
-<script lang="ts">
-import { ref } from 'vue';
+<script lang="ts" setup>
 
-export default {
-  name: 'CourseList',
-  setup() {
-    const searchQuery = ref<string>("");
+const searchQuery = ref<string>("");
 
-    return {
-      searchQuery
-    };
-  }
-};
 </script>
 
 <style scoped>

@@ -9,7 +9,7 @@ declare module 'vue' {
   export interface GlobalComponents {
     Appbar: typeof import('./components/Appbar.vue')['default']
     AppFooter: typeof import('./components/AppFooter.vue')['default']
-    AvatarStack: typeof import('./components/AvatarStack.vue')['default']
+    AvatarStack: typeof import('./components/CourseList/AvatarStack.vue')['default']
     Cards: typeof import('./components/CourseList/Cards.vue')['default']
     CourseDescription: typeof import('./components/CourseDetail/CourseDescription.vue')['default']
     CourseExercises: typeof import('./components/CourseDetail/CourseExercises.vue')['default']
@@ -18,7 +18,8 @@ declare module 'vue' {
     CourseRecommendLessons: typeof import('./components/CourseDetail/CourseRecommendLessons.vue')['default']
     DialogLearningType: typeof import('./components/DialogLearningType.vue')['default']
     HelloWorld: typeof import('./components/HelloWorld.vue')['default']
-    LearningOutcomes: typeof import('./components/LearningOutcomes.vue')['default']
+    LearningOutcomes: typeof import('./components/CourseList/LearningOutcomes.vue')['default']
+    LearningOutcomesModal: typeof import('./components/CourseList/LearningOutcomesModal.vue')['default']
     RecentCourses: typeof import('./components/CourseList/RecentCourses.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']

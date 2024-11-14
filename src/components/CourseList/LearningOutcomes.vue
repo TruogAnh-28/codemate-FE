@@ -35,39 +35,17 @@
   </div>
 </template>
 
-<script lang="ts">
-import { ref, computed } from 'vue';
-import LearningOutcomesModal from '@/modals/LearningOutcomesModal.vue';
+<script lang="ts" setup>
+const props = defineProps<{ outcomes: string[] }>();
 
-export default {
-  name: 'LearningOutcomes',
-  components: {
-    LearningOutcomesModal
-  },
-  props: {
-    outcomes: {
-      type: Array,
-      required: true
-    }
-  },
-  setup(props) {
-    const maxDisplay = 2;
-    const isModalOpen = ref(false);
+const maxDisplay = 2;
+const isModalOpen = ref(false);
 
-    // Calculate the outcomes to be displayed initially
-    const displayedOutcomes = computed(() => props.outcomes.slice(0, maxDisplay));
+// Calculate the outcomes to be displayed initially
+const displayedOutcomes = computed(() => props.outcomes.slice(0, maxDisplay));
 
-    // Open the modal
-    const openModal = () => {
-      isModalOpen.value = true;
-    };
-
-    return {
-      maxDisplay,
-      isModalOpen,
-      displayedOutcomes,
-      openModal
-    };
-  }
+// Open the modal
+const openModal = () => {
+  isModalOpen.value = true;
 };
 </script>

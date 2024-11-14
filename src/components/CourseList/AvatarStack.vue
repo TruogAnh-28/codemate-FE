@@ -25,7 +25,7 @@
     <!-- Display remaining students count -->
     <div
       v-if="remainingCount > 0"
-      class="relative -ml-1 flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 border-2 border-white text-xs font-medium text-gray-600"
+      class="relative -ml-1 flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 border-2 border-white text-xs font-medium text-text-tetiary"
     >
       +{{ remainingCount }}
     </div>

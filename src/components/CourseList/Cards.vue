@@ -57,6 +57,7 @@
             <v-btn
               color="secondary"
               class="flex-1 px-4 py-1 text-on-secondary rounded-md font-sans"
+              :to="`/courselist/course/${course.id}`"
             >
               View Course
             </v-btn>
@@ -67,40 +68,10 @@
   </v-container>
 </template>
 
-<script lang="ts">
-import { ref } from 'vue';
+<script lang="ts" setup>
 import { CourseRecent } from '@/types/Course';
 import { CourseRecentData } from '@/constants/course';
+import { formatDate } from '@/utils/functions/time';
 
-export default {
-  name: 'Cards',
-  setup() {
-    const response = ref<CourseRecent[]>(CourseRecentData);
-
-    // Format date to DD/MM/YYYY
-    const formatDate = (dateString: string): string => {
-      try {
-        if (!dateString) return 'N/A';
-
-        const date = new Date(dateString);
-
-        if (isNaN(date.getTime())) return 'Invalid Date';
-
-        const day = date.getDate().toString().padStart(2, '0');
-        const month = (date.getMonth() + 1).toString().padStart(2, '0');
-        const year = date.getFullYear();
-
-        return `${day}/${month}/${year}`;
-      } catch (error) {
-        console.error('Error formatting date:', error);
-        return 'Error';
-      }
-    };
-
-    return {
-      response,
-      formatDate
-    };
-  }
-};
+const response = ref<CourseRecent[]>(CourseRecentData);
 </script>
