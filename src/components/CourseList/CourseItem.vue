@@ -51,7 +51,12 @@
                   <strong>Professor:</strong> {{ course.professor }}
                 </p>
                 <p
-                  :class="[ 'text-sm', course.status === 'Completed' ? 'text-success' : 'text-warning' ]"
+                  :class="[
+                    'text-sm',
+                    course.status === 'Completed'
+                      ? 'text-success'
+                      : 'text-warning',
+                  ]"
                 >
                   {{ course.status }}
                 </p>
@@ -72,19 +77,8 @@
   </v-container>
 </template>
 
-<script lang="ts">
-
-import { CourseReviewData } from '@/constants/course';
-import { CourseReview } from '@/types/Course';
-
-export default {
-  name: 'CourseList',
-  setup() {
-    const courses = ref<CourseReview[]>(CourseReviewData);
-
-    return {
-      courses
-    };
-  }
-};
+<script lang="ts" setup>
+import { CourseReviewData } from "@/constants/course";
+import { CourseReview } from "@/types/Course";
+const courses = ref<CourseReview[]>(CourseReviewData);
 </script>

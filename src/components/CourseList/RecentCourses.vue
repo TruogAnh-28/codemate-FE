@@ -8,10 +8,6 @@
   </section>
 </template>
 
-<script lang="ts">
+<script lang="ts" setup>
 
-
-export default defineComponent({
-  name: 'RecentCourses',
-});
 </script>

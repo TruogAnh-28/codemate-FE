@@ -29,19 +29,10 @@
   </v-app>
 </template>
 
-<script lang="ts">
+<script lang="ts" setup>
 
+const searchQuery = ref<string>("");
 
-export default {
-  name: 'CourseList',
-  setup() {
-    const searchQuery = ref<string>("");
-
-    return {
-      searchQuery
-    };
-  }
-};
 </script>
 
 <style scoped>
