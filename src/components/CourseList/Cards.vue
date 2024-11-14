@@ -13,7 +13,7 @@
             <template #activator="{ props }">
               <h3
                 v-bind="props"
-                class="text-lg font-sans font-bold truncate"
+                class="text-heading-4 font-sans font-bold truncate"
               >
                 {{ course.name }}
               </h3>
@@ -21,15 +21,14 @@
             <span>{{ course.name }}</span>
           </v-tooltip>
         </v-card-title>
-
         <!-- Learning Outcomes -->
         <v-card-text class="relative flex-1">
           <LearningOutcomes :outcomes="course.learningOutcomes" />
         </v-card-text>
 
         <!-- Footer Section -->
-        <v-card-actions class="mt-auto flex-col">
-          <p class="text-xs text-text-secondary mb-2 font-sans">
+        <v-card-actions class="flex-col items-end">
+          <p class="text-body-small-1 text-text-tetiary mb-2 font-sans mr-auto">
             Last Accessed: {{ formatDate(course.lastAccessed) }}
           </p>
 
@@ -47,16 +46,16 @@
           </v-progress-linear>
 
           <!-- Action Buttons -->
-          <div class="flex gap-2 w-full">
+          <div class="flex gap-2 w-full justify-end">
             <v-btn
               color="primary"
-              class="flex-1 px-4 py-1 text-on-primary rounded-md font-sans"
+              class="px-4 py-1 text-on-primary rounded-md font-sans"
             >
               Resume
             </v-btn>
             <v-btn
               color="secondary"
-              class="flex-1 px-4 py-1 text-on-secondary rounded-md font-sans"
+              class="px-4 py-1 text-on-secondary rounded-md font-sans"
               :to="`/courselist/course/${course.id}`"
             >
               View Course
@@ -69,9 +68,9 @@
 </template>
 
 <script lang="ts" setup>
-import { CourseRecent } from '@/types/Course';
-import { CourseRecentData } from '@/constants/course';
-import { formatDate } from '@/utils/functions/time';
+import { CourseRecent } from "@/types/Course";
+import { CourseRecentData } from "@/constants/course";
+import { formatDate } from "@/utils/functions/time";
 
 const response = ref<CourseRecent[]>(CourseRecentData);
 </script>

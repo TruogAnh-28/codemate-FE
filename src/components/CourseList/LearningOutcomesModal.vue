@@ -1,6 +1,6 @@
 <template>
   <v-dialog
-    :value="localShow"
+    :value="show"
     @update:value="updateShow"
     max-width="600px"
     persistent
@@ -8,7 +8,7 @@
   >
     <v-card class="rounded-lg shadow-xl bg-white">
       <!-- Header -->
-      <v-card-title class="text-lg font-semibold">
+      <v-card-title class="text-heading-4 font-semibold">
         Learning Outcomes
       </v-card-title>
 
@@ -46,24 +46,15 @@ const props = defineProps({
   outcomes: Array,
 });
 
-const localShow = ref(props.show);
-
-watch(
-  () => props.show,
-  (newVal: boolean) => {
-    localShow.value = newVal;
-  }
-);
-
 const emit = defineEmits();
 
+// Close the modal
 const closeModal = () => {
-  localShow.value = false;
-  emit("update:show", false);
+  emit("update:show", false); // Emit the updated state back to the parent
 };
 
+// Update the show state when the dialog changes
 const updateShow = (value: boolean) => {
-  localShow.value = value;
-  emit("update:show", value);
+  emit("update:show", value); // Sync state with the parent component
 };
 </script>

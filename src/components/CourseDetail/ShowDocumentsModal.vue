@@ -1,7 +1,7 @@
 <template>
   <v-dialog v-model="internalShowModal" max-width="600">
     <v-card>
-      <v-card-title class="text-h6">Documents</v-card-title>
+      <v-card-title class="text-heading-4">Documents</v-card-title>
       <v-card-subtitle class="pb-4">
         The following documents are available for this lesson:
       </v-card-subtitle>
@@ -25,10 +25,10 @@
             </v-avatar>
           </template>
 
-          <v-list-item-title class="text-lg font-semibold">
+          <v-list-item-title class="text-body-large-1 font-semibold">
             {{ document.name }}
           </v-list-item-title>
-          <v-list-item-subtitle class="text-sm text-blue-600">
+          <v-list-item-subtitle class="text-body-base-1 text-blue-600">
             <a
               :href="document.documentUrl"
               target="_blank"

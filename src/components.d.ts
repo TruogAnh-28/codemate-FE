@@ -18,6 +18,7 @@ declare module 'vue' {
     CourseRecommendLessons: typeof import('./components/CourseDetail/CourseRecommendLessons.vue')['default']
     DialogLearningType: typeof import('./components/DialogLearningType.vue')['default']
     FeedbackLesson: typeof import('./components/CourseDetail/FeedbackLesson.vue')['default']
+    GetGoalsModal: typeof import('./components/CourseDetail/GetGoalsModal.vue')['default']
     HelloWorld: typeof import('./components/HelloWorld.vue')['default']
     LearningOutcomes: typeof import('./components/CourseList/LearningOutcomes.vue')['default']
     LearningOutcomesModal: typeof import('./components/CourseList/LearningOutcomesModal.vue')['default']
@@ -26,5 +27,6 @@ declare module 'vue' {
     RouterView: typeof import('vue-router')['RouterView']
     ShowDocumentsModal: typeof import('./components/CourseDetail/ShowDocumentsModal.vue')['default']
     Sidebar: typeof import('./components/Sidebar.vue')['default']
+    TextLimitAlert: typeof import('./components/utils/TextLimitAlert.vue')['default']
   }
 }

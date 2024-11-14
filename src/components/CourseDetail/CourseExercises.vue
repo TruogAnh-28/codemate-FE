@@ -8,15 +8,15 @@
           <v-card class="rounded-lg shadow-md p-4">
             <v-row align="center">
               <v-col cols="7">
-                <div class="font-semibold text-xl mb-2">{{ exercise.name }}</div>
-                <div class="text-sm text-text-tetiary">{{ exercise.description }}</div>
+                <div class="font-semibold text-body-large-1 mb-2">{{ exercise.name }}</div>
+                <div class="text-body-base-1 text-text-tetiary">{{ exercise.description }}</div>
               </v-col>
               <v-col cols="3" class="text-center">
-                <div class="text-lg font-medium">
+                <div class="text-body-large-4 font-medium">
                   Questions: <span class="font-bold">{{ exercise.questions.length }}</span>
                 </div>
               </v-col>
-              <v-col cols="2" class="text-center">
+              <v-col cols="2" class="text-center text-body-large-4">
                 <v-btn color="primary" @click="startExercise(exercise)">
                   Start
                 </v-btn>

@@ -35,7 +35,26 @@ const config = {
         '-10': '-1'
       },
       fontSize: {
-        'xxs': '0.625rem', // 10px
+        'heading-1': '3rem',    // 48px
+        'heading-2': '2.5rem',  // 40px
+        'heading-3': '2rem',    // 32px
+        'heading-4': '1.5rem',  // 24px
+        'body-large-1': '1.25rem', // 20px Bold
+        'body-large-2': '1.25rem', // 20px Semibold
+        'body-large-3': '1.25rem', // 20px Medium
+        'body-large-4': '1.25rem', // 20px Regular
+        'body-base-1': '1rem',     // 16px Bold
+        'body-base-2': '1rem',     // 16px Semibold
+        'body-base-3': '1rem',     // 16px Medium
+        'body-base-4': '1rem',     // 16px Regular
+        'body-small-1': '0.75rem', // 12px Bold
+        'body-small-2': '0.75rem', // 12px Semibold
+        'body-small-3': '0.75rem', // 12px Medium
+        'body-small-4': '0.75rem', // 12px Regular
+        'body-xs-1': '0.625rem',   // 10px Bold
+        'body-xs-2': '0.625rem',   // 10px Semibold
+        'body-xs-3': '0.625rem',   // 10px Medium
+        'body-xs-4': '0.625rem',   // 10px Regular
       },
       colors: {
         primary: 'hsl(var(--primary) / <alpha-value>)',
@@ -52,9 +71,9 @@ const config = {
         'on-error': 'hsl(var(--on-error) / <alpha-value>)',
 
         // Additional colors
-        'text-primary': 'hsl(var(--text-primary) / <alpha-value>)',
-        'text-secondary': 'hsl(var(--text-secondary) / <alpha-value>)',
-        'text-tetiary': 'hsl(var(--text-tetiary) / <alpha-value>)',
+        'text-primary': 'hsl(var(--text-primary) / <alpha-value>)', // Black
+        'text-secondary': 'hsl(var(--text-secondary) / <alpha-value>)', // White
+        'text-tetiary': 'hsl(var(--text-tetiary) / <alpha-value>)', // Light-gray
         border: 'hsl(var(--border) / <alpha-value>)',
         input: 'hsl(var(--input) / <alpha-value>)',
         ring: 'hsl(var(--ring) / <alpha-value>)',

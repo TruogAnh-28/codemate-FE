@@ -3,8 +3,8 @@
     <div v-for="lesson in recommendedLessons" :key="lesson.id" class="mb-6">
       <v-row class="mb-4">
         <v-col cols="12" md="8" class="border-b-2">
-          <div class="font-bold text-xl">{{ lesson.name }}</div>
-          <div class="text-text-tetiary">{{ lesson.description }}</div>
+          <div class="font-bold text-body-large-1">{{ lesson.name }}</div>
+          <div class="text-text-tetiary text-body-base-1">{{ lesson.description }}</div>
         </v-col>
         <v-col cols="12" md="4" class="flex justify-center items-center border-b-2">
           <!-- Tooltip for each action button -->
