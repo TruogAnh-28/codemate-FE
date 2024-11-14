@@ -11,14 +11,18 @@
           md="4"
           class="flex justify-center items-center border-b-2"
         >
-          <!-- Tooltip for icon -->
-          <v-tooltip bottom v-for="button in actionButtons" :key="button.index">
+          <v-tooltip
+            bottom
+            v-for="button in actionButtons(lesson)"
+            :key="button.index"
+          >
             <template v-slot:activator="{ props: activatorProps }">
               <v-btn
                 variant="text"
                 :icon="button.icon"
                 @click="handleButtonClick(button, lesson)"
                 v-bind="activatorProps"
+                :class="button.class"
               ></v-btn>
             </template>
             <span>{{ button.value }}</span>
@@ -27,50 +31,124 @@
       </v-row>
     </div>
   </v-card>
+
+  <FeedbackLesson
+    :lessonId="selectedLessonId"
+    :showModal="showFeedbackModal"
+    @update:showModal="updateFeedbackModal"
+    @feedback-submitted="handleFeedbackSubmitted"
+  />
+
+  <ShowDocumentsModal
+    :showModal="showDocumentsModal"
+    @update:showModal="showDocumentsModal = $event"
+    :documents="selectedDocuments"
+  />
 </template>
 
 <script lang="ts" setup>
-import { Document, Lesson } from "@/types/Course";
+import { Lesson, Document } from "@/types/Course";
 
 defineProps<{
   lessons: Lesson[];
 }>();
+interface FeedbackData {
+  lessonId: string;
+  feedback: string;
+}
 
-// Handle action button clicks
+const showDocumentsModal = ref(false);
+const showFeedbackModal = ref(false);
+const selectedLessonId = ref<string | undefined>(undefined);
+const selectedDocuments = ref<Document[]>([]);
+
 const handleButtonClick = (button: any, lesson: Lesson) => {
-  const arg = button.arg(lesson);
-  button.function(arg);
+  switch (button.index) {
+    case 0:
+      showDocuments(lesson.documents);
+      break;
+    case 1:
+      handleBookmark(lesson);
+      break;
+    case 2:
+      downloadDocuments(lesson.id);
+      break;
+    case 3:
+      openFeedbackModal(lesson.id);
+      break;
+    default:
+      console.error("Invalid button index:", button.index);
+  }
 };
 
+// Action functions
 const showDocuments = (documentList: Document[] | string) => {
   if (Array.isArray(documentList)) {
-    console.log("Showing documents for lesson:", documentList);
+    selectedDocuments.value = documentList;
+    showDocumentsModal.value = true;
   } else {
     console.error("Invalid argument for showDocuments:", documentList);
   }
 };
 
-const bookmarkLesson = (lessonId: string) => {
-  console.log("Bookmark lesson:", lessonId);
+const handleBookmark = (lesson: Lesson) => {
+  lesson.bookmarked = !lesson.bookmarked;
+  console.log(
+    `${lesson.bookmarked ? "Bookmarked" : "Unbookmarked"} lesson:`,
+    lesson.id
+  );
 };
 
 const downloadDocuments = (lessonId: string) => {
   console.log("Downloading documents for lesson:", lessonId);
 };
 
-const openFeedbackModal = (lessonId: string) => {
-  console.log("Opening feedback modal for lesson:", lessonId);
+const updateFeedbackModal = (value: boolean): void => {
+  showFeedbackModal.value = value;
 };
 
-// Define action buttons array
-const actionButtons = [
-  { index: 0, icon: "mdi-file-document", function: showDocuments, arg: (lesson: Lesson) => lesson.documents, value: "Show Documents" },
-  { index: 1, icon: "mdi-bookmark-outline", function: bookmarkLesson, arg: (lesson: Lesson) => lesson.id, value: "Bookmark Lesson" },
-  { index: 2, icon: "mdi-download", function: downloadDocuments, arg: (lesson: Lesson) => lesson.id, value: "Download Documents" },
-  { index: 3, icon: "mdi-comment-text-outline", function: openFeedbackModal, arg: (lesson: Lesson) => lesson.id, value: "Feedback Lesson" }
+const openFeedbackModal = (lessonId: string): void => {
+  selectedLessonId.value = lessonId;
+  showFeedbackModal.value = true;
+};
+
+const handleFeedbackSubmitted = (feedbackData: FeedbackData): void => {
+  console.log(
+    `Feedback received for lesson ${feedbackData.lessonId}:`,
+    feedbackData.feedback
+  );
+  showFeedbackModal.value = false;
+  selectedLessonId.value = undefined;
+};
+
+const actionButtons = (lesson: Lesson) => [
+  {
+    index: 0,
+    icon: "mdi-file-document",
+    value: "Show Documents",
+    class: "text-text-primary",
+  },
+  {
+    index: 1,
+    icon: lesson.bookmarked ? "mdi-bookmark" : "mdi-bookmark-outline",
+    value: lesson.bookmarked ? "Unbookmark Lesson" : "Bookmark Lesson",
+    class: lesson.bookmarked ? "text-error" : "text-text-primary",
+  },
+  {
+    index: 2,
+    icon: "mdi-download",
+    value: "Download Documents",
+    class: "text-text-primary",
+  },
+  {
+    index: 3,
+    icon: "mdi-comment-text-outline",
+    value: "Feedback Lesson",
+    class: "text-text-primary",
+  },
 ];
 </script>
 
 <style scoped>
-/* Additional styling if needed */
+/* Optional additional styling */
 </style>

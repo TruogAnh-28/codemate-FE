@@ -11,7 +11,7 @@
                 <div class="font-semibold text-xl mb-2">{{ exercise.name }}</div>
                 <div class="text-sm text-text-tetiary">{{ exercise.description }}</div>
               </v-col>
-              <v-col cols="2" class="text-center">
+              <v-col cols="3" class="text-center">
                 <div class="text-lg font-medium">
                   Questions: <span class="font-bold">{{ exercise.questions.length }}</span>
                 </div>

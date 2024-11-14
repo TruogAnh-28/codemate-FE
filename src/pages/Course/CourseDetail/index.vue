@@ -27,13 +27,22 @@
             </v-col>
             <v-col cols="8">
               <div class="text-4xl font-semibold">{{ course.name }}</div>
-              <div class="text-gray-600">
-                {{ course.percentageComplete }}% Completed
-              </div>
+
+              <v-progress-linear
+                v-model="course.percentageComplete"
+                class="mb-4 rounded-lg"
+                color="secondary"
+                height="25"
+              >
+                <template v-slot:default="{ value }">
+                  <strong class="text-text-primary">
+                    {{ String(Math.ceil(Number(value))) }}%
+                  </strong>
+                </template>
+              </v-progress-linear>
+
+              <AvatarStack :students="course.studentList" :maxVisible="5" />
             </v-col>
-            <v-col cols="8">
-              <AvatarStack :avatars="course.studentList" :maxVisible="5"
-            /></v-col>
           </v-row>
         </v-card>
 

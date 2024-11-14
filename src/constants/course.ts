@@ -187,12 +187,14 @@ export const CourseDetailData: CourseDetail = {
     {
       "studentId": "s001",
       "name": "John Doe",
-      "review": "Great introduction to computer science!"
+      "email": "johndoe@gmail.com",
+      "avatar": "https://example.com/avatars/johndoe.png"
     },
     {
       "studentId": "s002",
       "name": "Jane Smith",
-      "review": "Challenging but rewarding."
+      "email": "janesmith@gmail.com",
+      "avatar": "https://example.com/avatars/janesmith.png"
     }
   ],
   "lessons": [
@@ -205,15 +207,16 @@ export const CourseDetailData: CourseDetail = {
           "id": "doc1",
           "name": "Python Basics",
           "type": "PDF",
-          "documentUrl": "https://example.com/docs/python_basics.pdf"
+          "documentUrl": "https://assets.cambridge.org/97811084/72449/frontmatter/9781108472449_frontmatter.pdf"
         },
         {
           "id": "doc2",
           "name": "Setting Up Python",
-          "type": "VIDEO",
+          "type": "MP4",
           "documentUrl": "https://example.com/videos/setup_python.mp4"
         }
-      ]
+      ],
+      "bookmarked": true
     },
     {
       "id": "CS101_LS2",
@@ -226,7 +229,8 @@ export const CourseDetailData: CourseDetail = {
           "type": "PDF",
           "documentUrl": "https://example.com/docs/data_types.pdf"
         }
-      ]
+      ],
+      "bookmarked": false
     },
     {
       "id": "CS101_LS3",
@@ -242,10 +246,11 @@ export const CourseDetailData: CourseDetail = {
         {
           "id": "doc5",
           "name": "Looping Tutorial",
-          "type": "VIDEO",
+          "type": "MP4",
           "documentUrl": "https://example.com/videos/loops.mp4"
         }
-      ]
+      ],
+      bookmarked: false
     },
     {
       "id": "CS101_LS4",
@@ -258,7 +263,8 @@ export const CourseDetailData: CourseDetail = {
           "type": "PDF",
           "documentUrl": "https://example.com/docs/functions.pdf"
         }
-      ]
+      ],
+      bookmarked: true
     },
     {
       "id": "CS101_LS5",
@@ -271,7 +277,8 @@ export const CourseDetailData: CourseDetail = {
           "type": "PDF",
           "documentUrl": "https://example.com/docs/lists.pdf"
         }
-      ]
+      ],
+      bookmarked: false
     }
   ],
   "exercises": [
@@ -386,11 +393,13 @@ export const CourseDetailData: CourseDetail = {
   "recommendedLessons": [
     {
       "id": "r1",
-      "lessonId": "CS101_LS3"
+      "lessonId": "CS101_LS3",
+      bookmarked: false
     },
     {
       "id": "r2",
-      "lessonId": "CS101_LS4"
+      "lessonId": "CS101_LS4",
+      bookmarked: true
     }
   ]
 }

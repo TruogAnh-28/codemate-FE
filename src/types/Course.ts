@@ -1,3 +1,5 @@
+import { DateString, DateTimeString, DocumentType } from "@/utils/commonType"
+
 export interface StudentReview {
   name: string,
   email: string,
@@ -8,8 +10,8 @@ export interface StudentReview {
 export interface CourseReview {
   id: string
   name: string
-  startDate: string
-  endDate: string
+  startDate: DateString
+  endDate: DateString
   studentList: StudentReview[]
   learningOutcomes: string[]
   professor: string
@@ -21,7 +23,7 @@ export interface CourseRecent {
   id: string
   name: string
   learningOutcomes: string[]
-  lastAccessed: string
+  lastAccessed: DateTimeString
   percentageComplete: string
   status: string
 }
@@ -31,35 +33,29 @@ export interface CourseDetail {
   name: string
   learningOutcomes: string[]
   professor: string
-  startDate: string
-  endDate: string
+  startDate: DateString
+  endDate: DateString
   status: string
   percentageComplete: string
   image: string
-  lastAccessed: string
-  studentList: StudentList[]
+  lastAccessed: DateTimeString
+  studentList: StudentReview[]
   lessons: Lesson[]
   exercises: Exercise[]
   recommendedLessons: RecommendedLesson[]
 }
-
-export interface StudentList {
-  studentId: string
-  name: string
-  review: string
-}
-
 export interface Lesson {
   id: string
   name: string
   description: string
   documents: Document[]
+  bookmarked: boolean
 }
 
 export interface Document {
   id: string
   name: string
-  type: string
+  type: DocumentType
   documentUrl: string
 }
 
@@ -80,4 +76,5 @@ export interface Question {
 export interface RecommendedLesson {
   id: string
   lessonId: string
+  bookmarked: boolean
 }
