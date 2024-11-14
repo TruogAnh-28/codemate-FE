@@ -3,33 +3,27 @@
     <p class="text-body-large-4 text-text-primary font-sans font-bold mb-2">
       Learning Outcomes:
     </p>
-    <v-list class="mx-auto" dense tile>
-      <v-list-item
-        v-for="(outcome, index) in displayedOutcomes"
-        :key="index"
-        class="mb-1 line-clamp-1"
-      >
-        <v-list-item-content>
-          <v-list-item-title>{{ outcome }}</v-list-item-title>
-        </v-list-item-content>
-      </v-list-item>
-    </v-list>
 
-    <!-- View More Button Aligned to the Right using Tailwind CSS -->
-    <div class="flex justify-end mt-2">
-      <v-btn
-        v-if="outcomes.length > maxDisplay"
-        variant="text"
-        size="small"
+    <!-- List the displayed outcomes -->
+    <ul class="mx-auto" :class="{ 'dense': outcomes.length <= maxDisplay }">
+      <li v-for="(outcome, index) in displayedOutcomes" :key="index" class="mb-1 line-clamp-1">
+        {{ outcome }}
+      </li>
+    </ul>
+
+    <!-- Button to view more if outcomes exceed maxDisplay -->
+    <div class="flex justify-end mt-2" v-if="outcomes.length > maxDisplay">
+      <button
         @click="openModal"
-        class="text-body-xs-1 text-text-teriary hover:underline"
+        class="text-body-small-1 text-text-teriary hover:underline"
       >
         View more
-      </v-btn>
+      </button>
     </div>
 
-    <!-- Modal Component -->
+    <!-- Modal Component (conditionally rendered) -->
     <LearningOutcomesModal
+      v-if="isModalOpen"
       :show="isModalOpen"
       @update:show="isModalOpen = $event"
       :outcomes="outcomes"
@@ -37,17 +31,34 @@
   </div>
 </template>
 
-<script lang="ts" setup>
-const props = defineProps<{ outcomes: string[] }>();
+<script setup>
+import { ref, computed } from 'vue';
+import LearningOutcomesModal from './LearningOutcomesModal.vue';
 
-const maxDisplay = 2;
+// Props and state variables
+const props = defineProps({
+  outcomes: {
+    type: Array,
+    required: true
+  }
+});
+
+const maxDisplay = 2; // Max outcomes to display before showing the "View more" button
 const isModalOpen = ref(false);
 
-// Calculate the outcomes to be displayed initially
+// Displayed outcomes (slice first maxDisplay outcomes)
 const displayedOutcomes = computed(() => props.outcomes.slice(0, maxDisplay));
 
-// Open the modal
+// Open the modal (set isModalOpen to true)
 const openModal = () => {
+  console.log('open modal');
   isModalOpen.value = true;
 };
 </script>
+
+<style scoped>
+.dense {
+  padding: 0;
+  list-style-type: none;
+}
+</style>

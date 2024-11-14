@@ -39,37 +39,33 @@
               <AvatarStack :students="course.studentList" :max-visible="3" />
             </div>
 
-            <!-- Learning Outcomes -->
             <div class="flex-shrink-0 min-w-[200px]">
               <LearningOutcomes :outcomes="course.learningOutcomes" />
             </div>
 
-            <!-- Right Side Content -->
             <div class="d-flex flex-column justify-space-between align-end">
-              <div class="text-end mb-4">
-                <p class="text-sm mb-1">
+              <div class="text-end mb-2">
+                <p class="text-body-base-4 mb-4">
                   <strong>Professor:</strong> {{ course.professor }}
                 </p>
-                <p
-                  :class="[
-                    'text-sm',
-                    course.status === 'Completed'
-                      ? 'text-success'
-                      : 'text-warning',
-                  ]"
+                <v-chip
+                  :color="renderStatusLabel(course.status)"
+                  outlined
+                  small
+                  class="text-body-small-1"
                 >
+                  <v-icon left size="18" class="mr-2">mdi-check-circle</v-icon>
                   {{ course.status }}
-                </p>
+                </v-chip>
               </div>
-
-              <v-btn
-                color="secondary"
-                :to="`/courselist/course/${course.id}`"
-                rounded
-              >
-                View Course
-              </v-btn>
             </div>
+            <v-btn
+              color="secondary"
+              :to="`/courselist/course/${course.id}`"
+              rounded
+            >
+              View Course
+            </v-btn>
           </div>
         </v-card>
       </v-col>
@@ -80,5 +76,7 @@
 <script lang="ts" setup>
 import { CourseReviewData } from "@/constants/course";
 import { CourseReview } from "@/types/Course";
+import { renderStatusLabel } from "@/utils/functions/render";
+
 const courses = ref<CourseReview[]>(CourseReviewData);
 </script>

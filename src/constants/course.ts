@@ -97,7 +97,7 @@ export const CourseReviewData: CourseReview[] = [
       "Develop problem-solving skills in programming",
     ],
     professor: "Dr. Yann LeCun",
-    status: "Ongoing",
+    status: "New",
     image: "../../../../assets/course-images/cs501.png"
   }
 ];
@@ -114,7 +114,7 @@ export const CourseRecentData: CourseRecent[] = [
     ],
     lastAccessed: "2024-11-10T15:30:00Z",
     percentageComplete: "75",
-    status: "active"
+    status: "Ongoing"
   },
   {
     id: "CS201",
@@ -126,7 +126,7 @@ export const CourseRecentData: CourseRecent[] = [
     ],
     lastAccessed: "2024-11-08T10:45:00Z",
     percentageComplete: "90",
-    status: "active"
+    status: "Ongoing"
   },
   {
     id: "CS301",
@@ -138,7 +138,7 @@ export const CourseRecentData: CourseRecent[] = [
     ],
     lastAccessed: "2024-11-05T18:00:00Z",
     percentageComplete: "80",
-    status: "inactive"
+    status: "New"
   },
   {
     id: "CS401",
@@ -150,7 +150,7 @@ export const CourseRecentData: CourseRecent[] = [
     ],
     lastAccessed: "2024-11-12T08:20:00Z",
     percentageComplete: "30",
-    status: "active"
+    status: "Ongoing"
   },
   {
     id: "CS501",
@@ -162,7 +162,7 @@ export const CourseRecentData: CourseRecent[] = [
     ],
     lastAccessed: "2024-11-01T12:00:00Z",
     percentageComplete: "40",
-    status: "active"
+    status: "Ongoing"
   }
 ]
 
@@ -179,10 +179,10 @@ export const CourseDetailData: CourseDetail = {
   "professor": "Dr. Alice Johnson",
   "startDate": "2024-01-10",
   "endDate": "2024-06-10",
-  "status": "ACTIVE",
+  "status": "Ongoing",
   "percentageComplete": "75",
   "image": "https://example.com/images/cs101.png",
-  "lastAccessed": "2024-04-20",
+  "lastAccessed": "2024-11-05T18:00:00Z",
   "studentList": [
     {
       "studentId": "s001",

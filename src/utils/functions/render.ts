@@ -42,3 +42,16 @@ export const renderFileTypeIcon = (fileType: DocumentType) => {
       return DefaultType;
   }
 }
+
+export const renderStatusLabel = (status: string) => {
+  switch (status) {
+    case 'Ongoing':
+      return 'secondary';
+    case 'Completed':
+      return 'success';
+    case 'New':
+      return 'primary';
+    default:
+      return 'primary';
+  }
+}

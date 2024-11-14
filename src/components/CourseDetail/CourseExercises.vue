@@ -32,7 +32,7 @@
 <script lang="ts" setup>
 import { Exercise } from '@/types/Course';
 
-const props = defineProps<{
+defineProps<{
   exercises: Exercise[];
 }>();
 const startExercise = (exercise: Exercise) => {

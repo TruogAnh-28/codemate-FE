@@ -11,11 +11,11 @@
               class="flex justify-center items-center pr-4"
             >
               <!-- Tailwind pr-4 for spacing -->
-              <v-img height="200" max-width="300" :src="course.image">
+              <v-img :max-height="200" :max-width="300" :src="course.image">
                 <template v-slot:error>
                   <v-img
-                    height="200"
-                    max-width="300"
+                    :max-height="200"
+                    :max-width="300"
                     src="../../../assets/default-course-avt.svg"
                   ></v-img>
                 </template>
@@ -35,9 +35,16 @@
                   <div class="text-heading-1 font-weight-bold mb-1">
                     {{ course.percentageComplete }}%
                   </div>
-                  <v-chip color="success" outlined small class="text-body-small-1">
-                    <v-icon left size="18">mdi-check-circle</v-icon>
-                    Completed
+                  <v-chip
+                    :color="renderStatusLabel(course.status)"
+                    outlined
+                    small
+                    class="text-body-small-1"
+                  >
+                    <v-icon left size="18" class="mr-2"
+                      >mdi-check-circle</v-icon
+                    >
+                    {{ course.status }}
                   </v-chip>
                 </v-col>
 
@@ -127,7 +134,7 @@
 <script lang="ts" setup>
 import { CourseDetailData } from "@/constants/course";
 import { CourseDetail } from "@/types/Course";
-
+import { renderStatusLabel } from "@/utils/functions/render";
 const course = ref<CourseDetail>(CourseDetailData);
 const activeTab = ref("description");
 const dialog = ref(false);

@@ -1,9 +1,9 @@
 const config = {
-  purge: ['./src/**/*.html', './src/**/*.vue', './src/**/*.jsx'],
   darkMode: ['class'],
   content: [
-    './public/**/*.html',
-    './src/**/*.{js,jsx,ts,tsx,vue}'
+    './public/**/*.html',            // Include public HTML files
+    './src/**/*.{js,jsx,ts,tsx,vue}', // Include JS, JSX, TS, TSX, and Vue files in the src directory
+    './index.html'                   // Include the index.html file
   ],
   theme: {
     fontFamily: {
@@ -31,7 +31,7 @@ const config = {
       'accordion-up': 'accordion-up 0.2s ease-out'
     },
     extend: {
-      zIndex:{
+      zIndex: {
         '-10': '-1'
       },
       fontSize: {
@@ -81,7 +81,7 @@ const config = {
       }
     }
   },
-  plugins: [require('tailwindcss-animate')]
+  // plugins: [require('tailwindcss-animate')] // Uncomment this if you're using plugins
 };
 
 module.exports = config;
