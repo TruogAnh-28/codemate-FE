@@ -10,6 +10,7 @@ declare module 'vue' {
     Appbar: typeof import('./components/Appbar.vue')['default']
     AppFooter: typeof import('./components/AppFooter.vue')['default']
     AvatarStack: typeof import('./components/AvatarStack.vue')['default']
+    CardQuestionQuiz: typeof import('./components/CardQuestionQuiz.vue')['default']
     DialogLearningType: typeof import('./components/DialogLearningType.vue')['default']
     HelloWorld: typeof import('./components/HelloWorld.vue')['default']
     LearningOutcomes: typeof import('./components/LearningOutcomes.vue')['default']

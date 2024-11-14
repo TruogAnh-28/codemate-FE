@@ -25,6 +25,10 @@ declare module 'vue-router/auto-routes' {
     '/Course/CourseList/RecentCourses/': RouteRecordInfo<'/Course/CourseList/RecentCourses/', '/Course/CourseList/RecentCourses', Record<never, never>, Record<never, never>>,
     '/Course/CourseList/RecentCourses/Cards/': RouteRecordInfo<'/Course/CourseList/RecentCourses/Cards/', '/Course/CourseList/RecentCourses/Cards', Record<never, never>, Record<never, never>>,
     '/Dashboard/': RouteRecordInfo<'/Dashboard/', '/Dashboard', Record<never, never>, Record<never, never>>,
+    '/Lesson/': RouteRecordInfo<'/Lesson/', '/Lesson', Record<never, never>, Record<never, never>>,
+    '/Lesson/Code/': RouteRecordInfo<'/Lesson/Code/', '/Lesson/Code', Record<never, never>, Record<never, never>>,
+    '/Lesson/Document/': RouteRecordInfo<'/Lesson/Document/', '/Lesson/Document', Record<never, never>, Record<never, never>>,
     '/Lesson/LessonRecommend/': RouteRecordInfo<'/Lesson/LessonRecommend/', '/Lesson/LessonRecommend', Record<never, never>, Record<never, never>>,
+    '/Lesson/Quiz/': RouteRecordInfo<'/Lesson/Quiz/', '/Lesson/Quiz', Record<never, never>, Record<never, never>>,
   }
 }
