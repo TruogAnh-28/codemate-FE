@@ -180,7 +180,7 @@ export const CourseDetailData: CourseDetail = {
   "startDate": "2024-01-10",
   "endDate": "2024-06-10",
   "status": "ACTIVE",
-  "percentageComplete": "75%",
+  "percentageComplete": "75",
   "image": "https://example.com/images/cs101.png",
   "lastAccessed": "2024-04-20",
   "studentList": [

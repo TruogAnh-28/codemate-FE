@@ -11,7 +11,7 @@
                 class="flex-shrink-0"
                 :max-width="300"
                 :max-height="200"
-                :src="course.image"
+                src="../../../assets/default-course-avt.svg"
                 cover
               >
                 <template v-slot:error>
@@ -31,11 +31,19 @@
                 {{ course.percentageComplete }}% Completed
               </div>
             </v-col>
+            <v-col cols="8">
+              <AvatarStack :avatars="course.studentList" :maxVisible="5"
+            /></v-col>
           </v-row>
         </v-card>
 
         <v-tabs v-model="activeTab" background-color="primary" grow dark>
-          <v-tab v-for="tab in tabs" :key="tab.value" :value="tab.value">
+          <v-tab
+            v-for="tab in tabs"
+            :key="tab.value"
+            :value="tab.value"
+            class="text-secondary font-bold"
+          >
             {{ tab.label }}
           </v-tab>
         </v-tabs>
@@ -54,19 +62,36 @@
             v-if="activeTab === 'recommendlessons'"
             :key="'recommendlessons'"
           >
-            <CourseLessons :lessons="course.lessons" />
+            <CourseRecommendLessons :course="course" />
           </v-tab-item>
         </v-tab-items>
+      </v-col>
+      <!-- Recommend Learning Card -->
+      <v-col cols="12" md="4">
+        <v-card class="p-6">
+          <div class="flex justify-center">
+            <v-avatar size="120" class="bg-secondary-variant">
+              <v-icon size="56">mdi-check-circle</v-icon>
+            </v-avatar>
+          </div>
+          <div class="text-center mt-4">
+            <h3 class="font-semibold text-xl">Join our Recommend Learning</h3>
+            <p class="text-text-tetiary mt-2">
+              Tailored lessons to reach your goals, one step at a time.
+            </p>
+            <v-btn icon color="primary" class="mt-4">
+              <v-icon>mdi-arrow-right</v-icon>
+            </v-btn>
+          </div>
+        </v-card>
       </v-col>
     </v-row>
   </v-container>
 </template>
 
 <script lang="ts" setup>
-import { ref, watch } from "vue";
 import { CourseDetailData } from "@/constants/course";
 import { CourseDetail } from "@/types/Course";
-import CourseDescription from "@/components/CourseDetail/CourseDescription.vue";
 
 // Course Data
 const course = ref<CourseDetail>(CourseDetailData);
@@ -81,9 +106,4 @@ const tabs = [
   { label: "Exercises", value: "exercises" },
   { label: "Recommend Lessons", value: "recommendlessons" },
 ];
-
-// Watch for activeTab changes
-watch(activeTab, (newTab) => {
-  console.log("Active Tab:", newTab); // Log active tab value for debugging
-});
 </script>

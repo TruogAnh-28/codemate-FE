@@ -2,26 +2,21 @@
   <div class="space-y-6">
     <!-- Exercise List -->
     <v-container>
-      <v-row v-for="(exercise, index) in exercises" :key="index" align="start">
+      <v-row v-for="(exercise, index) in exercises" :key="index" align="center">
         <!-- Exercise Item -->
-        <v-col cols="12" md="6">
+        <v-col cols="12">
           <v-card class="rounded-lg shadow-md p-4">
-            <v-row>
-              <!-- Exercise Name and Description -->
-              <v-col cols="12">
+            <v-row align="center">
+              <v-col cols="7">
                 <div class="font-semibold text-xl mb-2">{{ exercise.name }}</div>
-                <div class="text-sm text-gray-600">{{ exercise.description }}</div>
+                <div class="text-sm text-text-tetiary">{{ exercise.description }}</div>
               </v-col>
-
-              <!-- Number of Questions -->
-              <v-col cols="12" class="mt-3">
+              <v-col cols="2" class="text-center">
                 <div class="text-lg font-medium">
                   Questions: <span class="font-bold">{{ exercise.questions.length }}</span>
                 </div>
               </v-col>
-
-              <!-- Start Button -->
-              <v-col cols="12" class="mt-4">
+              <v-col cols="2" class="text-center">
                 <v-btn color="primary" @click="startExercise(exercise)">
                   Start
                 </v-btn>
@@ -51,6 +46,6 @@ const startExercise = (exercise: Exercise) => {
   background-color: #f9fafb;
 }
 .v-btn {
-  width: 100%;
+  width: 100%; /* Full width for the button */
 }
 </style>

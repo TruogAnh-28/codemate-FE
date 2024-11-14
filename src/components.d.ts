@@ -15,6 +15,7 @@ declare module 'vue' {
     CourseExercises: typeof import('./components/CourseDetail/CourseExercises.vue')['default']
     CourseItem: typeof import('./components/CourseList/CourseItem.vue')['default']
     CourseLessons: typeof import('./components/CourseDetail/CourseLessons.vue')['default']
+    CourseRecommendLessons: typeof import('./components/CourseDetail/CourseRecommendLessons.vue')['default']
     DialogLearningType: typeof import('./components/DialogLearningType.vue')['default']
     HelloWorld: typeof import('./components/HelloWorld.vue')['default']
     LearningOutcomes: typeof import('./components/LearningOutcomes.vue')['default']

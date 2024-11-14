@@ -4,7 +4,7 @@
       <v-row class="mb-4">
         <v-col cols="12" md="8" class="border-b-2">
           <div class="font-bold text-xl">{{ lesson.name }}</div>
-          <div class="text-gray-600">{{ lesson.description }}</div>
+          <div class="text-text-tetiary">{{ lesson.description }}</div>
         </v-col>
         <v-col
           cols="12"
@@ -12,13 +12,13 @@
           class="flex justify-center items-center border-b-2"
         >
           <!-- Tooltip for icon -->
-          <v-tooltip bottom v-for="button in actionButtons" :key = button.index >
-            <template v-slot:activator="{ props }">
+          <v-tooltip bottom v-for="button in actionButtons" :key="button.index">
+            <template v-slot:activator="{ props: activatorProps }">
               <v-btn
-              variant="text"
+                variant="text"
                 :icon="button.icon"
-                :@click="() => button.function(button.arg(lesson))"
-                v-bind="props"
+                @click="handleButtonClick(button, lesson)"
+                v-bind="activatorProps"
               ></v-btn>
             </template>
             <span>{{ button.value }}</span>
@@ -30,13 +30,17 @@
 </template>
 
 <script lang="ts" setup>
-import { Document, Lesson, CourseDetail} from "@/types/Course";
+import { Document, Lesson } from "@/types/Course";
 
-const props = defineProps<{
+defineProps<{
   lessons: Lesson[];
 }>();
 
-
+// Handle action button clicks
+const handleButtonClick = (button: any, lesson: Lesson) => {
+  const arg = button.arg(lesson);
+  button.function(arg);
+};
 
 const showDocuments = (documentList: Document[] | string) => {
   if (Array.isArray(documentList)) {
@@ -46,36 +50,25 @@ const showDocuments = (documentList: Document[] | string) => {
   }
 };
 
-const bookmarkLesson = (lessonId: string | Document[]) => {
-  if (typeof lessonId === "string") {
-    console.log("Bookmark lesson:", lessonId);
-  } else {
-    console.error("Invalid argument for bookmarkLesson:", lessonId);
-  }
+const bookmarkLesson = (lessonId: string) => {
+  console.log("Bookmark lesson:", lessonId);
 };
 
-const downloadDocuments = (lessonId: string | Document[]) => {
-  if (typeof lessonId === "string") {
-    console.log("Downloading documents for lesson:", lessonId);
-  } else {
-    console.error("Invalid argument for downloadDocuments:", lessonId);
-  }
+const downloadDocuments = (lessonId: string) => {
+  console.log("Downloading documents for lesson:", lessonId);
 };
 
-const openFeedbackModal = (lessonId: string | Document[]) => {
-  if (typeof lessonId === "string") {
-    console.log("Opening feedback modal for lesson:", lessonId);
-  } else {
-    console.error("Invalid argument for openFeedbackModal:", lessonId);
-  }
+const openFeedbackModal = (lessonId: string) => {
+  console.log("Opening feedback modal for lesson:", lessonId);
 };
 
+// Define action buttons array
 const actionButtons = [
-  {index: 0, icon: "mdi-file-document", function: showDocuments, arg: (lesson: Lesson) => lesson.documents, value:"Show Documents"},
-  {index: 1, icon: "mdi-bookmark-outline", function: bookmarkLesson, arg: (lesson: Lesson) => lesson.id, value: "Bookmark Lesson"},
-  {index: 2, icon: "mdi-download", function: downloadDocuments, arg: (lesson: Lesson) => lesson.id, value:"Download Documents"},
-  {index: 3, icon: "mdi-comment-text-outline", function: openFeedbackModal, arg: (lesson: Lesson) => lesson.id, value: "Feedback Lesson"}
-]
+  { index: 0, icon: "mdi-file-document", function: showDocuments, arg: (lesson: Lesson) => lesson.documents, value: "Show Documents" },
+  { index: 1, icon: "mdi-bookmark-outline", function: bookmarkLesson, arg: (lesson: Lesson) => lesson.id, value: "Bookmark Lesson" },
+  { index: 2, icon: "mdi-download", function: downloadDocuments, arg: (lesson: Lesson) => lesson.id, value: "Download Documents" },
+  { index: 3, icon: "mdi-comment-text-outline", function: openFeedbackModal, arg: (lesson: Lesson) => lesson.id, value: "Feedback Lesson" }
+];
 </script>
 
 <style scoped>

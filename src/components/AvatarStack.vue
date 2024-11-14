@@ -33,7 +33,6 @@
 </template>
 
 <script lang="ts">
-import { computed } from 'vue';
 import { StudentReview } from '@/types/Course';
 
 export default {
@@ -49,7 +48,7 @@ export default {
       default: 3
     }
   },
-  setup(props) {
+  setup(props: { students: StudentReview[], maxVisible: number }) {
     const visibleStudents = computed(() => {
       return props.students.slice(0, props.maxVisible);
     });
