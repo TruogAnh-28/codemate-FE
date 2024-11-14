@@ -25,14 +25,14 @@
             <!-- Course Information -->
             <v-col cols="8" md="8">
               <!-- Course Name -->
-              <div class="text-heading-1 font-weight-bold mb-2">
+              <div class="text-heading-3 font-weight-bold mb-2">
                 {{ course.name }}
               </div>
 
               <v-row class="d-flex align-center">
                 <!-- Percentage Complete -->
                 <v-col cols="12" md="6" class="text-center">
-                  <div class="text-heading-1 font-weight-bold mb-1">
+                  <div class="text-heading-3 font-weight-bold mb-1">
                     {{ course.percentageComplete }}%
                   </div>
                   <v-chip
@@ -105,14 +105,18 @@
 
       <!-- Recommend Learning Card -->
       <v-col cols="12" md="4">
-        <v-card class="p-6">
-          <div class="flex justify-center">
-            <v-avatar size="120" class="bg-secondary-variant">
-              <v-icon size="56">mdi-check-circle</v-icon>
-            </v-avatar>
-          </div>
+        <v-card class="pa-6">
+          <!-- Centering the icon directly with Vuetify's layout system -->
+          <v-row justify="center">
+            <v-col class="d-flex justify-center" cols="auto">
+              <checkCircle />
+            </v-col>
+          </v-row>
+
           <div class="text-center mt-4">
-            <h3 class="font-semibold text-heading-4">Join our Recommend Learning</h3>
+            <h3 class="font-semibold text-heading-4">
+              Join our Recommended Learning
+            </h3>
             <p class="text-text-tetiary mt-2">
               Tailored lessons to reach your goals, one step at a time.
             </p>
@@ -122,6 +126,7 @@
           </div>
         </v-card>
       </v-col>
+
       <GetGoalsModal
         :dialog="dialog"
         @update:dialog="(value) => (dialog = value)"
@@ -135,6 +140,7 @@
 import { CourseDetailData } from "@/constants/course";
 import { CourseDetail } from "@/types/Course";
 import { renderStatusLabel } from "@/utils/functions/render";
+import checkCircle from "@/assets/icons/check-circle.vue";
 const course = ref<CourseDetail>(CourseDetailData);
 const activeTab = ref("description");
 const dialog = ref(false);
