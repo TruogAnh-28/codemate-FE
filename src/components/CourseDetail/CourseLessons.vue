@@ -1,10 +1,12 @@
 <template>
   <v-card class="p-6">
     <div v-for="lesson in lessons" :key="lesson.id" class="mb-6">
-      <v-row class="mb-4">
+      <v-row class="mb-4 m-0">
         <v-col cols="12" md="8" class="border-b-2">
           <div class="font-bold text-body-large-1">{{ lesson.name }}</div>
-          <div class="text-text-tetiary text-body-base-1">{{ lesson.description }}</div>
+          <div class="text-text-tetiary text-body-base-1">
+            {{ lesson.description }}
+          </div>
         </v-col>
         <v-col
           cols="12"
@@ -150,5 +152,7 @@ const actionButtons = (lesson: Lesson) => [
 </script>
 
 <style scoped>
-/* Optional additional styling */
+.v-row.m-0 {
+  margin: 0 !important;
+}
 </style>
