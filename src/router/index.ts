@@ -46,6 +46,12 @@ const StudentRoutes = [
         props: true,
       },
       {
+        path: 'Module/:moduleId/Quiz/DoQuiz/:quizId',
+        name: 'LessonRecommendDoQuiz',
+        component: () => import('@/pages/Lesson/DoQuiz/index.vue'),
+        props: true,
+      },
+      {
         path: 'Module/:moduleId/Code',
         name: 'LessonRecommendCode',
         component: () => import('@/pages/Lesson/Code/index.vue'),
@@ -55,6 +61,12 @@ const StudentRoutes = [
         path: 'Module/:moduleId/Document',
         name: 'LessonRecommendDocument',
         component: () => import('@/pages/Lesson/Document/index.vue'),
+        props: true,
+      },
+      {
+        path: 'Module/:moduleId/Document/Read/:documentId',
+        name: 'LessonRecommendReadDocument',
+        component: () => import('@/pages/Lesson/ReadDocument/index.vue'),
         props: true,
       }
     ]
