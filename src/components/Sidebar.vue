@@ -8,7 +8,7 @@
       <v-list-item
         prepend-avatar="@/assets/codemate.png"
         title="CODEMATE"
-        class="text-xl font-bold mb-2 text-text-primary dark:text-text-primary"
+        class="text-body-large-2 font-bold mb-2 text-text-primary dark:text-text-primary"
       ></v-list-item>
     </v-list>
     <v-divider class="border-border dark:border-border"></v-divider>

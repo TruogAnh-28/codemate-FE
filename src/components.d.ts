@@ -7,15 +7,26 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    ActivityItem: typeof import('./components/Dashboard/ActivityItem.vue')['default']
     Appbar: typeof import('./components/Appbar.vue')['default']
     AppFooter: typeof import('./components/AppFooter.vue')['default']
-    AvatarStack: typeof import('./components/AvatarStack.vue')['default']
+    AvatarStack: typeof import('./components/CourseList/AvatarStack.vue')['default']
     CardQuestionQuiz: typeof import('./components/CardQuestionQuiz.vue')['default']
+    Cards: typeof import('./components/CourseList/Cards.vue')['default']
+    CourseDescription: typeof import('./components/CourseDetail/CourseDescription.vue')['default']
+    CourseExercises: typeof import('./components/CourseDetail/CourseExercises.vue')['default']
+    CourseItem: typeof import('./components/CourseList/CourseItem.vue')['default']
+    CourseLessons: typeof import('./components/CourseDetail/CourseLessons.vue')['default']
+    CourseRecommendLessons: typeof import('./components/CourseDetail/CourseRecommendLessons.vue')['default']
     DialogLearningType: typeof import('./components/DialogLearningType.vue')['default']
-    HelloWorld: typeof import('./components/HelloWorld.vue')['default']
-    LearningOutcomes: typeof import('./components/LearningOutcomes.vue')['default']
+    FeedbackLesson: typeof import('./components/CourseDetail/FeedbackLesson.vue')['default']
+    GetGoalsModal: typeof import('./components/CourseDetail/GetGoalsModal.vue')['default']
+    LearningOutcomes: typeof import('./components/CourseList/LearningOutcomes.vue')['default']
+    LearningOutcomesModal: typeof import('./components/CourseList/LearningOutcomesModal.vue')['default']
+    RecentCourses: typeof import('./components/CourseList/RecentCourses.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    ShowDocumentsModal: typeof import('./components/CourseDetail/ShowDocumentsModal.vue')['default']
     Sidebar: typeof import('./components/Sidebar.vue')['default']
   }
 }

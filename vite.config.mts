@@ -40,14 +40,11 @@ export default defineConfig({
     // https://github.com/vuetifyjs/vuetify-loader/tree/master/packages/vite-plugin#readme
     Vuetify({
       autoImport: true,
-      styles: {
-        configFile: 'src/global.css',
-      },
     }),
     Fonts({
       google: {
         families: [ {
-          name: 'Roboto',
+          name: 'Public Sans',
           styles: 'wght@100;300;400;500;700;900',
         }],
       },
