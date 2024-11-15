@@ -30,7 +30,7 @@
                 <h3 class="text-body-large-1 font-bold text-wrap mb-1">
                   {{ course.name }}
                 </h3>
-                <p class="text-sm text-grey-darken-1">
+                <p class="text-body-small-1 text-text-tetiary">
                   {{ course.startDate }} to {{ course.endDate }}
                 </p>
               </div>

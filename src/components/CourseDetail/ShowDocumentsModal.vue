@@ -28,7 +28,7 @@
           <v-list-item-title class="text-body-large-1 font-semibold">
             {{ document.name }}
           </v-list-item-title>
-          <v-list-item-subtitle class="text-body-base-1 text-blue-600">
+          <v-list-item-subtitle class="text-body-base-1 text-primary-variant">
             <a
               :href="document.documentUrl"
               target="_blank"

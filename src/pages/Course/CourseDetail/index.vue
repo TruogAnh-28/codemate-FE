@@ -116,11 +116,11 @@
               <CheckCircle />
             </v-avatar>
 
-            <h3 class="text-h6 font-weight-bold mb-2">
+            <h3 class="text-heading-4 font-weight-bold mb-2">
               Join our Recommended Learning
             </h3>
 
-            <p class="text-body-2 text-grey mb-4">
+            <p class="text-body-2 text-text-tetiary mb-4">
               Get personalized course recommendations based on your goals and
               interests.
             </p>
@@ -140,7 +140,7 @@
         <!-- Progress Statistics -->
         <v-card class="mt-4 rounded-lg shadow-lg">
           <v-card-text>
-            <h4 class="text-xl font-semibold mb-4">Progress Statistics</h4>
+            <h4 class="text-heading-4 font-semibold mb-4">Progress Statistics</h4>
             <v-list>
               <v-list-item
                 v-for="(stat, index) in progressStats"

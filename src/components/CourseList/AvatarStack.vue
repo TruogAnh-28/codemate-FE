@@ -13,7 +13,7 @@
             class="w-full h-full"
           >
             <template v-slot:error>
-              <div class="w-full h-full rounded-full flex items-center justify-center bg-primary text-white text-body-small-1 font-medium">
+              <div class="w-full h-full rounded-full flex items-center justify-center bg-primary text-text-secondary text-body-small-1 font-medium">
                 {{ getInitials(student.name) }}
               </div>
             </template>

@@ -10,7 +10,7 @@
 
       <div class="flex flex-col flex-grow min-w-0">
         <div class="text-body-1">{{ description }}</div>
-        <div class="text-caption text-gray-500">{{ timestamp }}</div>
+        <div class="text-caption text-text-tetiary">{{ timestamp }}</div>
       </div>
     </div>
   </v-list-item>

@@ -15,7 +15,7 @@
     <div class="flex justify-end mt-2" v-if="outcomes.length > maxDisplay">
       <button
         @click="openModal"
-        class="text-body-small-1 text-text-teriary hover:underline"
+        class="text-body-small-1 text-text-tetiary hover:underline"
       >
         View more
       </button>

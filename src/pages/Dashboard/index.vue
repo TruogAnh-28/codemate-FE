@@ -21,10 +21,10 @@
           <v-card-text class="relative z-10 p-6">
             <div class="space-y-4">
               <div class="space-y-1">
-                <h2 class="text-2xl font-semibold text-gray-800">
+                <h2 class="text-heading-1 font-semibold text-gray-800">
                   Welcome back,
                 </h2>
-                <p class="text-xl text-blue-600 font-medium">
+                <p class="text-heading-4 text-blue-600 font-medium">
                   Swetha Shankaresh
                 </p>
               </div>
@@ -57,13 +57,13 @@
                 >mdi-help-circle</v-icon
               >
               <div class="flex-grow">
-                <p class="text-lg font-medium text-gray-800">Need help?</p>
+                <p class="text-body-large-1 font-medium text-gray-800">Need help?</p>
                 <p class="text-gray-600">Please send us your feedback</p>
               </div>
             </div>
             <v-btn
               block
-              class="mt-4 bg-primary text-white font-medium"
+              class="mt-4 bg-primary text-text-secondary font-medium"
               elevation="1"
               @click="openFeedback"
             >
@@ -76,7 +76,7 @@
       <!-- Activity Display Section -->
       <v-card class="flex-1 rounded-lg overflow-hidden" elevation="2">
         <v-card-title class="py-4 px-6 bg-gray-50 border-b">
-          <h3 class="text-xl font-semibold text-gray-800">Recent Activity</h3>
+          <h3 class="text-body-large-1 font-semibold text-gray-800">Recent Activity</h3>
         </v-card-title>
         <v-list class="max-h-96 overflow-y-auto px-2">
           <ActivityItem
@@ -96,7 +96,7 @@
       <!-- Fixed header with original layout -->
       <div class="p-4">
         <div class="flex justify-between items-center mb-4">
-          <h3 class="text-xl font-semibold text-gray-800">Courses</h3>
+          <h3 class="text-body-large-1 font-semibold text-gray-800">Courses</h3>
           <v-btn variant="text" color="secondary" :to="`/courselist`">
             View Details
           </v-btn>
