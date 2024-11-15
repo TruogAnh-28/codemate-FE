@@ -67,7 +67,7 @@
       </v-col>
       <v-col cols="4" v-for="module in lesson.modules" :key="module.id">
         <v-card
-          class="p-4 text-center bg-green-100 hover:bg-green-200 cursor-pointer"
+          class="p-4 text-center bg-secondary hover:bg-secondary-variant cursor-pointer"
           @click="openDialog(module)"
         >
           <v-card-text class="font-weight-bold">{{ module.introduction }}</v-card-text>
