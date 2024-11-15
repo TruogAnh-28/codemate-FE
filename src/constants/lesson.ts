@@ -1,6 +1,6 @@
 import { Lesson, Module } from "@/types/Lesson"
 
-const modules: Module[] = [
+export const ModulesData: Module[] = [
     {
       id: 'module1',
       introduction: 'Check for type compatibility',
@@ -54,5 +54,5 @@ const modules: Module[] = [
     progress: 65,
     recommendContent: 'This lesson focuses on semantic analysis, a crucial step in compilation that ensures the meaning and consistency of your source code\.You\'ll learn how to check for type compatibility, verify variable declarations, and ensure proper scope rules are followed.We\'ll also cover the creation and management of symbol tables, which store information about variables and functions, and discuss error handling techniques.',
     explain: 'Based on your profile, you have a strong foundation in lexical and syntax analysis. Now, it\'s time to understand semantic analysis,which adds meaning to the parsed program. By learning this, you\'ll be able to ensure your compiler understands the logic of your code and can catch potential errors before they reach the code generation phase.',
-    modules: modules
+    modules: ModulesData
   };

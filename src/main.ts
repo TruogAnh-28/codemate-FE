@@ -14,7 +14,7 @@ import App from './App.vue'
 import { createApp } from 'vue'
 
 //import settings.scss from styles
-import './global.css'
+import '@/global.css'
 
 const app = createApp(App)
 
