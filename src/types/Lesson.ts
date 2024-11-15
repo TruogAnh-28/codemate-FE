@@ -1,3 +1,5 @@
+import { QuizExercise } from './Exercise';
+import { Document } from './Document';
 export interface Lesson {
     id: string;
     name: string;
@@ -14,4 +16,6 @@ export interface Module {
     id: string;
     introduction: string;
     objectives: string[];
+    quizList?: QuizExercise[];
+    documentList?: Document[];
 }
