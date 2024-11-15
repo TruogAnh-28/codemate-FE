@@ -45,7 +45,7 @@ export const renderFileTypeIcon = (fileType: DocumentType) => {
 
 export const renderStatusLabel = (status: string) => {
   switch (status) {
-    case 'Ongoing':
+    case 'In Progress':
       return 'secondary';
     case 'Completed':
       return 'success';

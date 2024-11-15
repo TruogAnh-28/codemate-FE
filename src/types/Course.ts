@@ -1,4 +1,4 @@
-import { DateString, DateTimeString, DocumentType } from "@/utils/commonType"
+import { DateString, DateTimeString, DocumentType, Status} from "@/utils/commonType"
 
 export interface StudentReview {
   name: string,
@@ -15,8 +15,9 @@ export interface CourseReview {
   studentList: StudentReview[]
   learningOutcomes: string[]
   professor: string
-  status: string
+  status: Status
   image: string
+  percentageComplete: string
 }
 
 export interface CourseRecent {
@@ -25,7 +26,7 @@ export interface CourseRecent {
   learningOutcomes: string[]
   lastAccessed: DateTimeString
   percentageComplete: string
-  status: string
+  status: Status
 }
 
 export interface CourseDetail {
@@ -35,7 +36,7 @@ export interface CourseDetail {
   professor: string
   startDate: DateString
   endDate: DateString
-  status: string
+  status: Status
   percentageComplete: string
   image: string
   lastAccessed: DateTimeString
@@ -43,6 +44,10 @@ export interface CourseDetail {
   lessons: Lesson[]
   exercises: Exercise[]
   recommendedLessons: RecommendedLesson[]
+  completedLessons: string
+  timeSpent: string
+  assignmentsDone: string
+
 }
 export interface Lesson {
   id: string
@@ -64,6 +69,7 @@ export interface Exercise {
   name: string
   description: string
   questions: Question[]
+  status: Status
 }
 
 export interface Question {

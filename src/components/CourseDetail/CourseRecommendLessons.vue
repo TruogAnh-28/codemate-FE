@@ -1,14 +1,25 @@
 <template>
   <v-card class="p-6">
     <div v-for="lesson in recommendedLessons" :key="lesson.id" class="mb-6">
-      <v-row class="mb-4">
+      <v-row class="mb-4 m-0">
         <v-col cols="12" md="8" class="border-b-2">
           <div class="font-bold text-body-large-1">{{ lesson.name }}</div>
-          <div class="text-text-tetiary text-body-base-1">{{ lesson.description }}</div>
+          <div class="text-text-tetiary text-body-base-1">
+            {{ lesson.description }}
+          </div>
         </v-col>
-        <v-col cols="12" md="4" class="flex justify-center items-center border-b-2">
+        <v-col
+          cols="12"
+          md="4"
+          class="flex justify-center items-center border-b-2"
+        >
+
           <!-- Tooltip for each action button -->
-          <v-tooltip bottom v-for="button in actionButtons(lesson)" :key="button.index">
+          <v-tooltip
+            bottom
+            v-for="button in actionButtons(lesson)"
+            :key="button.index"
+          >
             <template v-slot:activator="{ props: activatorProps }">
               <v-btn
                 variant="text"
@@ -35,7 +46,7 @@
 </template>
 
 <script lang="ts" setup>
-import { CourseDetail, Lesson, RecommendedLesson } from '@/types/Course';
+import { CourseDetail, Lesson, RecommendedLesson } from "@/types/Course";
 
 const props = defineProps<{
   course: CourseDetail;
@@ -53,8 +64,14 @@ const openFeedbackModal = (lessonId: string): void => {
   showFeedbackModal.value = true;
 };
 
-const handleFeedbackSubmitted = (feedbackData: { lessonId: string; feedback: string }): void => {
-  console.log(`Feedback received for lesson ${feedbackData.lessonId}:`, feedbackData.feedback);
+const handleFeedbackSubmitted = (feedbackData: {
+  lessonId: string;
+  feedback: string;
+}): void => {
+  console.log(
+    `Feedback received for lesson ${feedbackData.lessonId}:`,
+    feedbackData.feedback
+  );
   showFeedbackModal.value = false;
   selectedLessonId.value = undefined;
 };
@@ -78,20 +95,24 @@ const actionButtons = (lesson: Lesson) => {
   return [
     {
       index: 0,
-      icon: recommendedLesson.bookmarked ? 'mdi-bookmark' : 'mdi-bookmark-outline',
-      value: recommendedLesson.bookmarked ? 'Unbookmark Lesson' : 'Bookmark Lesson',
-      class: recommendedLesson.bookmarked ? 'text-error' : "text-text-primary",
+      icon: recommendedLesson.bookmarked
+        ? "mdi-bookmark"
+        : "mdi-bookmark-outline",
+      value: recommendedLesson.bookmarked
+        ? "Unbookmark Lesson"
+        : "Bookmark Lesson",
+      class: recommendedLesson.bookmarked ? "text-error" : "text-text-primary",
     },
     {
       index: 1,
-      icon: 'mdi-comment-text-outline',
-      value: 'Feedback Lesson',
+      icon: "mdi-comment-text-outline",
+      value: "Feedback Lesson",
       class: "text-text-primary",
     },
     {
       index: 2,
-      icon: 'mdi-information-outline',
-      value: 'View Details',
+      icon: "mdi-information-outline",
+      value: "View Details",
       class: "text-text-primary",
     },
   ];
@@ -103,23 +124,33 @@ const handleButtonClick = (button: any, lesson: Lesson) => {
   );
 
   if (!recommendedLesson) {
-    console.error('No recommended lesson found for this lesson');
+    console.error("No recommended lesson found for this lesson");
     return;
   }
 
   switch (button.index) {
     case 0:
       recommendedLesson.bookmarked = !recommendedLesson.bookmarked;
-      console.log(`${recommendedLesson.bookmarked ? 'Bookmarked' : 'Unbookmarked'} lesson:`, lesson.id);
+      console.log(
+        `${
+          recommendedLesson.bookmarked ? "Bookmarked" : "Unbookmarked"
+        } lesson:`,
+        lesson.id
+      );
       break;
     case 1:
       openFeedbackModal(lesson.id);
       break;
     case 2:
-      console.log('Navigating to lesson details for lesson:', lesson.id);
+      console.log("Navigating to lesson details for lesson:", lesson.id);
       break;
     default:
-      console.error('Invalid button index:', button.index);
+      console.error("Invalid button index:", button.index);
   }
 };
 </script>
+<style scoped>
+.v-row.m-0 {
+  margin: 0 !important;
+}
+</style>

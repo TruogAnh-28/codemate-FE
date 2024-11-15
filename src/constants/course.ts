@@ -17,8 +17,9 @@ export const CourseReviewData: CourseReview[] = [
       "Develop problem-solving skills in programming",
     ],
     professor: "Dr. Jane Doe",
-    status: "Ongoing",
-    image: "../../../../assets/course-images/cs101.png"
+    status: "In Progress",
+    image: "../../../../assets/course-images/cs101.png",
+    percentageComplete: "60"
   },
   {
     id: "CS201",
@@ -37,8 +38,9 @@ export const CourseReviewData: CourseReview[] = [
       "Develop problem-solving skills in programming",
     ],
     professor: "Dr. Alan Turing",
-    status: "Ongoing",
-    image: "../../../../assets/course-images/cs201.png"
+    status: "In Progress",
+    image: "../../../../assets/course-images/cs201.png",
+    percentageComplete: "30"
   },
   {
     id: "CS301",
@@ -58,7 +60,8 @@ export const CourseReviewData: CourseReview[] = [
     ],
     professor: "Dr. Andrew Ng",
     status: "Completed",
-    image: "../../../../assets/course-images/cs301.png"
+    image: "../../../../assets/course-images/cs301.png",
+    percentageComplete: "70"
   },
   {
     id: "CS401",
@@ -78,7 +81,8 @@ export const CourseReviewData: CourseReview[] = [
     ],
     professor: "Dr. Fei-Fei Li",
     status: "Completed",
-    image: "../../../../assets/course-images/cs401.png"
+    image: "../../../../assets/course-images/cs401.png",
+    percentageComplete: "100"
   },
   {
     id: "CS501",
@@ -98,7 +102,8 @@ export const CourseReviewData: CourseReview[] = [
     ],
     professor: "Dr. Yann LeCun",
     status: "New",
-    image: "../../../../assets/course-images/cs501.png"
+    image: "../../../../assets/course-images/cs501.png",
+    percentageComplete: "60"
   }
 ];
 
@@ -114,7 +119,7 @@ export const CourseRecentData: CourseRecent[] = [
     ],
     lastAccessed: "2024-11-10T15:30:00Z",
     percentageComplete: "75",
-    status: "Ongoing"
+    status: "In Progress"
   },
   {
     id: "CS201",
@@ -126,7 +131,7 @@ export const CourseRecentData: CourseRecent[] = [
     ],
     lastAccessed: "2024-11-08T10:45:00Z",
     percentageComplete: "90",
-    status: "Ongoing"
+    status: "In Progress"
   },
   {
     id: "CS301",
@@ -150,7 +155,7 @@ export const CourseRecentData: CourseRecent[] = [
     ],
     lastAccessed: "2024-11-12T08:20:00Z",
     percentageComplete: "30",
-    status: "Ongoing"
+    status: "In Progress"
   },
   {
     id: "CS501",
@@ -162,7 +167,7 @@ export const CourseRecentData: CourseRecent[] = [
     ],
     lastAccessed: "2024-11-01T12:00:00Z",
     percentageComplete: "40",
-    status: "Ongoing"
+    status: "In Progress"
   }
 ]
 
@@ -179,7 +184,7 @@ export const CourseDetailData: CourseDetail = {
   "professor": "Dr. Alice Johnson",
   "startDate": "2024-01-10",
   "endDate": "2024-06-10",
-  "status": "Ongoing",
+  "status": "In Progress",
   "percentageComplete": "75",
   "image": "https://example.com/images/cs101.png",
   "lastAccessed": "2024-11-05T18:00:00Z",
@@ -305,7 +310,8 @@ export const CourseDetailData: CourseDetail = {
           "options": ["if", "def", "while", "return"],
           "correctAnswer": "while"
         }
-      ]
+      ],
+      status: "Completed"
     },
     {
       "id": "CS101_EX2",
@@ -330,7 +336,8 @@ export const CourseDetailData: CourseDetail = {
           "options": ["tuple", "str", "int", "list"],
           "correctAnswer": "list"
         }
-      ]
+      ],
+      status: "In Progress"
     },
     {
       "id": "CS101_EX3",
@@ -349,7 +356,8 @@ export const CourseDetailData: CourseDetail = {
           "options": ["skip", "continue", "pass", "break"],
           "correctAnswer": "continue"
         }
-      ]
+      ],
+      status: "New"
     },
     {
       "id": "CS101_EX4",
@@ -368,7 +376,8 @@ export const CourseDetailData: CourseDetail = {
           "options": ["func", "define", "def", "function"],
           "correctAnswer": "def"
         }
-      ]
+      ],
+      status: "In Progress"
     },
     {
       "id": "CS101_EX5",
@@ -387,7 +396,8 @@ export const CourseDetailData: CourseDetail = {
           "options": ["dict.key", "dict[key]", "dict(key)", "dict->key"],
           "correctAnswer": "dict[key]"
         }
-      ]
+      ],
+      status: "In Progress"
     }
   ],
   "recommendedLessons": [
@@ -401,5 +411,8 @@ export const CourseDetailData: CourseDetail = {
       "lessonId": "CS101_LS4",
       bookmarked: true
     }
-  ]
+  ],
+  "completedLessons": "1",
+  "timeSpent": "24h 30m",
+  "assignmentsDone": "1",
 }
