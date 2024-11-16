@@ -48,6 +48,9 @@
 <script lang="ts" setup>
 import { CourseDetail, Lesson, RecommendedLesson } from "@/types/Course";
 
+
+const router = useRouter(); // Sử dụng Vue Router
+
 const props = defineProps<{
   course: CourseDetail;
 }>();
@@ -142,13 +145,14 @@ const handleButtonClick = (button: any, lesson: Lesson) => {
       openFeedbackModal(lesson.id);
       break;
     case 2:
-      console.log("Navigating to lesson details for lesson:", lesson.id);
+      router.push(`/lessonRecommend/${lesson.id}`);
       break;
     default:
       console.error("Invalid button index:", button.index);
   }
 };
 </script>
+
 <style scoped>
 .v-row.m-0 {
   margin: 0 !important;
