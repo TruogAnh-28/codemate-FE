@@ -1,69 +1,106 @@
 <template>
   <v-container fluid class="ma-0">
+    <!-- Hiển thị câu hỏi hoặc kết quả -->
     <v-row>
       <v-col
         v-for="(question, index) in questions"
         :key="index"
         cols="12"
       >
+        <!-- Nếu trạng thái là hoàn thành, hiển thị kết quả -->
+        <CardQuizResult
+          v-if="status === 'completed'"
+          :question="question"
+          :ordinal="index + 1"
+        />
+        <!-- Nếu chưa hoàn thành, hiển thị câu hỏi -->
         <CardQuestionQuiz
+          v-else
           :question="question"
           :ordinal="index + 1"
           @answerSelected="handleAnswer(index, $event)"
         />
       </v-col>
     </v-row>
-    <v-btn color="primary" @click="submitAnswers">Submit</v-btn>
+    <v-row v-if="status !== 'completed'" justify="center">
+      <v-col cols="auto">
+        <v-btn color="primary" @click="openConfirmDialog">Submit</v-btn>
+      </v-col>
+    </v-row>
+
+    <!-- Dialogs -->
+    <v-dialog v-model="isConfirmDialogOpen" max-width="400">
+      <v-card>
+        <v-card-title>Confirm Submission</v-card-title>
+        <v-card-text>
+          Are you sure you want to submit your answers? This action cannot be undone.
+        </v-card-text>
+        <v-card-actions>
+          <v-btn text @click="isConfirmDialogOpen = false">Cancel</v-btn>
+          <v-btn color="primary" @click="confirmSubmit" elevation="2">Confirm</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <v-dialog v-model="isResultDialogOpen" max-width="400">
+      <v-card>
+        <v-card-title>Quiz Results</v-card-title>
+        <v-card-text>
+          You scored {{ score }} points out of {{ maxScore }}.
+        </v-card-text>
+        <v-card-actions>
+          <v-btn color="primary" @click="finishQuiz" elevation="2">View Results</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
-
 <script lang="ts" setup>
+import { QuizQuestion } from "@/types/Exercise";
+import { quizQuestionsData } from "@/constants/exercise";
 
-const questions = ref([
-  {
-    text: 'What will happen when you try to assign a string to a number variable in TypeScript?',
-    image: '',
-    options: [
-      'The value will be converted automatically.',
-      'It will result in an error.',
-      'The variable will remain undefined.',
-    ],
-  },
-  {
-    text: 'How can you assign the value of a variable value: any = "123" to a number variable using type assertion?',
-    image: '',
-    options: [
-      'let num: number = value;',
-      'let num: number = value as number;',
-      'let num: number = Number(value);',
-    ],
-  },
-  {
-    text: 'Which line of code will cause a type compatibility error?',
-    image: 'path-to-your-image.png',
-    options: [
-      'let num: number = value;',
-      'let num: number = value as number;',
-      'let num: number = Number(value);',
-    ],
-  },
-]);
+const questions = ref<QuizQuestion[]>(quizQuestionsData);
+const status = ref<'new' | 'on going' | 'completed'>('new');
 
-// Mảng để lưu câu trả lời của từng câu hỏi
-const answers = ref(Array(questions.value.length).fill(null));
+// Dialog states
+const isConfirmDialogOpen = ref(false);
+const isResultDialogOpen = ref(false);
 
-// Ghi nhận câu trả lời cho từng câu hỏi
-function handleAnswer(questionIndex: number, selectedAnswer: number | null) {
-  answers.value[questionIndex] = selectedAnswer;
+// Score tracking
+const score = ref(0);
+const maxScore = questions.value.length;
+
+// Open confirmation dialog
+function openConfirmDialog() {
+  isConfirmDialogOpen.value = true;
 }
 
-// Xử lý khi nhấn nút Submit
-function submitAnswers() {
-  console.log('All answers:', answers.value);
-  // Thực hiện các thao tác cần thiết, ví dụ: gửi kết quả lên server
+// Confirm submission and show result
+function confirmSubmit() {
+  isConfirmDialogOpen.value = false;
+  calculateScore();
+  isResultDialogOpen.value = true;
+}
+
+// Calculate the score
+function calculateScore() {
+  score.value = 0;
+  questions.value.forEach((question: QuizQuestion) => {
+    if (question.chooseUser === question.correctAnswer) {
+      score.value++;
+    }
+  });
+}
+
+// Handle user's answer
+function handleAnswer(questionIndex: number, selectedAnswer: number) {
+  const selectedOption = questions.value[questionIndex].options[selectedAnswer];
+  questions.value[questionIndex].chooseUser = selectedOption;
+}
+
+// Finish the quiz and mark it as completed
+function finishQuiz() {
+  isResultDialogOpen.value = false;
+  status.value = 'completed';
 }
 </script>
-
-<style scoped>
-
-</style>
