@@ -130,6 +130,7 @@
               block
               elevation="2"
               @click="openRecommendationModal"
+              class="text-body-base-4"
             >
               Get Recommendations
               <v-icon end>mdi-arrow-right</v-icon>
