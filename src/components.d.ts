@@ -12,6 +12,7 @@ declare module 'vue' {
     AppFooter: typeof import('./components/AppFooter.vue')['default']
     AvatarStack: typeof import('./components/CourseList/AvatarStack.vue')['default']
     CardQuestionQuiz: typeof import('./components/CardQuestionQuiz.vue')['default']
+    CardQuizResult: typeof import('./components/CardQuizResult.vue')['default']
     Cards: typeof import('./components/CourseList/Cards.vue')['default']
     CourseDescription: typeof import('./components/CourseDetail/CourseDescription.vue')['default']
     CourseExercises: typeof import('./components/CourseDetail/CourseExercises.vue')['default']
