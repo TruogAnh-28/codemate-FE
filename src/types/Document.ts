@@ -35,6 +35,14 @@ export interface Document {
   
   export interface SummaryAndReview {
     keyPoints: string[];             // Các điểm chính của module
-    reviewQuestions: string[];       // Các câu hỏi ôn tập hoặc câu hỏi tự luận ngắn
+    reviewQuestions: ReviewQuestion[];       // Các câu hỏi ôn tập hoặc câu hỏi tự luận ngắn
     quizLink?: string;               // Link đến bài kiểm tra trắc nghiệm nếu có
+  }
+  export interface ReviewQuestion {
+    id: string;
+    question: string;
+    answer: string;
+    maxscore: number;
+    score?: number;
+    inputUser?: string;
   }

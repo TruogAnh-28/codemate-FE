@@ -122,11 +122,44 @@ export const documentData: Document = {
         "Invalid downcasting can cause a runtime `ClassCastException`.",
       ],
       reviewQuestions: [
-        "What is the difference between upcasting and downcasting in Java?",
-        "Why is the following code valid?\n```java\nclass Animal {}\nclass Cat extends Animal {}\nAnimal animal = new Cat();\nCat cat = (Cat) animal;\n```",
-        "What happens if you try to cast an object to an unrelated type?",
+        {
+          id: "q1",
+          question: "What is the difference between upcasting and downcasting in Java?",
+          answer: "Upcasting is an implicit conversion where a subclass object is assigned to a superclass reference, enabling polymorphism. Downcasting, on the other hand, is an explicit conversion where a superclass reference is cast back to its subclass to access subclass-specific features.",
+          maxscore: 10,
+          inputUser: "",
+        },
+        {
+          id: "q2",
+          question: "Why is the following code valid?\n```java\nclass Animal {}\nclass Cat extends Animal {}\nAnimal animal = new Cat();\nCat cat = (Cat) animal;\n```",
+          answer: "The code is valid because `Cat` is a subclass of `Animal`, allowing upcasting from `Cat` to `Animal`. The downcasting back to `Cat` is safe here as the original object is actually a `Cat` instance.",
+          maxscore: 10,
+          inputUser: "",
+        },
+        {
+          id: "q3",
+          question: "What happens if you try to cast an object to an unrelated type?",
+          answer: "Attempting to cast an object to an unrelated type will result in a `ClassCastException` at runtime.",
+          maxscore: 10,
+          inputUser: "",
+        },
+        {
+          id: "q4",
+          question: "Explain the role of the `instanceof` operator in type casting.",
+          answer: "The `instanceof` operator checks whether an object is an instance of a particular class or subclass, allowing developers to ensure safe downcasting and prevent `ClassCastException` at runtime.",
+          maxscore: 10,
+          inputUser: "",
+        },
+        {
+          id: "q5",
+          question: "What is type compatibility in the context of primitive data types in Java?",
+          answer: "Type compatibility in primitive data types refers to implicit promotions (e.g., `int` to `float`) and explicit casting (e.g., `float` to `int`), which ensure that operations on data types are type-safe.",
+          maxscore: 10,
+          inputUser: "",
+        },
       ],
       quizLink: "https://example.com/java-type-compatibility-quiz",
     },
+    
   };
   

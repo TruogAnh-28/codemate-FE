@@ -8,6 +8,7 @@ export interface Lesson {
     description: string;
     recommendTime: string;
     progress: number;
+    status: string;
     recommendContent: string;
     explain: string;
     modules: Module[];

@@ -2,7 +2,10 @@ export interface QuizQuestion {
     id: string,
     image?: string,
     question: string,
-    options: string[]
+    options: string[],
+    correctAnswer: string,
+    explanation: string
+    chooseUser?: string
   }
 export interface QuizExercise {
     id: string;
