@@ -3,23 +3,32 @@
     <v-card>
       <v-card-title class="d-flex align-center">
         <v-icon color="green" class="mr-2">mdi-check-circle</v-icon>
-        <span class="text-h6">Select Your Preferred Learning Type</span>
+        <span class="text-heading-4 font-bold">Select Your Learning Type</span>
         <v-spacer></v-spacer>
-        <v-btn icon @click="closeDialog">
-          <v-icon>mdi-close</v-icon>
-        </v-btn>
       </v-card-title>
 
       <v-card-subtitle class="text-body-2 mb-4">
         Select the learning type that works best for you in this module
       </v-card-subtitle>
 
-      <v-card-subtitle class="font-weight-bold pb-2">
+      <v-card-subtitle class="font-weight-bold text-body-large-4 pb-2" style="opacity: 1;">
         Module: {{ module.introduction }}
       </v-card-subtitle>
 
       <v-card-text>
         <v-radio-group v-model="selectedOption">
+          
+          <v-row align="center" class="px-2 pt-2">
+            <v-radio label="Reading Materials (Rec: for All Levels)" value="reading" class="pr-2" />
+            <v-tooltip bottom>
+              <template v-slot:activator="{ props }">
+                <v-icon small v-bind="props" color="grey" >mdi-help-circle-outline</v-icon>
+              </template>
+              Purpose: Detailed theory and background information.<br>
+              Engagement: Low, primarily passive reading.
+            </v-tooltip>
+          </v-row>
+
           <v-row align="center" class="px-2 pt-2">
             <v-radio label="Interactive Quizzes (Rec: for Beginner to Intermediate)" value="quizzes" class="pr-2" />
             <v-tooltip bottom>
@@ -42,22 +51,19 @@
             </v-tooltip>
           </v-row>
 
-          <v-row align="center" class="px-2 pt-2">
-            <v-radio label="Reading Materials (Rec: for All Levels)" value="reading" class="pr-2" />
-            <v-tooltip bottom>
-              <template v-slot:activator="{ props }">
-                <v-icon small v-bind="props" color="grey" >mdi-help-circle-outline</v-icon>
-              </template>
-              Purpose: Detailed theory and background information.<br>
-              Engagement: Low, primarily passive reading.
-            </v-tooltip>
-          </v-row>
         </v-radio-group>
       </v-card-text>
 
       <v-card-actions>
-        <v-btn text @click="closeDialog">Cancel</v-btn>
-        <v-btn color="black" dark @click="confirmSelection">Confirm</v-btn>
+        <v-btn text @click="closeDialog" variant="text">Cancel</v-btn>
+        <v-btn  
+          @click="confirmSelection" 
+          color="text-primary"
+          elevation="2"
+          class="px-2"
+        >
+          Confirm
+        </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>

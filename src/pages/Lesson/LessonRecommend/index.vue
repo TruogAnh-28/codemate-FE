@@ -3,54 +3,53 @@
     <!-- Header Section -->
     <v-row class="mb-4">
       <v-col cols="8">
-        <v-sheet class="text-h4 font-weight-bold">{{lesson.name}}</v-sheet>
+        <v-sheet class="text-heading-3 font-weight-bold">{{lesson.name}}</v-sheet>
       </v-col>
-      <v-col cols="4" class="text-h5 font-weight-semibold text-right">
+      <v-col cols="4"  class="text-heading-4 font-weight-bold text-right">
         {{lesson.progress}}% 
          <v-chip     
           class="ma-2"
-          color="green"
+          :color="renderStatusLabel(lesson.status)"
           prepend-icon="mdi-checkbox-marked-circle"
         >
-          Completed
+          {{lesson.status}}
         </v-chip>
       </v-col>
     </v-row>
 
     <!-- Details Section -->
-    <v-col cols="3" class="text-gray-500 mb-4">
-      <v-row><v-icon class="mr-2">mdi-clock-outline</v-icon> Recommend Time: "{{lesson.recommendTime}} hours"</v-row>
-      <v-row><v-icon class="mr-2">mdi-book-open-outline</v-icon> {{lesson.modules.length}} Modules</v-row>
+    <v-col cols="3" class="text-body-base-4 mb-4">
+      <v-row><v-icon color="primary" class="mr-2">mdi-clock-outline</v-icon> Recommend Time: {{lesson.recommendTime}} </v-row>
+      <v-row><v-icon color="primary" class="mr-2">mdi-book-open-outline</v-icon> {{lesson.modules.length}} Modules</v-row>
     </v-col>
-
     <!-- Recommend Content & Learning Outcomes -->
     <v-row class="mb-4">
       <v-col cols="8">
         <v-card flat class="pa-0 mb-2">
-          <v-card-title class="font-weight-bold text-h6 pa-0">
-            Recommend
+          <v-card-title class="font-weight-bold text-heading-4 pa-0">
+            Recommend:
           </v-card-title>
-          <v-card-text class="pa-0">
+          <v-card-text class="pa-0 text-body-base-4">
             {{lesson.recommendContent}}
           </v-card-text>
         </v-card>
-        <v-card flat class="pa-0">
-          <v-card-title class="font-weight-bold text-h6 pa-0">
-            Explain
+        <v-card flat class="pa-0 ">
+          <v-card-title class="font-weight-bold text-heading-4 pa-0">
+            Explain:
           </v-card-title>
-          <v-card-text class="pa-0">
+          <v-card-text class="pa-0 text-body-base-1">
             {{lesson.explain}}
           </v-card-text>
         </v-card>
       </v-col>
       <v-col cols="4" class="pl-4">
         <v-card flat class="pa-0">
-          <v-card-title class="font-weight-bold text-h6 pa-0">
+          <v-card-title class="font-weight-bold text-heading-4 text-error" >
             Learning Outcomes
           </v-card-title>
           <v-card-text class="pa-0">
             <ul class="list-disc pl-6 space-y-2">
-              <li v-for="(outcome, index) in lesson.learningOutcomes" :key="index">
+              <li v-for="(outcome, index) in lesson.learningOutcomes" :key="index" class="text-body-base-1">
                 {{ outcome }}
               </li>
             </ul>
@@ -58,19 +57,18 @@
         </v-card>
       </v-col>
     </v-row>
-
-   
-    <!-- Modules Section -->
     <v-row>
       <v-col cols="12">
-        <v-sheet class="text-h6 font-weight-bold ">Modules:</v-sheet>
+        <v-card-title class="font-weight-bold text-heading-4 pa-0" >
+            Modules:
+          </v-card-title>
       </v-col>
       <v-col cols="4" v-for="module in lesson.modules" :key="module.id">
         <v-card
           class="p-4 text-center bg-secondary hover:bg-secondary-variant cursor-pointer"
           @click="openDialog(module)"
         >
-          <v-card-text class="font-weight-bold">{{ module.introduction }}</v-card-text>
+          <v-card-text class="font-weight-bold text-body-base-1">{{ module.introduction }}</v-card-text>
         </v-card>
       </v-col>
     </v-row>
@@ -90,6 +88,7 @@
 <script lang="ts" setup>
 import { LessonData } from "@/constants/lesson";
 import { Lesson, Module } from "@/types/Lesson";
+import { renderStatusLabel } from "@/utils/functions/render";
 const lesson = ref<Lesson[]>(LessonData);
 
 const showDialog = ref(false);
@@ -104,7 +103,4 @@ function openDialog(module: Module) {
 </script>
 
 <style scoped>
-.cursor-pointer {
-  cursor: pointer;
-}
 </style>

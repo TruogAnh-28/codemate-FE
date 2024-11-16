@@ -1,8 +1,8 @@
 <template>
   <v-card class="mb-4">
-    <v-card-title class="font-bold items-center bg-primary">
+    <v-card-title class="font-bold items-center bg-primary mb-2">
       <span class="bg-white rounded-full px-2 py-1 mr-2">{{ ordinal }}</span>
-      <span class="whitespace-normal break-words">{{ question.text }}</span>
+      <span class="whitespace-normal break-words text-body-large-4">{{ question.question }}</span>
     </v-card-title>
 
     <v-card-subtitle v-if="question.image">
@@ -10,7 +10,7 @@
     </v-card-subtitle>
 
     <v-card-text>
-      <v-radio-group v-model="selectedAnswer" @change="emitAnswer">
+      <v-radio-group v-model="selectedAnswer" @change="emitAnswer" hide-details>
         <v-radio
           v-for="(option, index) in question.options"
           :key="index"
