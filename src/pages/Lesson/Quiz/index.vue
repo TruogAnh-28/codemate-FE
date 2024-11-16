@@ -1,26 +1,26 @@
-<template>
+<template class="tailwind-scope">
   <v-container fluid class="px-12">
     <v-card flat class="pa-0 mb-4">
-      <v-card-title class="font-weight-bold text-h5 pa-0">
+      <v-sheet class="font-weight-bold text-heading-3 pa-0">
         {{module.introduction}}
         <v-chip variant="flat" class="ma-2">
           Quiz
         </v-chip>
-      </v-card-title>
-      <v-card-subtitle class="pa-0">
+      </v-sheet>
+      <v-card-subtitle class="text-body-base-1 pa-0">
            {{lesson.name}}
       </v-card-subtitle>
     </v-card>
     <v-row class="mb-4">
-      <v-col cols="6">
+      <v-col cols="6" class="py-6">
         <v-card flat class="pa-0 mb-2">
-          <v-card-text class="pa-0 mb-2">
-            Welcome to the <span class="text-red-500">'{{module.introduction}}'</span> module!
+          <v-card-text class="pa-0 mb-2 text-body-base-4">
+            Welcome to the <span class="text-error">'{{module.introduction}}'</span> module!
           </v-card-text>
-          <v-card-text class="pa-0 mb-2">
+          <v-card-text class="pa-0 mb-2 text-body-base-4">
             This module uses interactive quizzes to help you test your knowledge. Work through each quiz at your own speed, and check your answers along the way.
           </v-card-text>
-          <v-card-text class="pa-0">
+          <v-card-text class="pa-0 text-body-base-4">
             You can retake any quiz for better understanding.
           </v-card-text>
         </v-card>
@@ -28,11 +28,11 @@
       <v-col col="2"></v-col>
       <v-col cols="4" class="pl-4">
         <v-card flat class="pa-0">
-          <v-card-title class="font-weight-bold pa-0 text-red-500 mb-2">
+          <v-card-title class="font-weight-bold text-heading-4 text-error">
             Learning Outcomes:
           </v-card-title>
-          <v-card-text class="pa-0">
-            <ul class="list-disc pl-6 space-y-2">
+          <v-card-text class="pa-0 text-body-base-4">
+            <ul class="list-disc pl-6 ">
                <li v-for="(outcome, index) in module.objectives" :key="index">
                 {{ outcome }}
               </li>
@@ -41,35 +41,34 @@
         </v-card>
       </v-col>
     </v-row>
-    <v-row>
-      <v-col cols="12">
-        <v-row align="center" justify="space-between">
-          <v-col cols="auto">
-            <v-sheet class="text-h6 font-weight-bold mb-4">Quiz List:</v-sheet>
-          </v-col>
+     <v-card class="rounded-lg overflow-hidden" elevation="2">
+      <div >
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-body-large-1 font-semibold text-gray-800 pl-4">Quiz List</h3>
           <v-col cols="auto">
             <v-btn color="primary" @click="generateQuiz">Generate Quiz</v-btn>
           </v-col>
-        </v-row>
-      </v-col>
-      <v-col cols="12" v-for="exercise in exercises" :key="exercise.id">
-        <v-card class="mb-4" outlined>
-          <v-card-title>
+        </div>
+        <v-col cols="12" v-for="exercise in exercises" :key="exercise.id">
+        <v-card outlined class="py-0">
+          <v-card-title class="text-body-large-4">
             <v-row align="center" justify="space-between" class="w-full">
               <v-col cols="auto" class="d-flex align-center">
                 <v-icon class="mr-2">mdi-book-open-outline</v-icon>
                 {{ exercise.name }}
               </v-col>
-              <!-- <v-col cols="auto" class="text-right">
-                <span v-if="exercise.status === 'completed'" class="text-red-500 text-h5"> {{ exercise.score }}</span>
-              </v-col> -->
+              <v-col cols="auto" class="text-right">
+                <span v-if="exercise.status === 'completed'" class="text-white bg-red rounded-full px-2 py-1 text-h5"> 
+                  {{ exercise.score }}
+                </span>
+              </v-col>
             </v-row>
           </v-card-title>
           <v-card-subtitle style="opacity: 1;">
             <v-row align="center" justify="space-between" class="w-full my-0">
               <v-col cols="auto" class="d-flex align-center">
                  <v-chip color="grey">
-               NQuestions: {{ exercise.quizList.length }}
+               Questions: {{ exercise.quizList.length }}
                 </v-chip>
                 
                 <v-chip class="ml-2" :color="getDifficultyColor(exercise.difficulty)">
@@ -79,20 +78,18 @@
                   {{ exercise.status }}
                 </v-chip>
               </v-col>
-              <v-col cols="auto" class="text-right">
-                <span v-if="exercise.status === 'completed'" class="text-white bg-red rounded-full px-2 py-1 text-h5"> 
-                  {{ exercise.score }}
-                </span>
-              </v-col>
+                <v-card-actions>
+            <v-btn elevation="2" v-if="exercise.status === 'completed' || exercise.status === 'on going'" color="secondary" @click="viewAgain(exercise.id)" class="px-2 text-body-base-4">View Again</v-btn>
+            <v-btn elevation="2" color="primary" @click="doQuiz(exercise.id)" class="px-2 text-body-base-4">Start</v-btn>
+           
+          </v-card-actions>
             </v-row>
           </v-card-subtitle>
-          <v-card-actions>
-            <v-btn color="primary" @click="doQuiz(exercise.id)">Do Quiz</v-btn>
-            <v-btn v-if="exercise.status === 'completed' || exercise.status === 'on going'" color="secondary" @click="viewAgain(exercise.id)">View Again</v-btn>
-          </v-card-actions>
         </v-card>
       </v-col>
-    </v-row>
+      </div>
+     </v-card>
+    
   </v-container>
 </template>
 
