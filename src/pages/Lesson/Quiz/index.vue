@@ -58,7 +58,7 @@
                 {{ exercise.name }}
               </v-col>
               <v-col cols="auto" class="text-right">
-                <span v-if="exercise.status === 'completed'" class="text-white bg-red rounded-full px-2 py-1 text-h5"> 
+                <span v-if="exercise.status === 'completed'" class="text-white bg-red rounded-full px-2 py-2 text-body-large-4"> 
                   {{ exercise.score }}
                 </span>
               </v-col>
@@ -111,7 +111,6 @@ function doQuiz(exerciseId: string) {
 }
 
 function viewAgain(exerciseId: string) {
-  // Logic to navigate to the quiz page for viewing again
   // router.push(`/lessonRecommend/${exerciseId}/view`);
 
 }
@@ -129,7 +128,6 @@ function getDifficultyColor(difficulty: string) {
   }
 }
 function generateQuiz() {
-  // Logic to generate a new quiz
   console.log('Generating a new quiz...');
 }
 </script>

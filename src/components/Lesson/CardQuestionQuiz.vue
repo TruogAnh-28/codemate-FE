@@ -16,7 +16,7 @@
           :key="index"
           :label="option"
           :value="index"
-          class="text-gray-700"
+          :style="{ opacity: 1 }"
         ></v-radio>
       </v-radio-group>
     </v-card-text>

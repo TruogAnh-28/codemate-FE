@@ -62,12 +62,6 @@ const StudentRoutes = [
         name: 'LessonRecommendDocument',
         component: () => import('@/pages/Lesson/Document/index.vue'),
         props: true,
-      },
-      {
-        path: 'Module/:moduleId/Document/Read/:documentId',
-        name: 'LessonRecommendReadDocument',
-        component: () => import('@/pages/Lesson/ReadDocument/index.vue'),
-        props: true,
       }
     ]
   },  
