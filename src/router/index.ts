@@ -28,11 +28,43 @@ const StudentRoutes = [
     props: true,
   },
   {
-    path: '/lessonRecommend',
-    name: 'LessonRecommend',
-    component: () => import('@/pages/Lesson/LessonRecommend/index.vue'),
+    path: '/lessonRecommend/:lessonId',
+    name: 'Lesson',
+    component: () => import('@/pages/Lesson/index.vue'),
     props: true,
-  },
+    children: [
+      {
+        path: '',
+        name: 'LessonRecommend',
+        component: () => import('@/pages/Lesson/LessonRecommend/index.vue'),
+        props: true,
+      },
+      {
+        path: 'Module/:moduleId/Quiz',
+        name: 'LessonRecommendQuiz',
+        component: () => import('@/pages/Lesson/Quiz/index.vue'),
+        props: true,
+      },
+      {
+        path: 'Module/:moduleId/Quiz/DoQuiz/:quizId',
+        name: 'LessonRecommendDoQuiz',
+        component: () => import('@/pages/Lesson/DoQuiz/index.vue'),
+        props: true,
+      },
+      {
+        path: 'Module/:moduleId/Code',
+        name: 'LessonRecommendCode',
+        component: () => import('@/pages/Lesson/Code/index.vue'),
+        props: true,
+      },
+      {
+        path: 'Module/:moduleId/Document',
+        name: 'LessonRecommendDocument',
+        component: () => import('@/pages/Lesson/Document/index.vue'),
+        props: true,
+      }
+    ]
+  },  
   {
     path: '/',
     name: '',
