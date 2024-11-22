@@ -5,19 +5,20 @@
  */
 
 // Plugins
-import { registerPlugins } from '@/plugins'
+import { registerPlugins } from "@/plugins";
 
 // Components
-import App from './App.vue'
+import App from "./App.vue";
 
 // Composables
-import { createApp } from 'vue'
+import { createApp } from "vue";
 
 //import settings.scss from styles
-import '@/global.css'
+import "@/global.css";
+import ApiService from "./common/api.service";
+ApiService.init();
+const app = createApp(App);
 
-const app = createApp(App)
+registerPlugins(app);
 
-registerPlugins(app)
-
-app.mount('#app')
+app.mount("#app");

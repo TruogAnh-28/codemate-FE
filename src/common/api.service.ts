@@ -1,20 +1,16 @@
-import axios, { AxiosError, AxiosResponse } from "axios";
+import axios, { AxiosError } from "axios";
 import { V1_API_URL } from "@/common/config";
 import { IResponseData } from "@/modals/apis/response";
 
 interface ApiService {
   init(): void;
-  query<T>(resource: string, params?: object): Promise<AxiosResponse<IResponseData<T>>>;
-  get<T>(resource: string, slug?: string): Promise<AxiosResponse<IResponseData<T>>>;
-  post<T>(resource: string, params: object): Promise<AxiosResponse<IResponseData<T>>>;
-  update<T>(
-    resource: string,
-    slug: string,
-    params: object
-  ): Promise<AxiosResponse<IResponseData<T>>>;
-  put<T>(resource: string, params: object): Promise<AxiosResponse<IResponseData<T>>>;
-  delete<T>(resource: string): Promise<AxiosResponse<IResponseData<T>>>;
-  handleError(error: AxiosError): never;
+  query<T>(resource: string, params?: object, showError?: (message: string) => void): Promise<IResponseData<T>>;
+  get<T>(resource: string, slug?: string, showError?: (message: string) => void): Promise<IResponseData<T>>;
+  post<T>(resource: string, params: object, showError?: (message: string) => void): Promise<IResponseData<T>>;
+  update<T>(resource: string, slug: string, params: object, showError?: (message: string) => void): Promise<IResponseData<T>>;
+  put<T>(resource: string, params: object, showError?: (message: string) => void): Promise<IResponseData<T>>;
+  delete<T>(resource: string, showError?: (message: string) => void): Promise<IResponseData<T>>;
+  handleError(error: AxiosError, showError?: (message: string) => void): never;
 }
 
 const ApiService: ApiService = {
@@ -22,60 +18,54 @@ const ApiService: ApiService = {
     axios.defaults.baseURL = V1_API_URL;
   },
 
-  query<T>(resource: string, params?: object): Promise<AxiosResponse<IResponseData<T>>> {
-    return axios.get<IResponseData<T>>(resource, { params }).catch(this.handleError);
+  query<T>(resource: string, params?: object, showError?: (message: string) => void): Promise<IResponseData<T>> {
+    return axios.get<IResponseData<T>>(resource, { params })
+      .then(response => response.data)
+      .catch(error => this.handleError(error, showError));
   },
 
-  get<T>(resource: string, slug = ""): Promise<AxiosResponse<IResponseData<T>>> {
-    return axios.get<IResponseData<T>>(`${resource}/${slug}`).catch(this.handleError);
+  get<T>(resource: string, slug = "", showError?: (message: string) => void): Promise<IResponseData<T>> {
+    return axios.get<IResponseData<T>>(`${resource}/${slug}`)
+      .then(response => response.data)
+      .catch(error => this.handleError(error, showError));
   },
 
-  post<T>(resource: string, params: object): Promise<AxiosResponse<IResponseData<T>>> {
-    return axios.post<IResponseData<T>>(`${resource}`, params).catch(this.handleError);
+  post<T>(resource: string, params: object, showError?: (message: string) => void): Promise<IResponseData<T>> {
+    return axios.post<IResponseData<T>>(`${resource}`, params)
+      .then(response => response.data)
+      .catch(error => this.handleError(error, showError));
   },
 
-  update<T>(
-    resource: string,
-    slug: string,
-    params: object
-  ): Promise<AxiosResponse<IResponseData<T>>> {
-    return axios.put<IResponseData<T>>(`${resource}/${slug}`, params).catch(this.handleError);
+  update<T>(resource: string, slug: string, params: object, showError?: (message: string) => void): Promise<IResponseData<T>> {
+    return axios.put<IResponseData<T>>(`${resource}/${slug}`, params)
+      .then(response => response.data)
+      .catch(error => this.handleError(error, showError));
   },
 
-  put<T>(resource: string, params: object): Promise<AxiosResponse<IResponseData<T>>> {
-    return axios.put<IResponseData<T>>(`${resource}`, params).catch(this.handleError);
+  put<T>(resource: string, params: object, showError?: (message: string) => void): Promise<IResponseData<T>> {
+    return axios.put<IResponseData<T>>(`${resource}`, params)
+      .then(response => response.data)
+      .catch(error => this.handleError(error, showError));
   },
 
-  delete<T>(resource: string): Promise<AxiosResponse<IResponseData<T>>> {
-    return axios.delete<IResponseData<T>>(resource).catch(this.handleError);
+  delete<T>(resource: string, showError?: (message: string) => void): Promise<IResponseData<T>> {
+    return axios.delete<IResponseData<T>>(resource)
+      .then(response => response.data)
+      .catch(error => this.handleError(error, showError));
   },
 
-  handleError(error: AxiosError) {
+  handleError(error: AxiosError, showError?: (message: string) => void) {
     if (error.response) {
-      // Extract the message from the response if available
       const responseData = error.response.data as IResponseData<any>;
-
-      if (!responseData.isSuccess) {
-        // If API response indicates failure, show the error message from the API response
-        const errorMessage = responseData.message || "An unknown error occurred";
-
-        // Inject the showError method to trigger the alert
-        const showError = inject("showError") as (message: string) => void;
-        if (showError) {
-          showError(`API Error: ${errorMessage}`);
-        } else {
-          console.error("API Error:", errorMessage);
-        }
+      const errorMessage = responseData.message || "An unknown error occurred";
+      if (showError) {
+        showError(`API Error: ${errorMessage}`);
       } else {
-        // If isSuccess is true, we handle it as a success
-        console.log("API Call Success:", responseData);
+        console.error("API Error:", errorMessage);
       }
     } else {
-      // If there's no response (network error or timeout), handle it as a generic error
       console.error("Network Error:", error.message);
     }
-
-    // Rethrow the error so the promise is rejected and can be handled by the caller
     throw error;
   },
 };

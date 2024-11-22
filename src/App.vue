@@ -8,7 +8,7 @@
 </template>
 
 <script lang="ts" setup>
-import ErrorAlert from '@ErrorAlert.vue';
+import ErrorAlert from './components/ErrorAlert.vue';
 const errorAlert = ref<InstanceType<typeof ErrorAlert> | null>(null);
 
 provide("showError", (message: string) => {
@@ -17,3 +17,7 @@ provide("showError", (message: string) => {
   }
 });
 </script>
+
+<style scoped>
+
+</style>

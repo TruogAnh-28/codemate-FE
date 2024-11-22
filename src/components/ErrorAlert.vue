@@ -1,28 +1,56 @@
 <template>
-  <v-snackbar v-model="isVisible" :timeout="5000" color="error" top>
-    <v-alert type="error" dismissible>
-      {{ errorMessage }}
-    </v-alert>
+  <v-snackbar
+    v-model="isVisible"
+    location="top right"
+    :timeout="3000"
+    class="!tw-z-[9999]"
+  >
+    <div class="flex items-center bg-red-50 p-4 rounded-lg w-full">
+      <v-icon
+        icon="mdi-alert-circle"
+        color="error"
+        class="mr-3 text-red-500"
+      />
+      <div class="flex-grow text-red-800 mr-4">
+        {{ errorMessage }}
+      </div>
+      <v-btn
+        icon
+        density="compact"
+        variant="text"
+        color="error"
+        @click="hideSnackbar"
+        class="ml-2"
+      >
+        <v-icon>mdi-close</v-icon>
+      </v-btn>
+    </div>
   </v-snackbar>
 </template>
 
-<script lang="ts" setup>
+<script lang="ts">
 
-const isVisible = ref(false);
-const errorMessage = ref('');
+export default {
+  setup() {
+    const isVisible = ref(false);
+    const errorMessage = ref('');
 
-// Function to show the error alert
-const showError = (message: string) => {
-  errorMessage.value = message;
-  isVisible.value = true;
-};
+    const showError = (message: string) => {
+      errorMessage.value = message;
+      isVisible.value = true;
+    };
 
-// Function to hide the alert (can be triggered manually)
-const hideAlert = () => {
-  isVisible.value = false;
+    const hideSnackbar = () => {
+      isVisible.value = false;
+    };
+
+    return {
+      isVisible,
+      errorMessage,
+      showError,
+      hideSnackbar,
+    };
+  },
 };
 </script>
 
-<style scoped>
-/* Optional: Customize the alert styles */
-</style>
