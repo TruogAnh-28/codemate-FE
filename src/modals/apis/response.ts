@@ -13,11 +13,3 @@ export interface IResponseData<T> {
   messageCode: string;
   data: T | null;
 }
-
-// class ResponseModel implements IResponse {
-//   isSuccess = false;
-//   errorCode = 0;
-//   message = '';
-//   data = null;
-//   messageCode = '';
-// }

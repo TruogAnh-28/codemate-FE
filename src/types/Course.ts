@@ -47,7 +47,6 @@ export interface CourseDetail {
   completedLessons: string
   timeSpent: string
   assignmentsDone: string
-
 }
 export interface Lesson {
   id: string
