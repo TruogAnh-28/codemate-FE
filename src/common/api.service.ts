@@ -4,12 +4,12 @@ import { IResponseData } from "@/modals/apis/response";
 
 interface ApiService {
   init(): void;
-  query<T>(resource: string, params?: object, showError?: (message: string) => void): Promise<IResponseData<T>>;
-  get<T>(resource: string, slug?: string, showError?: (message: string) => void): Promise<IResponseData<T>>;
-  post<T>(resource: string, params: object, showError?: (message: string) => void): Promise<IResponseData<T>>;
-  update<T>(resource: string, slug: string, params: object, showError?: (message: string) => void): Promise<IResponseData<T>>;
-  put<T>(resource: string, params: object, showError?: (message: string) => void): Promise<IResponseData<T>>;
-  delete<T>(resource: string, showError?: (message: string) => void): Promise<IResponseData<T>>;
+  query<T>(resource: string, params?: object, showError?: (message: string) => void, showSuccess?: (message: string) => void): Promise<IResponseData<T>>;
+  get<T>(resource: string, slug?: string, showError?: (message: string) => void, showSuccess?: (message: string) => void): Promise<IResponseData<T>>;
+  post<T>(resource: string, params: object, showError?: (message: string) => void, showSuccess?: (message: string) => void): Promise<IResponseData<T>>;
+  update<T>(resource: string, slug: string, params: object, showError?: (message: string) => void, showSuccess?: (message: string) => void): Promise<IResponseData<T>>;
+  put<T>(resource: string, params: object, showError?: (message: string) => void, showSuccess?: (message: string) => void): Promise<IResponseData<T>>;
+  delete<T>(resource: string, showError?: (message: string) => void, showSuccess?: (message: string) => void): Promise<IResponseData<T>>;
   handleError(error: AxiosError, showError?: (message: string) => void): never;
 }
 
@@ -18,39 +18,57 @@ const ApiService: ApiService = {
     axios.defaults.baseURL = V1_API_URL;
   },
 
-  query<T>(resource: string, params?: object, showError?: (message: string) => void): Promise<IResponseData<T>> {
+  query<T>(resource: string, params?: object, showError?: (message: string) => void, showSuccess?: (message: string) => void): Promise<IResponseData<T>> {
     return axios.get<IResponseData<T>>(resource, { params })
-      .then(response => response.data)
+      .then(response => {
+        if (showSuccess) showSuccess("API request was successful!");
+        return response.data;
+      })
       .catch(error => this.handleError(error, showError));
   },
 
-  get<T>(resource: string, slug = "", showError?: (message: string) => void): Promise<IResponseData<T>> {
+  get<T>(resource: string, slug = "", showError?: (message: string) => void, showSuccess?: (message: string) => void): Promise<IResponseData<T>> {
     return axios.get<IResponseData<T>>(`${resource}/${slug}`)
-      .then(response => response.data)
+      .then(response => {
+        if (showSuccess) showSuccess("API request was successful!");
+        return response.data;
+      })
       .catch(error => this.handleError(error, showError));
   },
 
-  post<T>(resource: string, params: object, showError?: (message: string) => void): Promise<IResponseData<T>> {
+  post<T>(resource: string, params: object, showError?: (message: string) => void, showSuccess?: (message: string) => void): Promise<IResponseData<T>> {
     return axios.post<IResponseData<T>>(`${resource}`, params)
-      .then(response => response.data)
+      .then(response => {
+        if (showSuccess) showSuccess("API request was successful!");
+        return response.data;
+      })
       .catch(error => this.handleError(error, showError));
   },
 
-  update<T>(resource: string, slug: string, params: object, showError?: (message: string) => void): Promise<IResponseData<T>> {
+  update<T>(resource: string, slug: string, params: object, showError?: (message: string) => void, showSuccess?: (message: string) => void): Promise<IResponseData<T>> {
     return axios.put<IResponseData<T>>(`${resource}/${slug}`, params)
-      .then(response => response.data)
+      .then(response => {
+        if (showSuccess) showSuccess("API request was successful!");
+        return response.data;
+      })
       .catch(error => this.handleError(error, showError));
   },
 
-  put<T>(resource: string, params: object, showError?: (message: string) => void): Promise<IResponseData<T>> {
+  put<T>(resource: string, params: object, showError?: (message: string) => void, showSuccess?: (message: string) => void): Promise<IResponseData<T>> {
     return axios.put<IResponseData<T>>(`${resource}`, params)
-      .then(response => response.data)
+      .then(response => {
+        if (showSuccess) showSuccess("API request was successful!");
+        return response.data;
+      })
       .catch(error => this.handleError(error, showError));
   },
 
-  delete<T>(resource: string, showError?: (message: string) => void): Promise<IResponseData<T>> {
+  delete<T>(resource: string, showError?: (message: string) => void, showSuccess?: (message: string) => void): Promise<IResponseData<T>> {
     return axios.delete<IResponseData<T>>(resource)
-      .then(response => response.data)
+      .then(response => {
+        if (showSuccess) showSuccess("API request was successful!");
+        return response.data;
+      })
       .catch(error => this.handleError(error, showError));
   },
 

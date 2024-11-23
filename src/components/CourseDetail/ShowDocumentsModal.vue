@@ -19,7 +19,7 @@
           <template v-slot:prepend>
             <v-avatar class="mr-3" rounded="0" size="64">
               <component
-                :is="renderFileTypeIcon(document.type)"
+                :is="renderFileTypeIcon(document?.type)"
                 class="w-full h-full object-contain"
               />
             </v-avatar>
@@ -30,11 +30,11 @@
           </v-list-item-title>
           <v-list-item-subtitle class="text-body-base-1 text-primary-variant">
             <a
-              :href="document.documentUrl"
+              :href="document.url"
               target="_blank"
               rel="noopener noreferrer"
             >
-              {{ document.documentUrl }}
+              {{ document.url }}
             </a>
           </v-list-item-subtitle>
         </v-list-item>
@@ -60,7 +60,7 @@
 
 <script lang="ts" setup>
 import { renderFileTypeIcon } from "@/utils/functions/render";
-import { Document } from "@/types/Course";
+import { DocumentOriginalResponse } from "@/types/Course";
 
 const props = defineProps({
   showModal: {
@@ -68,7 +68,7 @@ const props = defineProps({
     required: true,
   },
   documents: {
-    type: Array as () => Document[],
+    type: Array as () => DocumentOriginalResponse[],
     required: true,
   },
 });

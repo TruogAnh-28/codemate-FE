@@ -4,10 +4,14 @@
     max-width="600px"
     persistent
     scrollable
+    transition="dialog-bottom-transition"
   >
-    <v-card class="rounded-lg shadow-xl bg-white">
+    <v-card class="rounded-lg shadow-xl bg-white transform transition-all">
       <v-card-title class="text-heading-4 font-semibold">
-        Learning Outcomes
+        <div class="text-center">
+          Learning Outcomes
+        </div>
+        <div class="text-center font-medium mt-2">{{ nameCourse }}</div>
       </v-card-title>
 
       <v-card-text class="p-6 max-h-[60vh] overflow-y-auto">
@@ -45,35 +49,71 @@ const props = defineProps({
   outcomes: {
     type: Array,
     required: true
+  },
+  nameCourse: {
+    type: String,
+    required: true
   }
 });
 
-// Local state to track modal visibility
 const localShow = ref(props.show);
 
-// Watch the "show" prop to update localShow when it's changed
 watch(
   () => props.show,
   (newVal: boolean) => {
-    console.log('Modal visibility changed:', newVal); // Log changes for debugging
     localShow.value = newVal;
   }
 );
 
-// Emit the update:show event when the modal is closed
 const emit = defineEmits();
 
 const closeModal = () => {
   localShow.value = false;
-  emit('update:show', false); // Notify the parent component to close the modal
+  emit('update:show', false);
 };
-
-// const updateShow = (value: boolean) => {
-//   localShow.value = value;
-//   emit('update:show', value); // Emit the updated visibility value
-// };
 </script>
 
 <style scoped>
-/* Scoped styles for the modal (if needed) */
+.v-dialog .v-card {
+  transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+  animation: fadeInUp 0.5s ease-out;
+}
+
+@keyframes fadeInUp {
+  0% {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.v-dialog .v-card-title {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.v-card-title .font-medium {
+  font-weight: 600;
+  margin-top: 0.5rem;
+}
+
+.v-card-text {
+  padding: 24px;
+}
+
+.v-btn {
+  margin-top: 1rem;
+}
+
+.v-dialog .v-card {
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  transform: translateY(0);
+  animation: fadeInUp 0.5s ease-out;
+}
 </style>

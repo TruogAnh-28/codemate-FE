@@ -1,68 +1,89 @@
 <template>
   <v-container>
     <v-row>
-      <v-col v-for="course in courses" :key="course.id" cols="12" class="mb-6">
-        <v-card class="rounded-lg shadow-md">
-          <div class="d-flex p-4 gap-4">
-            <!-- Course Image -->
-            <v-img
-              class="flex-shrink-0"
-              :max-width="300"
-              :max-height="200"
-              :src="course.image"
-              cover
-            >
-              <template v-slot:error>
-                <v-img
-                  :max-width="300"
-                  :max-height="200"
-                  src="../../assets/default-course-avt.svg"
-                  alt="Course Avatar"
-                  cover
-                />
-              </template>
-            </v-img>
+      <v-col
+        v-for="course in props.courses"
+        :key="course.id"
+        cols="12"
+        class="mb-6"
+      >
+        <v-card
+          class="rounded-lg shadow-md course-card"
+          :elevation="2"
+          v-ripple
+        >
+          <div class="d-flex p-4 gap-4 course-content">
+            <!-- Course Image with zoom effect -->
+            <div class="image-container">
+              <v-img
+                class="flex-shrink-0 course-image"
+                width="300px"
+                height="200px"
+                :src="course.image"
+                cover
+              >
+                <template v-slot:error>
+                  <v-img
+                    width="300px"
+                    height="200px"
+                    src="../../assets/default-course-avt.svg"
+                    alt="Course Avatar"
+                    cover
+                  />
+                </template>
+              </v-img>
+            </div>
 
-            <!-- Middle Content -->
-            <div class="flex-grow-1 min-w-0">
-              <!-- Course Title and Date -->
-              <div class="mb-4">
-                <h3 class="text-body-large-1 font-bold text-wrap mb-1">
+            <!-- Middle Content with fixed width -->
+            <div class="flex-grow-1 middle-content">
+              <div class="mb-4 course-header">
+                <h3 class="text-body-large-1 font-bold text-wrap mb-1 course-title">
                   {{ course.name }}
                 </h3>
-                <p class="text-body-small-1 text-text-tetiary">
-                  {{ course.startDate }} to {{ course.endDate }}
+                <p class="text-body-small-1 text-text-tetiary course-date">
+                  {{ course.start_date }} to {{ course.end_date }}
                 </p>
               </div>
 
-              <!-- Avatar Stack -->
-              <AvatarStack :students="course.studentList" :max-visible="3" />
+              <AvatarStack
+                :students="course.student_list"
+                :max-visible="3"
+                class="avatar-stack"
+              />
             </div>
 
-            <div class="flex-shrink-0 min-w-[200px]">
-              <LearningOutcomes :outcomes="course.learningOutcomes" />
+            <!-- Learning Outcomes with fixed width -->
+            <div class="outcomes-section">
+              <LearningOutcomes :outcomes="course.learning_outcomes" :nameCourse="course.name" />
             </div>
 
-            <div class="d-flex flex-column justify-space-between align-end">
+            <!-- Professor Info and Status -->
+            <div class="d-flex flex-column justify-space-between align-end info-section">
               <div class="text-end mb-2">
-                <p class="text-body-base-4 mb-4">
-                  <strong>Professor:</strong> {{ course.professor }}
+                <p class="text-body-base-4 mb-4 professor-info">
+                  <strong>Professor:</strong>
+                  {{ course.professor.professor_name }}
                 </p>
                 <v-chip
                   :color="renderStatusLabel(course.status)"
                   outlined
                   small
-                  class="text-body-small-1"
+                  class="text-body-small-1 status-chip"
                 >
-                  <v-icon left size="18" class="mr-2">mdi-check-circle</v-icon>
+                  <v-icon left size="18" class="mr-2 status-icon">
+                    mdi-check-circle
+                  </v-icon>
                   {{ course.status }}
                 </v-chip>
               </div>
             </div>
+
+            <!-- View Course Button with hover effect -->
             <v-btn
               color="secondary"
-              :to="`/courselist/course/${course.id}`"
+              @click="viewCourseDetails(course)"
               rounded
+              class="view-button"
             >
               View Course
             </v-btn>
@@ -74,9 +95,117 @@
 </template>
 
 <script lang="ts" setup>
-import { CourseReviewData } from "@/constants/course";
-import { CourseReview } from "@/types/Course";
+import { CoursesListResponse } from "@/types/Course";
 import { renderStatusLabel } from "@/utils/functions/render";
+import { useCourseStore } from '@/stores/courseStore';
 
-const courses = ref<CourseReview[]>(CourseReviewData);
+const router = useRouter();
+const props = defineProps<{
+  courses: CoursesListResponse[];
+}>();
+
+const store = useCourseStore();
+
+const viewCourseDetails = (course: CoursesListResponse) => {
+  store.setCourseDetails(course);
+  router.push({ path: '/courselist/course/' + course.id });
+};
 </script>
+
+<style scoped>
+.course-card {
+  position: relative;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.course-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+}
+
+.course-content {
+  position: relative;
+  height: 200px;
+}
+
+.image-container {
+  width: 300px;
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+.course-image {
+  transition: transform 0.5s ease;
+}
+
+.image-container:hover .course-image {
+  transform: scale(1.05);
+}
+
+.middle-content {
+  width: 300px; /* Fixed width */
+  padding: 0 16px;
+}
+
+.course-title {
+  position: relative;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.outcomes-section {
+  width: 400px; /* Fixed width */
+  padding: 0 16px;
+}
+
+.info-section {
+  width: 200px; /* Fixed width */
+  padding: 0 16px;
+}
+
+.professor-info {
+  transition: transform 0.3s ease;
+}
+
+.professor-info:hover {
+  transform: translateX(-4px);
+}
+
+.status-chip {
+  transition: all 0.3s ease;
+}
+
+.status-chip:hover {
+  transform: scale(1.05);
+}
+
+.status-icon {
+  transition: transform 0.3s ease;
+}
+
+.status-chip:hover .status-icon {
+  transform: rotate(360deg);
+}
+
+.view-button {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  transition: all 0.3s ease;
+}
+
+.view-button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.avatar-stack {
+  transition: transform 0.3s ease;
+}
+
+.avatar-stack:hover {
+  transform: translateX(4px);
+}
+</style>

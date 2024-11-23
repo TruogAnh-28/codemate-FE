@@ -2,7 +2,7 @@
   <div class="space-y-6">
     <!-- Exercise List -->
     <v-container>
-      <v-row v-for="(exercise, index) in exercises" :key="index" align="center">
+      <v-row v-for="(exercise, index) in getAllExercises(course)" :key="index" align="center">
         <!-- Exercise Item -->
         <v-col cols="12">
           <v-card class="rounded-lg shadow-md p-4">
@@ -16,10 +16,6 @@
                 </div>
               </v-col>
               <v-col cols="3" class="text-center">
-                <div class="text-body-base-3 font-medium">
-                  Questions:
-                  <span class="font-bold">{{ exercise.questions.length }}</span>
-                </div>
                 <v-chip
                   :color="renderStatusLabel(exercise.status)"
                   outlined
@@ -44,15 +40,22 @@
 </template>
 
 <script lang="ts" setup>
-import { Exercise } from "@/types/Course";
+import { CourseDetailResponse, ExerciseOriginalResponse, LessonOriginalResponse } from "@/types/Course";
 import { renderStatusLabel } from "@/utils/functions/render";
 
 defineProps<{
-  exercises: Exercise[];
+  course: CourseDetailResponse;
 }>();
-const startExercise = (exercise: Exercise) => {
+
+const exercises = ref<ExerciseOriginalResponse[]>([]);
+function getAllExercises(course: CourseDetailResponse) {
+  // Fetch all exercises for the course
+  exercises.value = course.lessons.flatMap((lesson: LessonOriginalResponse) => lesson.exercises);
+  return exercises.value;
+}
+const startExercise = (exercise: ExerciseOriginalResponse) => {
   console.log(
-    `Starting ${exercise.name} with ${exercise.questions.length} questions.`
+    `Starting ${exercise.name} `
   );
 };
 </script>

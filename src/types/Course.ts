@@ -1,90 +1,77 @@
-import { DateString, DateTimeString, DocumentType, Status} from "@/utils/commonType"
-
-
-
-
-
-
-export interface StudentReview {
-  name: string,
-  email: string,
-  studentId: string,
-  avatar: string
+import { UUID, DateString, DateTimeString, DocumentType, Status} from "@/utils/commonType"
+export interface CoursesListDashBoardRequest{
+  student_id: UUID
+  offset: number
+  page_size: number
+}
+export interface CoursesListPaginatedResponse {
+  content: CoursesListResponse[]
+  currentPage: number
+  pageSize: number
+  totalRows: number
+  totalPages: number
 }
 
-export interface CourseReview {
-  id: string
+export interface CoursesListResponse {
+  id: UUID
   name: string
-  startDate: DateString
-  endDate: DateString
-  studentList: StudentReview[]
-  learningOutcomes: string[]
-  professor: string
-  status: Status
+  start_date: DateTimeString
+  end_date: DateTimeString
+  student_list: StudentOfCourseListModal[]
+  learning_outcomes: string[]
+  professor: ProfessorInformation
+  status: string
   image: string
-  percentageComplete: string
+  percentage_complete: string
+  last_accessed: DateTimeString
 }
 
-export interface CourseRecent {
-  id: string
-  name: string
-  learningOutcomes: string[]
-  lastAccessed: DateTimeString
-  percentageComplete: string
-  status: Status
+export interface StudentOfCourseListModal {
+  student_id: UUID
+  student_name: string
+  student_email: string
+  student_avatar: string
 }
 
-export interface CourseDetail {
-  id: string
-  name: string
-  learningOutcomes: string[]
-  professor: string
-  startDate: DateString
-  endDate: DateString
-  status: Status
-  percentageComplete: string
-  image: string
-  lastAccessed: DateTimeString
-  studentList: StudentReview[]
-  lessons: Lesson[]
-  exercises: Exercise[]
-  recommendedLessons: RecommendedLesson[]
-  completedLessons: string
-  timeSpent: string
-  assignmentsDone: string
+export interface ProfessorInformation {
+  professor_id: UUID
+  professor_name: string
+  professor_email: string
+  professor_avatar: string
 }
-export interface Lesson {
+export interface CourseDetailResponse {
+  course_id: UUID
+  student_id: UUID
+  completed_lessons: number
+  time_spent: string
+  assignments_done: number
+  lessons: LessonOriginalResponse[]
+}
+
+export interface LessonOriginalResponse {
+  id: UUID
+  title: string
+  description: string
+  lesson_type: string
+  bookmark: boolean
+  order: number
+  status: string
+  exercises: ExerciseOriginalResponse[]
+  documents: DocumentOriginalResponse[]
+}
+
+export interface ExerciseOriginalResponse {
+  id: UUID
+  name: string
+  description: string
+  status: string
+  type: string
+}
+
+export interface DocumentOriginalResponse {
   id: string
   name: string
   description: string
-  documents: Document[]
-  bookmarked: boolean
-}
-
-export interface Document {
-  id: string
-  name: string
   type: DocumentType
-  documentUrl: string
-}
-
-export interface Exercise {
-  id: string
-  name: string
-  description: string
-  questions: Question[]
-  status: Status
-}
-
-export interface Question {
-  id: string
-  question: string
-  options: string[]
-  correctAnswer: string
-}
-
-export interface RecommendedLesson {
-  id: string
-  lessonId: string
-  bookmarked: boolean
+  url: string
 }
