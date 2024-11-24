@@ -1,7 +1,9 @@
-// CourseSidebar.vue
 <template>
   <div>
-    <RecommendationCard @open-recommendation="$emit('open-recommendation')" />
+    <RecommendationCard
+      @open-recommendation="$emit('open-recommendation')"
+      @open-course-recommendations="openRecommendationsModal"
+    />
 
     <ProgressStats
       v-if="course"
@@ -20,22 +22,44 @@
         @submitGoal="$emit('submit-goal', $event)"
       />
     </v-dialog>
+
+    <CourseRecommendLessons
+      v-if="showRecommendationsModal"
+      :show-modal="showRecommendationsModal"
+      @update:show-modal="updateRecommendationsModal"
+      @close="closeRecommendationsModal"
+    />
   </div>
 </template>
 
 <script lang="ts" setup>
 import { CourseDetailResponse } from "@/types/Course";
 
-const props = defineProps<{
+const showRecommendationsModal = ref(false);
+
+defineProps<{
   course: CourseDetailResponse | null;
   dialog: boolean;
 }>();
 
 const emit = defineEmits<{
   'open-recommendation': [];
+  'open-course-recommendations': [];
   'update:dialog': [value: boolean];
   'submit-goal': [goal: string];
 }>();
+
+const openRecommendationsModal = () => {
+  showRecommendationsModal.value = true;
+};
+
+const closeRecommendationsModal = () => {
+  showRecommendationsModal.value = false;
+};
+
+const updateRecommendationsModal = (value: boolean) => {
+  showRecommendationsModal.value = value;
+};
 
 const handleDialogUpdate = (value: unknown) => {
   if (typeof value === 'boolean') {

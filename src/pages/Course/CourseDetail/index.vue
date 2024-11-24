@@ -30,29 +30,40 @@ import { coursesService } from "@/services/courseslistServices";
 import { User } from "@/constants/user";
 
 const store = useCourseStore();
-const getCourseInformationFromCoursesListPage = computed(() => store.getCourseDetails);
+const getCourseInformationFromCoursesListPage = computed(
+  () => store.getCourseDetails
+);
 const course = ref<CourseDetailResponse | null>(null);
 const activeTab = ref("description");
 const dialog = ref(false);
 const showError = inject("showError") as (message: string) => void;
-const showSuccess = inject("showSuccess") as (message: string) => void;
 
 const tabs = [
-  { label: "Description", value: "description" },
-  { label: "Lessons", value: "lessons" },
-  { label: "Exercises", value: "exercises" },
-  { label: "Recommendations", value: "recommendlessons" },
+  {
+    label: "Description",
+    value: "description",
+    tooltip: `This is the Learning Outcomes which uploaded by your Professor: ${getCourseInformationFromCoursesListPage.value?.professor.professor_name}`,
+  },
+  {
+    label: "Lessons",
+    value: "lessons",
+    tooltip: `Course's lessons with documents which uploaded by your Professor: ${getCourseInformationFromCoursesListPage.value?.professor.professor_name}`,
+  },
+  {
+    label: "Exercises",
+    value: "exercises",
+    tooltip: `Course's exercises which uploaded by your Professor:  ${getCourseInformationFromCoursesListPage.value?.professor.professor_name}`,
+  },
 ];
 
 const fetchCourseDetail = async () => {
-  const response = await coursesService.fetchCourseDetail(
+  const response = (await coursesService.fetchCourseDetail(
     showError,
     User.course_id,
     User.id
-  ) as CourseDetailResponse;
+  )) as CourseDetailResponse;
   if (response) {
     course.value = response;
-    showSuccess("Course details loaded successfully");
   }
 };
 

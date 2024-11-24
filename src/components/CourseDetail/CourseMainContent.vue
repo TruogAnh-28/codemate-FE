@@ -1,4 +1,3 @@
-// CourseMainContent.vue
 <template>
   <v-card class="p-6">
     <CourseBanner
@@ -13,14 +12,18 @@
       grow
       dark
     >
-      <v-tab
-        v-for="tab in tabs"
-        :key="tab.value"
-        :value="tab.value"
-        class="text-secondary font-bold"
-      >
-        {{ tab.label }}
-      </v-tab>
+      <v-tooltip v-for="tab in tabs" :key="tab.value" top>
+        <template v-slot:activator="{ props: activatorProps }">
+          <v-tab
+            v-bind="activatorProps"
+            :value="tab.value"
+            class="text-secondary font-bold"
+          >
+            {{ tab.label }}
+          </v-tab>
+        </template>
+        <span>{{ tab.tooltip }}</span>
+      </v-tooltip>
     </v-tabs>
 
     <v-window
@@ -40,10 +43,6 @@
       <v-window-item value="exercises">
         <CourseExercises v-if="course" :course="course" />
       </v-window-item>
-
-      <v-window-item value="recommendlessons">
-        <!-- <CourseRecommendLessons :course="course" /> -->
-      </v-window-item>
     </v-window>
   </v-card>
 </template>
@@ -54,6 +53,7 @@ import { CourseDetailResponse, CoursesListResponse } from "@/types/Course";
 interface Tab {
   label: string;
   value: string;
+  tooltip: string;
 }
 
 defineProps<{

@@ -3,6 +3,7 @@ import {
   CoursesListDashBoardRequest,
   CoursesListPaginatedResponse,
   CourseDetailResponse,
+  GetRecommendedLessonsResponse,
 } from "@/types/Course";
 export const coursesService = {
   async fetchCoursesList(
@@ -71,4 +72,28 @@ export const coursesService = {
       return false;
     }
   },
+  async getRecommendedLessons(
+    showError: (message: string) => void,
+    student_id: string,
+    course_id: string,
+  ){
+    try
+    {
+      const response = await ApiService.get<GetRecommendedLessonsResponse[]>(
+        `courses/${course_id}/students/${student_id}/lessons_recommendation`
+      );
+
+      if (response && response.data && response.isSuccess) {
+        return response.data;
+      } else {
+        console.error("Failed to fetch recommended lessons.");
+        return null;
+      }
+    }
+    catch (error) {
+      console.error("Error fetching recommended lessons:", error);
+      return null;
+    }
+
+  }
 };

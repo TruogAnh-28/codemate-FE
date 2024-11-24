@@ -75,3 +75,14 @@ export interface DocumentOriginalResponse {
   type: DocumentType
   url: string
 }
+
+
+export interface GetRecommendedLessonsResponse {
+  course_id: string
+  lesson_id: string
+  bookmark: boolean
+  status: string
+  title: string
+  description: string
+  order: number
+}
