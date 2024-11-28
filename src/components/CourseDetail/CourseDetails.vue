@@ -3,7 +3,7 @@
     <div class="d-flex align-center mb-2 text-body-small-2">
       <v-icon size="18" color="primary" class="mr-1">mdi-calendar</v-icon>
       <span>
-        {{ courseInfo?.start_date }} to {{ courseInfo?.end_date }}
+        {{ formatStart_EndDate(courseInfo?.start_date || "")  }} to {{ formatStart_EndDate(courseInfo?.end_date || "") }}
       </span>
     </div>
     <div class="d-flex align-center mb-2 text-body-small-2">
@@ -19,6 +19,7 @@
 
 <script lang="ts" setup>
 import { CourseDetailResponse } from "@/types/Course";
+import { formatStart_EndDate } from "@/utils/functions/time";
 
 defineProps<{
   courseInfo: {

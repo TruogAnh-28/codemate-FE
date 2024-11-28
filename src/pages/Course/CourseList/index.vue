@@ -1,14 +1,9 @@
 <template>
   <v-app>
     <v-main class="pt-0 pb-2 pl-4 pr-4 bg-gray-50">
-      <!-- Recent Courses - Original Position -->
       <RecentCourses :courses="courses" />
-
-      <!-- My Courses Section - Original Position -->
       <section>
         <h2 class="text-heading-4 font-semibold mb-6">My Courses</h2>
-
-        <!-- Search Bar - Original Position -->
         <v-text-field
           v-model="searchQuery"
           placeholder="Search"
@@ -34,13 +29,9 @@
             </v-fade-transition>
           </template>
         </v-text-field>
-
-        <!-- Course Items -->
         <div class="space-y-4 mt-6">
           <CourseItem :courses="courses" />
         </div>
-
-        <!-- Pagination Controls -->
         <v-pagination
           v-if="totalPages > 1"
           v-model="currentPage"

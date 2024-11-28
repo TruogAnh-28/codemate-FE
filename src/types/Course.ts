@@ -79,6 +79,7 @@ export interface DocumentOriginalResponse {
 
 export interface GetRecommendedLessonsResponse {
   course_id: string
+  course_name: string
   lesson_id: string
   bookmark: boolean
   status: string

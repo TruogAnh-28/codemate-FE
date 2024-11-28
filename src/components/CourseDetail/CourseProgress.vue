@@ -1,6 +1,6 @@
 <template>
   <v-col cols="12" md="6" class="text-center">
-    <div class="text-heading-3 font-weight-bold mb-1">
+    <div class="text-heading-3 font-weight-bold mb-1 text-error">
       {{ courseInfo?.percentage_complete }}%
     </div>
     <v-chip

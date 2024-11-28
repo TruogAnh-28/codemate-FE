@@ -42,31 +42,14 @@ export const formatDateTime = (dateString: string): string => {
   }
 };
 export const formatTime = (timeString: string): string => {
-  const [hours, minutes, seconds] = timeString.split(":").map(Number);
+  const [hours, minutes, seconds] = timeString.split(':').map(Number);
+  const roundedMinutes = Math.round(minutes + seconds / 60);
+  const finalHours = hours + Math.floor(roundedMinutes / 60);
+  const finalMinutes = roundedMinutes % 60;
+  return `${finalHours} hours and ${finalMinutes} minutes`;
+}
 
-  // Initialize an array to hold the readable parts
-  const parts: string[] = [];
-
-  // Format the hours part
-  if (hours > 0) {
-    parts.push(`${hours} hour${hours > 1 ? 's' : ''}`);
-  }
-
-  // Format the minutes part
-  if (minutes > 0) {
-    parts.push(`${minutes} minute${minutes > 1 ? 's' : ''}`);
-  }
-
-  // Format the seconds part
-  if (seconds > 0) {
-    parts.push(`${seconds} second${seconds > 1 ? 's' : ''}`);
-  }
-
-  // If all parts are zero, return "0 hour"
-  if (parts.length === 0) {
-    return "0 hour";
-  }
-
-  // Join the parts with " and " for readability
-  return parts.join(' and ');
+export const formatStart_EndDate = (date: string): string => {
+  const [year, month, day] = date.split('-');
+  return `${day}/${month}/${year}`;
 }

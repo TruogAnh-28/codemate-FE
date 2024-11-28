@@ -59,7 +59,7 @@ const tabs = [
 const fetchCourseDetail = async () => {
   const response = (await coursesService.fetchCourseDetail(
     showError,
-    User.course_id,
+    getCourseInformationFromCoursesListPage.value?.id || '',
     User.id
   )) as CourseDetailResponse;
   if (response) {
