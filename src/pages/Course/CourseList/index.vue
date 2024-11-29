@@ -6,15 +6,15 @@
         <h2 class="text-heading-4 font-semibold mb-6">My Courses</h2>
         <v-text-field
           v-model="searchQuery"
-          placeholder="Search"
-          class="mt-4 w-full rounded-lg shadow-sm"
+          placeholder="You can search by course name and your professor's name here ... 🌸🎆"
+          class="mt-4 w-full rounded-lg shadow-sm bg-on-primary"
           :loading="isLoading"
           solo
           append-inner-icon="mdi-magnify"
           outlined
           dense
           hide-details
-          @update:model-value="handleSearch"
+          @input="handleSearch"
         >
           <template v-slot:append>
             <v-fade-transition>
@@ -22,7 +22,7 @@
                 v-if="searchQuery"
                 color="gray"
                 class="cursor-pointer"
-                @click="searchQuery = ''"
+                @click="clearSearch"
               >
                 mdi-close
               </v-icon>
@@ -37,7 +37,6 @@
           v-model="currentPage"
           :length="totalPages"
           :total-visible="5"
-          @input="fetchCourses"
         />
       </section>
     </v-main>
@@ -50,29 +49,43 @@ import {
   CoursesListDashBoardRequest,
   CoursesListResponse,
 } from "@/types/Course";
-
 import { User } from "@/constants/user";
+import useDebounce from "@/composables/useDebounce";
+import { PAGE_SIZE_OF_COURSE_LIST } from "@/constants/courses";
+
 const searchQuery = ref<string>("");
 const currentPage = ref<number>(1);
 const totalPages = ref<number>(1);
 const isLoading = ref<boolean>(false);
 const courses = ref<CoursesListResponse[]>([]);
 
+const debouncedSearch = useDebounce.useDebounceFn(() => {
+  fetchCourses();
+}, 500);
+
 const handleSearch = () => {
+  currentPage.value = 1;
+  debouncedSearch();
+};
+
+const clearSearch = () => {
+  searchQuery.value = "";
   currentPage.value = 1;
   fetchCourses();
 };
-const showError = inject("showError") as (message: string) => void;
 
-const courseReviewRequest: CoursesListDashBoardRequest = {
-  student_id: User.id,
-  offset: 0,
-  page_size: 10,
-};
+const showError = inject("showError") as (message: string) => void;
 
 const fetchCourses = async () => {
   isLoading.value = true;
   try {
+    const courseReviewRequest: CoursesListDashBoardRequest = {
+      student_id: User.id,
+      offset: (currentPage.value - 1) * PAGE_SIZE_OF_COURSE_LIST,
+      page_size: PAGE_SIZE_OF_COURSE_LIST,
+      search_query: searchQuery.value || undefined,
+    };
+
     const response = (await coursesService.fetchCoursesList(
       showError,
       courseReviewRequest
@@ -95,7 +108,12 @@ const fetchCourses = async () => {
   }
 };
 
-watchEffect(() => {
+// Watch for changes in currentPage and trigger API call
+watch(currentPage, () => {
+  fetchCourses();
+});
+
+onMounted(() => {
   fetchCourses();
 });
 </script>

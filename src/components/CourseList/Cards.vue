@@ -79,12 +79,15 @@
     </v-slide-group>
   </v-container>
 </template>
+
 <script lang="ts" setup>
 import { CoursesListResponse } from "@/types/Course";
 import { formatDateTime } from "@/utils/functions/time";
+
 const props = defineProps<{
   response: CoursesListResponse[];
 }>();
+
 const model = ref(0);
 
 const slideGroupProps = {

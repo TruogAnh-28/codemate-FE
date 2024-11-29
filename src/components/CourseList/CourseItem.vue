@@ -41,7 +41,7 @@
                   {{ course.name }}
                 </h3>
                 <p class="text-body-small-1 text-text-tetiary course-date">
-                  {{ course.start_date }} to {{ course.end_date }}
+                  {{ formatStart_EndDate(course.start_date)  }} to {{ formatStart_EndDate(course.end_date)  }}
                 </p>
               </div>
 
@@ -97,6 +97,7 @@
 <script lang="ts" setup>
 import { CoursesListResponse } from "@/types/Course";
 import { renderStatusLabel } from "@/utils/functions/render";
+import { formatStart_EndDate } from "@/utils/functions/time";
 const props = defineProps<{
   courses: CoursesListResponse[];
 }>();

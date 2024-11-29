@@ -1,8 +1,9 @@
 import { UUID, DateString, DateTimeString, DocumentType, Status} from "@/utils/commonType"
 export interface CoursesListDashBoardRequest{
   student_id: UUID
-  offset: number
-  page_size: number
+  offset?: number
+  page_size?: number
+  search_query?: string
 }
 export interface CoursesListPaginatedResponse {
   content: CoursesListResponse[]
