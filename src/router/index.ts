@@ -64,7 +64,7 @@ const StudentRoutes = [
         props: true,
       }
     ]
-  },  
+  },
   {
     path: '/',
     name: '',

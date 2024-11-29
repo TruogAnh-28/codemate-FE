@@ -24,6 +24,7 @@
     </v-dialog>
 
     <CourseRecommendLessons
+    :course="course"
       v-if="showRecommendationsModal"
       :show-modal="showRecommendationsModal"
       @update:show-modal="updateRecommendationsModal"

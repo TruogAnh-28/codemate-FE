@@ -1,7 +1,7 @@
 <template>
   <v-img
-    :src="getAvatarCourseUrl(courseInfo?.image ?? '')"
-    :alt="courseInfo?.name"
+    :src="getAvatarCourseUrl(course?.course_image ?? '')"
+    :alt="course?.course_name"
     class="w-full h-full"
   >
     <template v-slot:error>
@@ -16,10 +16,8 @@
 
 <script lang="ts" setup>
 import { getAvatarCourseUrl } from "@/utils/functions/functions";
+import { CourseDetailResponse } from "@/types/Course";
 defineProps<{
-  courseInfo: {
-    image: string;
-    name: string;
-  } | null;
+  course: CourseDetailResponse | null;
 }>();
 </script>

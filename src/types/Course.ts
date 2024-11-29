@@ -20,7 +20,7 @@ export interface CoursesListResponse {
   student_list: StudentOfCourseListModal[]
   learning_outcomes: string[]
   professor: ProfessorInformation
-  status: string
+  status: Status
   image: string
   percentage_complete: string
   last_accessed: DateTimeString
@@ -40,8 +40,16 @@ export interface ProfessorInformation {
   professor_avatar: string
 }
 export interface CourseDetailResponse {
-  course_id: UUID
-  student_id: UUID
+  course_id: string
+  course_name: string
+  course_start_date: DateString
+  course_end_date: DateString
+  course_learning_outcomes: string[]
+  course_professor: ProfessorInformation
+  course_status: Status
+  course_image: string
+  course_percentage_complete: string
+  course_last_accessed: string
   completed_lessons: number
   time_spent: string
   assignments_done: number

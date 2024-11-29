@@ -21,7 +21,7 @@ export const dashboardService = {
       );
 
       if (response && response.data && response.isSuccess) {
-        return response.data.course;
+        return response.data;
       } else {
         console.error("Failed to fetch courses.");
         return null;

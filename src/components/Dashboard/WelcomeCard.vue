@@ -23,13 +23,14 @@
 
         <p class="text-gray-600 leading-relaxed">
           Glad to see you again! Keep up the momentum in your
-          <span class="font-medium">{{ recentCourse }}</span> course.
+          <span class="font-medium">{{ recentCourse.course }}</span> course.
         </p>
 
         <v-btn
           variant="text"
           color="primary"
           class="px-4 py-2 mt-2 font-medium hover:bg-blue-50 transition-colors"
+          :to="`/courselist/course/${recentCourse.course_id}`"
         >
           Tap to learn
           <v-icon end icon="mdi-arrow-right" class="ml-1" />
@@ -40,8 +41,10 @@
 </template>
 
 <script setup lang="ts">
+import { WelcomeMessageResponse } from '@/types/Dashboard';
+
 defineProps<{
   studentName: string;
-  recentCourse: string;
+  recentCourse: WelcomeMessageResponse;
 }>();
 </script>

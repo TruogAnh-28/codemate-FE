@@ -3,7 +3,6 @@
     <v-row>
       <v-col cols="12" md="8">
         <CourseMainContent
-          :course-info="getCourseInformationFromCoursesListPage"
           :course="course"
           :active-tab="activeTab"
           @update:active-tab="activeTab = $event"
@@ -24,15 +23,14 @@
 </template>
 
 <script lang="ts" setup>
-import { useCourseStore } from "@/stores/courseStore";
 import { CourseDetailResponse } from "@/types/Course";
 import { coursesService } from "@/services/courseslistServices";
 import { User } from "@/constants/user";
 
-const store = useCourseStore();
-const getCourseInformationFromCoursesListPage = computed(
-  () => store.getCourseDetails
-);
+const props = defineProps<{
+  id: string;
+}>();
+const id = props.id;
 const course = ref<CourseDetailResponse | null>(null);
 const activeTab = ref("description");
 const dialog = ref(false);
@@ -42,24 +40,24 @@ const tabs = [
   {
     label: "Description",
     value: "description",
-    tooltip: `This is the Learning Outcomes which uploaded by your Professor: ${getCourseInformationFromCoursesListPage.value?.professor.professor_name}`,
+    tooltip: `This is the Learning Outcomes which uploaded by your Professor: ${course.value?.course_professor.professor_name}`,
   },
   {
     label: "Lessons",
     value: "lessons",
-    tooltip: `Course's lessons with documents which uploaded by your Professor: ${getCourseInformationFromCoursesListPage.value?.professor.professor_name}`,
+    tooltip: `Course's lessons with documents which uploaded by your Professor: ${course.value?.course_professor.professor_name}`,
   },
   {
     label: "Exercises",
     value: "exercises",
-    tooltip: `Course's exercises which uploaded by your Professor:  ${getCourseInformationFromCoursesListPage.value?.professor.professor_name}`,
+    tooltip: `Course's exercises which uploaded by your Professor:  ${course.value?.course_professor.professor_name}`,
   },
 ];
 
 const fetchCourseDetail = async () => {
   const response = (await coursesService.fetchCourseDetail(
     showError,
-    getCourseInformationFromCoursesListPage.value?.id || '',
+    id,
     User.id
   )) as CourseDetailResponse;
   if (response) {
@@ -77,7 +75,6 @@ const handleGoalSubmission = (goal: string) => {
 };
 
 onMounted(() => {
-  store.loadCourseDetails();
   fetchCourseDetail();
 });
 </script>

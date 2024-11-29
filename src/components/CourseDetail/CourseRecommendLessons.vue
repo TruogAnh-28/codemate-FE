@@ -92,10 +92,10 @@
 <script lang="ts" setup>
 import { coursesService } from "@/services/courseslistServices";
 import { User } from "@/constants/user";
-import { GetRecommendedLessonsResponse } from "@/types/Course";
-import { useCourseStore } from "@/stores/courseStore";
+import { CourseDetailResponse, GetRecommendedLessonsResponse } from "@/types/Course";
 const props = defineProps<{
   showModal: boolean;
+  course: CourseDetailResponse | null;
 }>();
 
 defineEmits<{
@@ -112,10 +112,6 @@ const courseName = ref<string>("");
 const showError = inject("showError") as (message: string) => void;
 const showSuccess = inject("showSuccess") as (message: string) => void;
 const router = useRouter();
-const store = useCourseStore();
-const getCourseInformationFromCoursesListPage = computed(
-  () => store.getCourseDetails
-);
 const fetchRecommendedLessons = async () => {
   try {
     loading.value = true;
@@ -123,13 +119,13 @@ const fetchRecommendedLessons = async () => {
     const response = await coursesService.getRecommendedLessons(
       showError,
       User.id,
-      getCourseInformationFromCoursesListPage.value?.id || ""
+      props.course?.course_id ?? ""
     );
     if (response) {
       recommendedLessons.value = response;
       courseName.value = response[0].course_name;
     } else {
-      error.value = "Failed to load recommended lessons";
+      showError("Failed to fetch recommended lessons");
     }
   } catch (err) {
     error.value = "An error occurred while loading recommendations";

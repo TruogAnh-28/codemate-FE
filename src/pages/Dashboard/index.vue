@@ -13,9 +13,7 @@
       <RecentActivityCard :activities="activities" />
     </div>
 
-    <CourseListCard
-      :courses="courses"
-    />
+    <CourseListCard :courses="courses" />
 
     <FeedbackLesson
       v-model:showModal="showFeedbackDialog"
@@ -25,51 +23,71 @@
 </template>
 
 <script setup lang="ts">
-import { dashboardService } from '@/services/dashboardService';
+import { dashboardService } from "@/services/dashboardService";
 import { User } from "@/constants/user";
-import { RecentActivitiesResponse, RecentActivitiesRequest } from '@/types/Dashboard';
-import { CoursesListDashBoardRequest, CoursesListPaginatedResponse } from '@/types/Course';
+import {
+  RecentActivitiesResponse,
+  RecentActivitiesRequest,
+  WelcomeMessageResponse,
+} from "@/types/Dashboard";
+import {
+  CoursesListDashBoardRequest,
+  CoursesListPaginatedResponse,
+} from "@/types/Course";
 const courses = ref<CoursesListPaginatedResponse>({
   content: [],
   currentPage: 0,
   pageSize: 0,
   totalRows: 0,
-  totalPages: 0
+  totalPages: 0,
 });
 const activities = ref(<RecentActivitiesResponse[]>[]);
-const recentCourse = ref<string>("");
+const recentCourse = ref<WelcomeMessageResponse>({} as WelcomeMessageResponse);
 const showFeedbackDialog = ref(false);
 
 const showError = inject("showError") as (message: string) => void;
-
 
 const recentActivityRequest: RecentActivitiesRequest = {
   student_id: User.id,
   limit: 5,
   offset: 0,
-}
+};
 
 const courseReviewRequest: CoursesListDashBoardRequest = {
   student_id: User.id,
   offset: 0,
   page_size: 10,
-}
+};
 const fetchRecentCourse = async () => {
-  recentCourse.value = await dashboardService.fetchStudentWelcome(showError, User.id) || "";
+  const response = (await dashboardService.fetchStudentWelcome(
+    showError,
+    User.id
+  )) as unknown as WelcomeMessageResponse;
+  if (response) {
+    recentCourse.value = response;
+  } else {
+    showError("Failed to fetch recent course");
+  }
 };
 
 const fetchRecentActivities = async () => {
-  activities.value = await dashboardService.fetchRecentActivities(showError, recentActivityRequest) || [];
+  activities.value =
+    (await dashboardService.fetchRecentActivities(
+      showError,
+      recentActivityRequest
+    )) || [];
 };
 
-
 const fetchCoursesList = async () => {
-  courses.value = await dashboardService.fetchCoursesList(showError, courseReviewRequest) || {
+  courses.value = (await dashboardService.fetchCoursesList(
+    showError,
+    courseReviewRequest
+  )) || {
     content: [],
     currentPage: 0,
     pageSize: 0,
     totalRows: 0,
-    totalPages: 0
+    totalPages: 0,
   };
   console.log(courses.value);
 };

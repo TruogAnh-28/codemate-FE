@@ -81,7 +81,7 @@
             <!-- View Course Button with hover effect -->
             <v-btn
               color="secondary"
-              @click="viewCourseDetails(course)"
+              :to="`/courselist/course/${course.id}`"
               rounded
               class="view-button"
             >
@@ -97,19 +97,10 @@
 <script lang="ts" setup>
 import { CoursesListResponse } from "@/types/Course";
 import { renderStatusLabel } from "@/utils/functions/render";
-import { useCourseStore } from '@/stores/courseStore';
-
-const router = useRouter();
 const props = defineProps<{
   courses: CoursesListResponse[];
 }>();
 
-const store = useCourseStore();
-
-const viewCourseDetails = (course: CoursesListResponse) => {
-  store.setCourseDetails(course);
-  router.push({ path: '/courselist/course/' + course.id });
-};
 </script>
 
 <style scoped>

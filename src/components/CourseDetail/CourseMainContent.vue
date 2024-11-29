@@ -1,7 +1,6 @@
 <template>
   <v-card class="p-6">
     <CourseBanner
-      :course-info="courseInfo"
       :course="course"
     />
 
@@ -32,7 +31,7 @@
     >
       <v-window-item value="description">
         <CourseDescription
-          :learning-outcomes="courseInfo?.learning_outcomes ?? []"
+          :learning-outcomes="course?.course_learning_outcomes ?? []"
         />
       </v-window-item>
 
@@ -48,7 +47,7 @@
 </template>
 
 <script lang="ts" setup>
-import { CourseDetailResponse, CoursesListResponse } from "@/types/Course";
+import { CourseDetailResponse } from "@/types/Course";
 
 interface Tab {
   label: string;
@@ -57,7 +56,6 @@ interface Tab {
 }
 
 defineProps<{
-  courseInfo: CoursesListResponse | null;
   course: CourseDetailResponse | null;
   activeTab: string;
   tabs: Tab[];

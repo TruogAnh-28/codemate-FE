@@ -40,7 +40,6 @@
         </v-list-item>
       </v-list>
 
-      <!-- No Documents Available -->
       <v-list v-else>
         <v-list-item>
           <v-list-item-title>
@@ -77,7 +76,6 @@ const emit = defineEmits(["update:showModal"]);
 
 const internalShowModal = ref(props.showModal);
 
-// Watch for changes in the showModal prop
 watch(
   () => props.showModal,
   (newValue: boolean) => {
@@ -85,7 +83,6 @@ watch(
   }
 );
 
-// Watch for changes in the internal value
 watch(internalShowModal, (newValue: boolean) => {
   if (newValue !== props.showModal) {
     emit("update:showModal", newValue);
