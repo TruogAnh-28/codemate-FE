@@ -1,3 +1,4 @@
+
 /**
  * router/index.ts
  *
@@ -46,7 +47,7 @@ const StudentRoutes = [
         props: true,
       },
       {
-        path: 'Module/:moduleId/Quiz/DoQuiz/:quizId',
+        path: 'Module/:moduleId/Quiz/:quizId',
         name: 'LessonRecommendDoQuiz',
         component: () => import('@/pages/Lesson/DoQuiz/index.vue'),
         props: true,

@@ -1,6 +1,6 @@
 <template>
   <v-dialog v-model="dialog" max-width="500px">
-    <v-card>
+    <v-card class="pa-2">
       <v-card-title class="d-flex align-center">
         <v-icon color="green" class="mr-2">mdi-check-circle</v-icon>
         <span class="text-heading-4 font-bold">Select Your Learning Type</span>
@@ -12,10 +12,10 @@
       </v-card-subtitle>
 
       <v-card-subtitle class="font-weight-bold text-body-large-4 pb-2" style="opacity: 1;">
-        Module: {{ module.introduction }}
+        Module: {{ module.title }}
       </v-card-subtitle>
 
-      <v-card-text>
+      <v-card-text >
         <v-radio-group v-model="selectedOption">
           
           <v-row align="center" class="px-2 pt-2">
@@ -83,7 +83,7 @@ export default defineComponent({
     module: {
       type: Object as () => Module,
       required: true,
-      default: () => ({ id: '', introduction: '', objectives: [] })
+      default: () => ({ id: '', title: '', objectives: [] })
     },
     lessonId: {
       type: String,
@@ -105,7 +105,7 @@ export default defineComponent({
       emit('update:dialog', false);
       
       const lessonId = props.lessonId;
-      const moduleId = props.module.id; 
+      const moduleId = props.module.module_id; 
       
       switch (selectedOption.value) {
         case 'quizzes':

@@ -46,3 +46,51 @@ export interface Document {
     score?: number;
     inputUser?: string;
   }
+  export interface ExampleResponse {
+    title: string;
+    codeSnippet: string;
+    explanation: string;
+  }
+  
+  export interface TheoryContentResponse {
+    title: string;
+    prerequisites: string[];
+    description: string[];
+    examples?: ExampleResponse[]; // Optional examples
+  }
+  
+  export interface PracticalGuideResponse {
+    title: string;
+    steps: string[];
+    commonErrors: string[];
+  }
+  
+  export interface ReferenceResponse {
+    title: string;
+    link: string;
+    description: string;
+  }
+  
+  export interface SummaryAndReviewResponse {
+    keyPoints: string[];
+    reviewQuestions: ReviewQuestionResponse[];
+    quizLink: string;
+  }
+  
+  export interface ReviewQuestionResponse {
+    id: string; // UUID
+    question: string;
+    answer: string;
+    maxscore: number;
+    score?: number; // Optional, for user attempt
+    inputUser?: string; // Optional user input
+  }
+  
+  export interface DocumentResponse {
+    id: string; // UUID
+    name: string;
+    theoryContent: TheoryContentResponse[];
+    practicalGuide: PracticalGuideResponse[];
+    references: ReferenceResponse[];
+    summaryAndReview: SummaryAndReviewResponse;
+  }
