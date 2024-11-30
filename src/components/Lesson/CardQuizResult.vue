@@ -25,7 +25,7 @@
       </v-radio-group>
 
       <!-- Correct answer and explanation -->
-      <p class="text-body-base-4"><strong>Correct Answer:</strong> {{ question.correctAnswer }}</p>
+      <p class="text-body-base-4"><strong>Correct Answer:</strong> {{ question.correct_answer }}</p>
       <p class="text-body-base-4"><strong>Explanation:</strong> {{ question.explanation }}</p>
     </v-card-text>
   </v-card>
@@ -37,22 +37,20 @@ const props = defineProps<{
     text: string;
     image?: string;
     options: string[];
-    correctAnswer: string;
+    correct_answer: string;
     explanation: string;
-    chooseUser?: string;
+    user_choice?: string;
   };
   ordinal: number;
 }>();
 
 const selectedAnswer = ref<number | null>(null);
-if (props.question.chooseUser) {
   selectedAnswer.value = props.question.options.indexOf(
-    props.question.chooseUser
+    props.question.options[props.question.user_choice]
   );
-}
 const getOptionColor = (option: string): string => {
-  if (option === props.question.correctAnswer) return 'green';
-  if (option === props.question.chooseUser && option !== props.question.correctAnswer) return 'red';
+  if (option === props.question.correct_answer) return 'green';
+  if (option === props.question.options[props.question.user_choice] && option !== props.question.correct_answer) return 'red';
   return 'inherit';
 };
 </script>
