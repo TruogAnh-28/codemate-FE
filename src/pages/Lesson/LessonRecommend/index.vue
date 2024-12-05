@@ -1,5 +1,5 @@
 <template class="tailwind-scope">
-  <v-container fluid class="px-12">
+  <v-container fluid class="px-12" v-if="lesson">
     <!-- Header Section -->
     <v-row class="mb-4">
       <v-col cols="8">
@@ -19,7 +19,7 @@
 
     <!-- Details Section -->
     <v-col cols="3" class="text-body-base-4 mb-4">
-      <v-row><v-icon color="primary" class="mr-2">mdi-clock-outline</v-icon> Recommend Time: {{lesson.recommendTime}} </v-row>
+      <!-- <v-row><v-icon color="primary" class="mr-2">mdi-clock-outline</v-icon> Recommend Time: {{lesson.recommendTime}} </v-row> -->
       <v-row><v-icon color="primary" class="mr-2">mdi-book-open-outline</v-icon> {{lesson.modules.length}} Modules</v-row>
     </v-col>
     <!-- Recommend Content & Learning Outcomes -->
@@ -30,7 +30,7 @@
             Recommend:
           </v-card-title>
           <v-card-text class="pa-0 text-body-base-4">
-            {{lesson.recommendContent}}
+            {{lesson.recommend_content}}
           </v-card-text>
         </v-card>
         <v-card flat class="pa-0 ">
@@ -49,7 +49,7 @@
           </v-card-title>
           <v-card-text class="pa-0">
             <ul class="list-disc pl-6 space-y-2">
-              <li v-for="(outcome, index) in lesson.learningOutcomes" :key="index" class="text-body-base-1">
+              <li v-for="(outcome, index) in lesson.learning_outcomes" :key="index" class="text-body-base-1">
                 {{ outcome }}
               </li>
             </ul>
@@ -68,7 +68,7 @@
           class="p-4 text-center bg-secondary hover:bg-secondary-variant cursor-pointer"
           @click="openDialog(module)"
         >
-          <v-card-text class="font-weight-bold text-body-base-1">{{ module.introduction }}</v-card-text>
+          <v-card-text class="font-weight-bold text-body-base-1">{{ module.title }}</v-card-text>
         </v-card>
       </v-col>
     </v-row>
@@ -86,6 +86,7 @@
 </template>
 
 <script lang="ts" setup>
+import { lessonsService } from '@/services/recommendLesson';
 import { LessonData } from "@/constants/lesson";
 import { Lesson, Module } from "@/types/Lesson";
 import { renderStatusLabel } from "@/utils/functions/render";
@@ -95,11 +96,19 @@ const showDialog = ref(false);
 const selectedModule = ref<Module | null>(null);
 const route=useRoute();
 const lessonId = route.params.lessonId as string;
+const showError = inject("showError") as (message: string) => void;
+
 function openDialog(module: Module) {
   selectedModule.value = module;
 
   showDialog.value = true;
 }
+const fetchRecommendedLesson = async () => {
+  lesson.value = await lessonsService.fetchRecommendedLesson(showError, lessonId) || "";
+};
+onMounted(() => {
+  fetchRecommendedLesson();
+});
 </script>
 
 <style scoped>

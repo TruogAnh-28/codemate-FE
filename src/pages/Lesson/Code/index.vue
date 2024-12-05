@@ -104,9 +104,9 @@ const router = useRouter();
 const route = useRoute();
 const lessonId = route.params.lessonId as string;
 const moduleId = route.params.moduleId as string;
-const module = ref<Module>(ModulesData.find(m => m.id === moduleId));
+const module = ref<Module>(ModulesData.find(m => m.module_id === moduleId));
 function doQuiz(exerciseId: string) {
-  const path = `/lessonRecommend/${lessonId}/module/${moduleId}/Quiz/DoQuiz/${exerciseId}`;
+  const path = `/lessonRecommend/${lessonId}/module/${moduleId}/Quiz/${exerciseId}`;
   router.push(path);
 }
 

@@ -1,12 +1,12 @@
 <template class="tailwind-scope">
   <v-container fluid class="px-12">
-    <v-card class="p-6" elevation="0" >
-      <h1 class="text-heading-3 font-bold mb-4">{{ doc.name}}</h1>
+    <v-card class="p-6" elevation="0" v-if="document" >
+      <h1 class="text-heading-3 font-bold mb-4">{{ document.name}}</h1>
       <!-- Theory Content -->
       <section class="mb-8">
         <h2 class="text-heading-4 font-bold">1. Theory Content</h2>
         <v-divider class="mb-4"></v-divider>
-        <div v-for="content in doc.theoryContent" :key="content.title" class="mb-6">
+        <div v-for="content in document.theoryContent" :key="content.title" class="mb-6">
           <h3 class="text-body-large-1 font-bold mb-1">{{ content.title }}</h3>
           <p class="text-body-base-1 mb-1">
             <strong>Prerequisites:</strong> {{ content.prerequisites.join(", ") }}
@@ -36,7 +36,7 @@
       <section class="mb-8">
         <h2 class="text-heading-4 font-semibold mb-2">2. Practical Guide</h2>
         <v-divider class="mb-4"></v-divider>
-        <div v-for="guide in doc.practicalGuide" :key="guide.title" class="mb-6 ">
+        <div v-for="guide in document.practicalGuide" :key="guide.title" class="mb-6 ">
           <h3 class="text-body-large-1 font-medium mb-1">{{ guide.title }}</h3>
           <div class="px-4">
               <ul class="list-decimal pl-5 text-gray-700 mb-2 ">
@@ -54,7 +54,7 @@
       <section class="mb-8">
         <h2 class="text-heading-4 font-semibold mb-2">3. References</h2>
         <v-divider class="mb-4"></v-divider>
-        <v-card v-for="ref in doc.references" :key="ref.title" class="p-4 mb-3 pa-2">
+        <v-card v-for="ref in document.references" :key="ref.title" class="p-4 mb-3 pa-2">
           <h4 class="font-semibold">{{ ref.title }}</h4>
           <p class="text-gray-700">{{ ref.description }}</p>
           <a :href="ref.link" target="_blank" class="text-blue-500 underline">View Reference</a>
@@ -69,24 +69,22 @@
         <h3 class="text-body-large-1 font-medium mb-1">Key Points:</h3>
         <div class="px-4">
           <ul class="list-disc pl-5 text-gray-700 mb-4">
-            <li v-for="point in doc.summaryAndReview.keyPoints" :key="point">{{ point }}</li>
+            <li v-for="point in document.summaryAndReview.keyPoints" :key="point">{{ point }}</li>
           </ul>
         </div>
 
-        <h3 class="text-body-large-1 font-medium mb-1">Review Questions:</h3>
+        <!-- <h3 class="text-body-large-1 font-medium mb-1">Review Questions:</h3>
         <div class="px-4">
           <ul class="list-decimal pl-5 text-gray-700 mb-4">
-            <li v-for="(question, index) in doc.summaryAndReview.reviewQuestions" :key="question.id" class="mb-6">
+            <li v-for="(question, index) in document.summaryAndReview.reviewQuestions" :key="question.id" class="mb-6">
               <p class="font-semibold">{{ question.question }}</p>
               
               <textarea
-                v-model="doc.summaryAndReview.reviewQuestions[index].inputUser"
+                v-model="document.summaryAndReview.reviewQuestions[index].inputUser"
                 class="w-full p-2 mt-2 border border-gray-300 rounded"
                 rows="4"
                 placeholder="Enter your answer here"
               ></textarea>
-              
-              <!-- Submit button -->
               <div class="text-right mt-2">
                 <v-btn
                   @click="submitAnswer(index)"
@@ -95,23 +93,26 @@
                   Submit
                 </v-btn>
               </div>
-              <!-- Display score and correct answer -->
-              <div v-if="doc.summaryAndReview.reviewQuestions[index].score !== undefined" class="mt-2">
-                <p><strong>Your Score:</strong> {{ doc.summaryAndReview.reviewQuestions[index].score }} / {{ question.maxscore }}</p>
+              <div v-if="document.summaryAndReview.reviewQuestions[index].score !== undefined" class="mt-2">
+                <p><strong>Your Score:</strong> {{ document.summaryAndReview.reviewQuestions[index].score }} / {{ question.maxscore }}</p>
                 <p><strong>Explaination:</strong> {{ question.answer }}</p>
               </div>
             </li>
           </ul>
-        </div>
+        </div> -->
       </section>
     </v-card>
   </v-container>
 </template>
 <script lang="ts" setup>
+import { moduleService } from "@/services/module";
 import { documentData } from "@/constants/document";
-import { Document } from "@/types/Document";
+import { Document,DocumentResponse } from "@/types/Document";
 
 const doc = ref<Document>(documentData);
+const document = ref<DocumentResponse>();
+const route=useRoute();
+const moduleId = route.params.moduleId as string;
 
 function submitAnswer(index: number) {
   const question = doc.value.summaryAndReview.reviewQuestions[index];
@@ -122,4 +123,14 @@ function submitAnswer(index: number) {
     question.score = 0; 
   }
 }
+const showError = inject("showError") as (message: string) => void;
+const fetchDocumentDetails = async () => {
+  console.log(moduleId)
+  document.value = await moduleService.fetchDocumentDetails(showError, moduleId) || "";
+  console.log(document.value)
+};
+
+onMounted(() => {
+  fetchDocumentDetails();
+});
 </script>
