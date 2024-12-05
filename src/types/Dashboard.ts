@@ -16,3 +16,8 @@ export interface RecentActivitiesResponse {
   activity_type: string;
   activity_date: string;
 }
+export interface AddActivityRequest {
+  student_id: string
+  type: string
+  description: string
+}
