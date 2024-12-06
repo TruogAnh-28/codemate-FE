@@ -1,4 +1,6 @@
-const config = {
+import type { Config } from "tailwindcss";
+
+const config: Config = {
   darkMode: ["class"],
   content: [
     "./public/**/*.html", // Include public HTML files
@@ -59,21 +61,28 @@ const config = {
       colors: {
         primary: "hsl(var(--primary) / <alpha-value>)",
         "primary-variant": "hsl(var(--primary-variant) / <alpha-value>)",
+        "primary-darker": "hsl(var(--primary-darker) / <alpha-value>)",
         secondary: "hsl(var(--secondary) / <alpha-value>)",
         "secondary-variant": "hsl(var(--secondary-variant) / <alpha-value>)",
+        "secondary-darker": "hsl(var(--secondary-darker) / <alpha-value>)",
         background: "hsl(var(--background) / <alpha-value>)",
         surface: "hsl(var(--surface) / <alpha-value>)",
         error: "hsl(var(--error) / <alpha-value>)",
+        "error-variant": "hsl(var(--error-variant) / <alpha-value>)",
+        warning: "hsl(var(--warning) / <alpha-value>)",
+        "warning-variant": "hsl(var(--warning-variant) / <alpha-value>)",
+        success: "hsl(var(--success) / <alpha-value>)",
+        "success-variant": "hsl(var(--success-variant) / <alpha-value>)",
         "on-primary": "hsl(var(--on-primary) / <alpha-value>)",
         "on-secondary": "hsl(var(--on-secondary) / <alpha-value>)",
         "on-background": "hsl(var(--on-background) / <alpha-value>)",
         "on-surface": "hsl(var(--on-surface) / <alpha-value>)",
         "on-error": "hsl(var(--on-error) / <alpha-value>)",
-
-        // Additional colors
-        "text-primary": "hsl(var(--text-primary) / <alpha-value>)", // Black
-        "text-secondary": "hsl(var(--text-secondary) / <alpha-value>)", // White
-        "text-tetiary": "hsl(var(--text-tetiary) / <alpha-value>)", // Light-gray
+        "on-warning": "hsl(var(--on-warning) / <alpha-value>)",
+        "on-success": "hsl(var(--on-success) / <alpha-value>)",
+        "text-primary": "hsl(var(--text-primary) / <alpha-value>)",
+        "text-secondary": "hsl(var(--text-secondary) / <alpha-value>)",
+        "text-tetiary": "hsl(var(--text-tetiary) / <alpha-value>)",
         border: "hsl(var(--border) / <alpha-value>)",
         input: "hsl(var(--input) / <alpha-value>)",
         ring: "hsl(var(--ring) / <alpha-value>)",
@@ -81,7 +90,7 @@ const config = {
       },
     },
   },
-  // plugins: [require('tailwindcss-animate')] // Uncomment this if you're using plugins
+  plugins: [],
 };
 
-module.exports = config;
+export default config;

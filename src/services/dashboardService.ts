@@ -3,6 +3,7 @@ import {
   WelcomeMessageResponse,
   RecentActivitiesResponse,
   RecentActivitiesRequest,
+  AddActivityRequest,
 } from "@/types/Dashboard";
 import {
   CoursesListDashBoardRequest,
@@ -73,6 +74,28 @@ export const dashboardService = {
     } catch (error) {
       console.error("Error fetching courses:", error);
       return null;
+    }
+  },
+  async addActivity(
+    showError: (message: string) => void,
+    request: AddActivityRequest
+  ) {
+    try {
+      const response = await ApiService.post(
+        "/activities/",
+        request,
+        showError
+      );
+
+      if (response && response.isSuccess) {
+        return true;
+      } else {
+        console.error("Failed to add activity.");
+        return false;
+      }
+    } catch (error) {
+      console.error("Error adding activity:", error);
+      return false;
     }
   },
 };
