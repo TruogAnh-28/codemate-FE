@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-model="dialog" max-width="500px">
+  <v-dialog v-model="localDialog" max-width="500px">
     <v-card class="pa-2">
       <v-card-title class="d-flex align-center">
         <v-icon color="green" class="mr-2">mdi-check-circle</v-icon>
@@ -15,14 +15,13 @@
         Module: {{ module.title }}
       </v-card-subtitle>
 
-      <v-card-text >
+      <v-card-text>
         <v-radio-group v-model="selectedOption">
-          
           <v-row align="center" class="px-2 pt-2">
             <v-radio label="Reading Materials (Rec: for All Levels)" value="reading" class="pr-2" />
             <v-tooltip bottom>
               <template v-slot:activator="{ props }">
-                <v-icon small v-bind="props" color="grey" >mdi-help-circle-outline</v-icon>
+                <v-icon small v-bind="props" color="grey">mdi-help-circle-outline</v-icon>
               </template>
               Purpose: Detailed theory and background information.<br>
               Engagement: Low, primarily passive reading.
@@ -50,18 +49,12 @@
               Engagement: High, requiring active problem-solving.
             </v-tooltip>
           </v-row>
-
         </v-radio-group>
       </v-card-text>
 
       <v-card-actions>
         <v-btn text @click="closeDialog" variant="text">Cancel</v-btn>
-        <v-btn  
-          @click="confirmSelection" 
-          color="text-primary"
-          elevation="2"
-          class="px-2"
-        >
+        <v-btn @click="confirmSelection" color="text-primary" elevation="2" class="px-2">
           Confirm
         </v-btn>
       </v-card-actions>
@@ -70,8 +63,9 @@
 </template>
 
 <script lang="ts">
-
+import { useBreadcrumbsStore } from "@/stores/breadcrumbs";
 import type { Module } from "@/types/Lesson";
+import type { Breadcrumbs } from "@/types/Breadcrumbs";
 
 export default defineComponent({
   name: 'DialogLearningType',
@@ -93,26 +87,38 @@ export default defineComponent({
   emits: ['update:dialog', 'confirm'],
   setup(props: { dialog: boolean; module: Module; lessonId: string }, { emit }: { emit: (event: string, ...args: any[]) => void }) {
     const router = useRouter();
-    
     const selectedOption = ref('');
-    
+    const localDialog = ref(props.dialog);
+
+    watch(() => props.dialog, (newValue: boolean) => {
+      localDialog.value = newValue;
+    });
+
     const closeDialog = () => {
-      emit('update:dialog', false);
+      emit('update:dialog', false); 
     };
 
     const confirmSelection = () => {
       emit('confirm', selectedOption.value);
       emit('update:dialog', false);
-      
+
       const lessonId = props.lessonId;
-      const moduleId = props.module.module_id; 
-      
+      const moduleId = props.module.module_id;
+      const breadcrumbsModule: Breadcrumbs = {
+        title: props.module.title,
+        disabled: true
+      };
+      const breadcrumbsStore = useBreadcrumbsStore();
+      breadcrumbsStore.addBreadcrumbs(breadcrumbsModule);
+      console.log(breadcrumbsStore.breadcrumbs);
+
       switch (selectedOption.value) {
         case 'quizzes':
           router.push(`/lessonRecommend/${lessonId}/module/${moduleId}/Quiz`);
           break;
         case 'exercises':
-          router.push(`/lessonRecommend/${lessonId}/module/${moduleId}/Code`);
+          // router.push(`/lessonRecommend/${lessonId}/module/${moduleId}/Code`);
+          router.push(`/lessonRecommend/${lessonId}/module/${moduleId}/Quiz`);
           break;
         case 'reading':
           router.push(`/lessonRecommend/${lessonId}/module/${moduleId}/Document`);
@@ -122,6 +128,7 @@ export default defineComponent({
 
     return {
       selectedOption,
+      localDialog, 
       closeDialog,
       confirmSelection
     };
