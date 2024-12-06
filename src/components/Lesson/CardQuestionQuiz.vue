@@ -24,13 +24,10 @@
 </template>
 
 <script lang="ts" setup>
+import { QuizQuestionResponse } from "@/types/Exercise";
 
-const props = defineProps<{
-  question: {
-    text: string;
-    image?: string;
-    options: string[];
-  };
+defineProps<{
+  question: QuizQuestionResponse;
   ordinal: number;
 }>();
 

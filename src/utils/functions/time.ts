@@ -41,3 +41,15 @@ export const formatDateTime = (dateString: string): string => {
     return 'Error';
   }
 };
+export const formatTime = (timeString: string): string => {
+  const [hours, minutes, seconds] = timeString.split(':').map(Number);
+  const roundedMinutes = Math.round(minutes + seconds / 60);
+  const finalHours = hours + Math.floor(roundedMinutes / 60);
+  const finalMinutes = roundedMinutes % 60;
+  return `${finalHours} hours and ${finalMinutes} minutes`;
+}
+
+export const formatStart_EndDate = (date: string): string => {
+  const [year, month, day] = date.split('-');
+  return `${day}/${month}/${year}`;
+}

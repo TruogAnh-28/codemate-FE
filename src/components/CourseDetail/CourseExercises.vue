@@ -1,13 +1,18 @@
 <template>
   <div class="space-y-6">
-    <!-- Exercise List -->
     <v-container>
-      <v-row v-for="(exercise, index) in exercises" :key="index" align="center">
-        <!-- Exercise Item -->
+      <v-row
+        v-for="(exercise, index) in getAllExercises(course)"
+        :key="index"
+        align="center"
+      >
         <v-col cols="12">
           <v-card class="rounded-lg shadow-md p-4">
             <v-row align="center" class="m-0">
               <v-col cols="7">
+                <div class="font-semibold text-heading-4 text-secondary mb-2">
+                  {{ exercise.lessonTitle }}
+                </div>
                 <div class="font-semibold text-body-large-1 mb-2">
                   {{ exercise.name }}
                 </div>
@@ -16,10 +21,6 @@
                 </div>
               </v-col>
               <v-col cols="3" class="text-center">
-                <div class="text-body-base-3 font-medium">
-                  Questions:
-                  <span class="font-bold">{{ exercise.questions.length }}</span>
-                </div>
                 <v-chip
                   :color="renderStatusLabel(exercise.status)"
                   outlined
@@ -32,7 +33,7 @@
               </v-col>
               <v-col cols="2" class="text-center text-body-large-4">
                 <v-btn color="primary" @click="startExercise(exercise)">
-                  Start
+                  {{ renderLabelButtonBasedOnStatus(exercise.status) }}
                 </v-btn>
               </v-col>
             </v-row>
@@ -44,16 +45,44 @@
 </template>
 
 <script lang="ts" setup>
-import { Exercise } from "@/types/Course";
+import {
+  CourseDetailResponse,
+  ExerciseOriginalResponse,
+  LessonOriginalResponse,
+} from "@/types/Course";
 import { renderStatusLabel } from "@/utils/functions/render";
 
+interface ExtendedExercise extends ExerciseOriginalResponse {
+  lessonTitle: string;
+}
+
 defineProps<{
-  exercises: Exercise[];
+  course: CourseDetailResponse;
 }>();
-const startExercise = (exercise: Exercise) => {
-  console.log(
-    `Starting ${exercise.name} with ${exercise.questions.length} questions.`
+
+const exercises = ref<ExtendedExercise[]>([]);
+function renderLabelButtonBasedOnStatus(status: string) {
+  if (status === "Completed") {
+    return "Review";
+  } else if (status === "New") {
+    return "Start";
+  } else {
+    return "Continue";
+  }
+}
+
+function getAllExercises(course: CourseDetailResponse) {
+  exercises.value = course.lessons.flatMap((lesson: LessonOriginalResponse) =>
+    lesson.exercises.map((exercise) => ({
+      ...exercise,
+      lessonTitle: lesson.title,
+    }))
   );
+  return exercises.value;
+}
+
+const startExercise = (exercise: ExtendedExercise) => {
+  console.log(`Starting ${exercise.name}`);
 };
 </script>
 

@@ -18,5 +18,4 @@ defineProps<{
 </script>
 
 <style scoped>
-/* Scoped styling can be added here if necessary */
 </style>

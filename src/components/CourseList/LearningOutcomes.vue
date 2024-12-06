@@ -21,12 +21,13 @@
       </button>
     </div>
 
-    <!-- Modal Component (conditionally rendered) -->
+    <!-- Modal Component -->
     <LearningOutcomesModal
       v-if="isModalOpen"
       :show="isModalOpen"
       @update:show="isModalOpen = $event"
       :outcomes="outcomes"
+      :nameCourse="nameCourse"
     />
   </div>
 </template>
@@ -35,23 +36,23 @@
 import { ref, computed } from 'vue';
 import LearningOutcomesModal from './LearningOutcomesModal.vue';
 
-// Props and state variables
 const props = defineProps({
   outcomes: {
     type: Array,
     required: true
+  },
+  nameCourse: {
+    type: String,
+    required: true
   }
 });
 
-const maxDisplay = 2; // Max outcomes to display before showing the "View more" button
+const maxDisplay = 2;
 const isModalOpen = ref(false);
 
-// Displayed outcomes (slice first maxDisplay outcomes)
 const displayedOutcomes = computed(() => props.outcomes.slice(0, maxDisplay));
 
-// Open the modal (set isModalOpen to true)
 const openModal = () => {
-  console.log('open modal');
   isModalOpen.value = true;
 };
 </script>

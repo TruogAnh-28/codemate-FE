@@ -57,7 +57,6 @@ const emit = defineEmits<{
 
 const internalDialog = ref(props.dialog);
 const learningGoal = ref("");
-
 watch(
   () => props.dialog,
   (newVal: boolean) => {
@@ -68,7 +67,6 @@ watch(
 watch(internalDialog, (newVal: boolean) => {
   emit("update:dialog", newVal);
 });
-
 const cancel = () => {
   internalDialog.value = false;
 };
@@ -80,3 +78,7 @@ const submitGoal = () => {
   }
 };
 </script>
+
+<style scoped>
+
+</style>

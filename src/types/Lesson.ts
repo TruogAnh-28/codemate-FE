@@ -14,8 +14,8 @@ export interface Lesson {
     modules: Module[];
   }
 export interface Module {
-    id: string;
-    introduction: string;
+    module_id: string;
+    title: string;
     objectives: string[];
     quizList?: QuizExercise[];
     documentList?: Document[];

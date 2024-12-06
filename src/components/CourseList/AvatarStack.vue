@@ -2,19 +2,21 @@
   <div class="relative flex items-center">
     <div class="flex -space-x-2">
       <!-- Loop through the students to display their avatars -->
-      <template v-for="(student, index) in visibleStudents" :key="student.studentId">
+      <template v-for="(student, index) in visibleStudents" :key="student.student_id">
         <div
           class="relative w-8 h-8 rounded-full border-2 border-white overflow-hidden"
           :style="{ zIndex: students.length - index }"
         >
+          <!-- Display image or initials depending on the validity of the avatar -->
           <v-img
-            :src="student.avatar"
-            :alt="student.name"
+            :src="getAvatarStudentUrl(student.student_avatar)"
+            :alt="student.student_name"
             class="w-full h-full"
           >
+            <!-- Display initials when the image fails to load -->
             <template v-slot:error>
               <div class="w-full h-full rounded-full flex items-center justify-center bg-primary text-text-secondary text-body-small-1 font-medium">
-                {{ getInitials(student.name) }}
+                {{ getInitials(student.student_name) }}
               </div>
             </template>
           </v-img>
@@ -33,10 +35,10 @@
 </template>
 
 <script lang="ts" setup>
-
-import { StudentReview } from '@/types/Course';
+import { StudentOfCourseListModal } from '@/types/Course';
+import { getAvatarStudentUrl } from '@/utils/functions/functions';
 const props = defineProps<{
-  students: StudentReview[];
+  students: StudentOfCourseListModal[];
   maxVisible: number;
 }>();
 
@@ -57,4 +59,9 @@ const getInitials = (name: string) => {
     .slice(0, 2);
 };
 
+
 </script>
+
+<style scoped>
+
+</style>

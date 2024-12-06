@@ -1,15 +1,19 @@
 <template>
-  <v-container fluid class="ma-0">
+  <v-container fluid class="ma-0" v-if="quizExercise">
     <!-- Hiển thị câu hỏi hoặc kết quả -->
+    <v-breadcrumbs class="ma-0 pa-0 mb-4"
+      :items="breadcrumbs"
+      divider="/"
+    ></v-breadcrumbs>
     <v-row>
       <v-col
-        v-for="(question, index) in questions"
+        v-for="(question, index) in quizExercise.questions"
         :key="index"
         cols="12"
       >
         <!-- Nếu trạng thái là hoàn thành, hiển thị kết quả -->
         <CardQuizResult
-          v-if="status === 'completed'"
+          v-if="quizExercise.status === 'completed'"
           :question="question"
           :ordinal="index + 1"
         />
@@ -22,7 +26,7 @@
         />
       </v-col>
     </v-row>
-    <v-row v-if="status !== 'completed'" justify="center">
+    <v-row v-if="quizExercise.status !== 'completed'" justify="center">
       <v-col cols="auto">
         <v-btn color="primary" @click="openConfirmDialog">Submit</v-btn>
       </v-col>
@@ -46,7 +50,7 @@
       <v-card>
         <v-card-title>Quiz Results</v-card-title>
         <v-card-text>
-          You scored {{ score }} points out of {{ maxScore }}.
+          You scored {{ score }} points out of {{ quizExercise.questions.length }}.
         </v-card-text>
         <v-card-actions>
           <v-btn color="primary" @click="finishQuiz" elevation="2">View Results</v-btn>
@@ -55,20 +59,34 @@
     </v-dialog>
   </v-container>
 </template>
+
 <script lang="ts" setup>
-import { QuizQuestion } from "@/types/Exercise";
-import { quizQuestionsData } from "@/constants/exercise";
+import { moduleService } from "@/services/module";
+import { QuizExerciseResponse, QuizAnswerRequest, QuizScoreResponse } from "@/types/Exercise";
+import { useBreadcrumbsStore } from "@/stores/breadcrumbs";
+import { Breadcrumbs } from "@/types/Breadcrumbs";
 
-const questions = ref<QuizQuestion[]>(quizQuestionsData);
-const status = ref<'new' | 'on going' | 'completed'>('new');
-
-// Dialog states
+const quizExercise = ref<QuizExerciseResponse | null>(null);
+const answers = ref<(number | null)[]>([]);
 const isConfirmDialogOpen = ref(false);
 const isResultDialogOpen = ref(false);
-
-// Score tracking
 const score = ref(0);
-const maxScore = questions.value.length;
+const quizResult = ref<QuizScoreResponse | null>(null);
+
+const route = useRoute();
+const quizId = route.params.quizId as string;
+const moduleId = route.params.moduleId as string;
+
+const breadcrumbsStore = useBreadcrumbsStore();
+const routeState = route.state as { breadcrumbs?: Breadcrumbs[] };
+
+// Gán breadcrumbs từ route state nếu có
+if (routeState?.breadcrumbs) {
+  breadcrumbsStore.setBreadcrumbs(routeState.breadcrumbs);
+}
+
+const breadcrumbs = computed(() => breadcrumbsStore.breadcrumbs);
+
 
 // Open confirmation dialog
 function openConfirmDialog() {
@@ -76,31 +94,59 @@ function openConfirmDialog() {
 }
 
 // Confirm submission and show result
-function confirmSubmit() {
+async function confirmSubmit() {
   isConfirmDialogOpen.value = false;
-  calculateScore();
+  await submitQuizAnswers();
   isResultDialogOpen.value = true;
 }
 
-// Calculate the score
-function calculateScore() {
-  score.value = 0;
-  questions.value.forEach((question: QuizQuestion) => {
-    if (question.chooseUser === question.correctAnswer) {
-      score.value++;
-    }
-  });
-}
-
 // Handle user's answer
-function handleAnswer(questionIndex: number, selectedAnswer: number) {
-  const selectedOption = questions.value[questionIndex].options[selectedAnswer];
-  questions.value[questionIndex].chooseUser = selectedOption;
+function handleAnswer(questionIndex: number, selectedAnswerIndex: number) {
+  answers.value[questionIndex] = selectedAnswerIndex;
 }
 
 // Finish the quiz and mark it as completed
-function finishQuiz() {
+async function finishQuiz() {
   isResultDialogOpen.value = false;
-  status.value = 'completed';
+  await fetchQuizDetails();
 }
+
+// Fetch quiz details
+const fetchQuizDetails = async () => {
+  const data = await moduleService.fetchQuizDetails(showError, moduleId, quizId);
+  quizExercise.value = data;
+
+  // Initialize answers array based on number of questions
+  if (data?.questions) {
+    answers.value = new Array(data.questions.length).fill(null);
+  }
+};
+
+// Submit quiz answers
+const submitQuizAnswers = async () => {
+  if (!quizExercise.value) return;
+
+  const submitQuizAnswersRequest: QuizAnswerRequest = {
+    quizId,
+    answers: answers.value,
+  };
+
+  const result = await moduleService.submitQuizAnswers(
+    showError,
+    moduleId,
+    quizId,
+    submitQuizAnswersRequest
+  );
+
+  if (result) {
+    quizResult.value = result;
+    score.value = result.correct_answers;
+  }
+};
+
+const showError = inject("showError") as (message: string) => void;
+
+onMounted(() => {
+  fetchQuizDetails();
+});
 </script>
