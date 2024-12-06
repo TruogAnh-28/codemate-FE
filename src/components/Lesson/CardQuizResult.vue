@@ -2,9 +2,7 @@
   <v-card class="mb-4">
     <v-card-title class="font-bold items-center bg-primary mb-2">
       <span class="bg-white rounded-full px-2 py-1 mr-2">{{ ordinal }}</span>
-      <span class="whitespace-normal break-words text-body-large-4">{{
-        question.question
-      }}</span>
+      <span class="whitespace-normal break-words text-body-large-4">{{ question.question }}</span>
     </v-card-title>
 
     <v-card-subtitle v-if="question.image">
@@ -32,28 +30,29 @@
 </template>
 
 <script lang="ts" setup>
+import { QuizQuestionResponse } from "@/types/Exercise";
+
+// Cập nhật kiểu của question để sử dụng QuizQuestionResponse
 const props = defineProps<{
-  question: {
-    text: string;
-    image?: string;
-    options: string[];
-    correct_answer: string;
-    explanation: string;
-    user_choice?: string;
-  };
+  question: QuizQuestionResponse;
   ordinal: number;
 }>();
 
 const selectedAnswer = ref<number | null>(null);
-  selectedAnswer.value = props.question.options.indexOf(
-    props.question.options[props.question.user_choice]
-  );
+
+// Lấy giá trị đã chọn từ user_choice và cập nhật selectedAnswer
+selectedAnswer.value = props.question.options.indexOf(
+  props.question.options[props.question.user_choice ?? ''] // xử lý nếu user_choice không có giá trị
+);
+
+// Hàm để thay đổi màu sắc của lựa chọn
 const getOptionColor = (option: string): string => {
   if (option === props.question.correct_answer) return 'green';
-  if (option === props.question.options[props.question.user_choice] && option !== props.question.correct_answer) return 'red';
+  if (option === props.question.options[props.question.user_choice ?? ''] && option !== props.question.correct_answer) return 'red';
   return 'inherit';
 };
 </script>
 
 <style scoped>
+/* Có thể thêm các style tùy chỉnh nếu cần */
 </style>

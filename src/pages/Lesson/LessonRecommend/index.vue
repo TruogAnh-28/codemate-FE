@@ -1,27 +1,34 @@
 <template class="tailwind-scope">
   <v-container fluid class="px-12" v-if="lesson">
     <!-- Header Section -->
-    <v-row class="mb-4">
+      <v-breadcrumbs class="ma-0 pa-0"
+      :items="breadcrumbsStore.breadcrumbs"
+      divider="/"
+    ></v-breadcrumbs>
+    <v-row class="">
       <v-col cols="8">
-        <v-sheet class="text-heading-3 font-weight-bold">{{lesson.name}}</v-sheet>
+        <v-sheet class="text-heading-3 font-weight-bold">{{ lesson.name }}</v-sheet>
       </v-col>
-      <v-col cols="4"  class="text-heading-4 font-weight-bold text-right">
-        {{lesson.progress}}% 
-         <v-chip     
+      <v-col cols="4" class="text-heading-4 font-weight-bold text-right">
+        {{ lesson.progress }}%
+        <v-chip
           class="ma-2"
           :color="renderStatusLabel(lesson.status)"
           prepend-icon="mdi-checkbox-marked-circle"
         >
-          {{lesson.status}}
+          {{ lesson.status }}
         </v-chip>
       </v-col>
     </v-row>
 
     <!-- Details Section -->
     <v-col cols="3" class="text-body-base-4 mb-4">
-      <!-- <v-row><v-icon color="primary" class="mr-2">mdi-clock-outline</v-icon> Recommend Time: {{lesson.recommendTime}} </v-row> -->
-      <v-row><v-icon color="primary" class="mr-2">mdi-book-open-outline</v-icon> {{lesson.modules.length}} Modules</v-row>
+      <v-row>
+        <v-icon color="primary" class="mr-2">mdi-book-open-outline</v-icon> 
+        {{ lesson.modules.length }} Modules
+      </v-row>
     </v-col>
+
     <!-- Recommend Content & Learning Outcomes -->
     <v-row class="mb-4">
       <v-col cols="8">
@@ -30,21 +37,21 @@
             Recommend:
           </v-card-title>
           <v-card-text class="pa-0 text-body-base-4">
-            {{lesson.recommend_content}}
+            {{ lesson.recommend_content }}
           </v-card-text>
         </v-card>
-        <v-card flat class="pa-0 ">
+        <v-card flat class="pa-0">
           <v-card-title class="font-weight-bold text-heading-4 pa-0">
             Explain:
           </v-card-title>
           <v-card-text class="pa-0 text-body-base-1">
-            {{lesson.explain}}
+            {{ lesson.explain }}
           </v-card-text>
         </v-card>
       </v-col>
       <v-col cols="4" class="pl-4">
         <v-card flat class="pa-0">
-          <v-card-title class="font-weight-bold text-heading-4 text-error" >
+          <v-card-title class="font-weight-bold text-heading-4 text-error">
             Learning Outcomes
           </v-card-title>
           <v-card-text class="pa-0">
@@ -57,11 +64,13 @@
         </v-card>
       </v-col>
     </v-row>
+
+    <!-- Module List -->
     <v-row>
       <v-col cols="12">
-        <v-card-title class="font-weight-bold text-heading-4 pa-0" >
-            Modules:
-          </v-card-title>
+        <v-card-title class="font-weight-bold text-heading-4 pa-0">
+          Modules:
+        </v-card-title>
       </v-col>
       <v-col cols="4" v-for="module in lesson.modules" :key="module.id">
         <v-card
@@ -79,24 +88,29 @@
       :dialog="showDialog"
       :lessonId="lessonId"
       @update:dialog="showDialog = $event"
-    
     />
   </v-container>
+
   <router-view />
 </template>
 
 <script lang="ts" setup>
 import { lessonsService } from '@/services/recommendLesson';
-import { LessonData } from "@/constants/lesson";
 import { Lesson, Module } from "@/types/Lesson";
 import { renderStatusLabel } from "@/utils/functions/render";
-const lesson = ref<Lesson[]>(LessonData);
+import { useBreadcrumbsStore } from "@/stores/breadcrumbs";
+import { Breadcrumbs } from '@/types/Breadcrumbs';
 
+const lesson = ref<Lesson[]>();
 const showDialog = ref(false);
-const selectedModule = ref<Module | null>(null);
+const selectedModule = ref<Module>({} as Module);
+
 const route=useRoute();
 const lessonId = route.params.lessonId as string;
+const courseName = computed(() => route.query.courseName);
+
 const showError = inject("showError") as (message: string) => void;
+const breadcrumbsStore = useBreadcrumbsStore();
 
 function openDialog(module: Module) {
   selectedModule.value = module;
@@ -104,11 +118,20 @@ function openDialog(module: Module) {
   showDialog.value = true;
 }
 const fetchRecommendedLesson = async () => {
-  lesson.value = await lessonsService.fetchRecommendedLesson(showError, lessonId) || "";
+  try {
+    lesson.value = await lessonsService.fetchRecommendedLesson(showError, lessonId);
+    if (lesson.value) {
+      breadcrumbsStore.setBreadcrumbs([
+        { title: courseName.value, disabled: true },
+        { title: lesson.value.name, disabled: true }
+      ]);
+    }
+  } catch (error) {
+    console.error("Error fetching recommended lesson:", error);
+  }
 };
-onMounted(() => {
-  fetchRecommendedLesson();
-});
+
+onMounted(fetchRecommendedLesson);
 </script>
 
 <style scoped>

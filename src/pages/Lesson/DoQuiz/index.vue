@@ -1,6 +1,10 @@
 <template>
   <v-container fluid class="ma-0" v-if="quizExercise">
     <!-- Hiển thị câu hỏi hoặc kết quả -->
+    <v-breadcrumbs class="ma-0 pa-0 mb-4"
+      :items="breadcrumbs"
+      divider="/"
+    ></v-breadcrumbs>
     <v-row>
       <v-col
         v-for="(question, index) in quizExercise.questions"
@@ -22,7 +26,7 @@
         />
       </v-col>
     </v-row>
-    <v-row v-if="quizExercise.status !== 'Completed'" justify="center">
+    <v-row v-if="quizExercise.status !== 'completed'" justify="center">
       <v-col cols="auto">
         <v-btn color="primary" @click="openConfirmDialog">Submit</v-btn>
       </v-col>
@@ -59,21 +63,30 @@
 <script lang="ts" setup>
 import { moduleService } from "@/services/module";
 import { QuizExerciseResponse, QuizAnswerRequest, QuizScoreResponse } from "@/types/Exercise";
+import { useBreadcrumbsStore } from "@/stores/breadcrumbs";
+import { Breadcrumbs } from "@/types/Breadcrumbs";
 
 const quizExercise = ref<QuizExerciseResponse | null>(null);
 const answers = ref<(number | null)[]>([]);
-// Dialog states
 const isConfirmDialogOpen = ref(false);
 const isResultDialogOpen = ref(false);
-
-// Score tracking
 const score = ref(0);
+const quizResult = ref<QuizScoreResponse | null>(null);
 
 const route = useRoute();
 const quizId = route.params.quizId as string;
 const moduleId = route.params.moduleId as string;
 
-const quizResult = ref<QuizScoreResponse | null>(null);
+const breadcrumbsStore = useBreadcrumbsStore();
+const routeState = route.state as { breadcrumbs?: Breadcrumbs[] };
+
+// Gán breadcrumbs từ route state nếu có
+if (routeState?.breadcrumbs) {
+  breadcrumbsStore.setBreadcrumbs(routeState.breadcrumbs);
+}
+
+const breadcrumbs = computed(() => breadcrumbsStore.breadcrumbs);
+
 
 // Open confirmation dialog
 function openConfirmDialog() {

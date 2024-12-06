@@ -194,7 +194,11 @@ const handleButtonClick = (
       openFeedbackModal(recommendedLesson.lesson_id);
       break;
     case 2:
-      router.push("/lessonRecommend/${recommendedLesson.lesson_id}");
+      router.push({
+        path: `/lessonRecommend/${recommendedLesson.lesson_id}`,
+        query: { courseName: courseName.value },
+      });
+    
       break;
     default:
       console.error("Invalid button index:", button.index);

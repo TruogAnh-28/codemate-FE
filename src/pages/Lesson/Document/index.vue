@@ -1,5 +1,9 @@
 <template class="tailwind-scope">
   <v-container fluid class="px-12">
+    <v-breadcrumbs class="ma-0 pa-0"
+      :items="breadcrumbs"
+      divider="/"
+    ></v-breadcrumbs>
     <v-card class="p-6" elevation="0" v-if="document" >
       <h1 class="text-heading-3 font-bold mb-4">{{ document.name}}</h1>
       <!-- Theory Content -->
@@ -107,30 +111,46 @@
 <script lang="ts" setup>
 import { moduleService } from "@/services/module";
 import { documentData } from "@/constants/document";
-import { Document,DocumentResponse } from "@/types/Document";
+import { Document, DocumentResponse } from "@/types/Document";
+import { useBreadcrumbsStore } from "@/stores/breadcrumbs";
+import { Breadcrumbs } from "@/types/Breadcrumbs";
 
+// Khởi tạo dữ liệu
 const doc = ref<Document>(documentData);
 const document = ref<DocumentResponse>();
-const route=useRoute();
+const route = useRoute();
 const moduleId = route.params.moduleId as string;
 
-function submitAnswer(index: number) {
+// Breadcrumbs Store
+const breadcrumbsStore = useBreadcrumbsStore();
+const routeState = route.state as { breadcrumbs?: Breadcrumbs[] };
+
+// Gán breadcrumbs từ route state nếu có
+if (routeState?.breadcrumbs) {
+  breadcrumbsStore.setBreadcrumbs(routeState.breadcrumbs);
+}
+
+const breadcrumbs = computed(() => breadcrumbsStore.breadcrumbs);
+
+// Hàm xử lý câu trả lời
+const submitAnswer = (index: number) => {
   const question = doc.value.summaryAndReview.reviewQuestions[index];
   const userAnswer = question.inputUser?.trim().toLowerCase() || "";
-  if (userAnswer === question.answer.toLowerCase()) {
-    question.score = question.maxscore; 
-  } else {
-    question.score = 0; 
-  }
-}
-const showError = inject("showError") as (message: string) => void;
-const fetchDocumentDetails = async () => {
-  console.log(moduleId)
-  document.value = await moduleService.fetchDocumentDetails(showError, moduleId) || "";
-  console.log(document.value)
+  question.score = userAnswer === question.answer.toLowerCase() ? question.maxscore : 0;
 };
 
-onMounted(() => {
-  fetchDocumentDetails();
-});
+// Inject hàm hiển thị lỗi
+const showError = inject("showError") as (message: string) => void;
+
+// Lấy chi tiết tài liệu
+const fetchDocumentDetails = async () => {
+  try {
+    document.value = await moduleService.fetchDocumentDetails(showError, moduleId);
+  } catch (error) {
+    console.error("Error fetching document details:", error);
+  }
+};
+
+// Tự động gọi hàm khi component mounted
+onMounted(fetchDocumentDetails);
 </script>

@@ -1,5 +1,9 @@
 <template class="tailwind-scope">
   <v-container fluid class="px-12">
+    <v-breadcrumbs class="ma-0 pa-0"
+      :items="breadcrumbs"
+      divider="/"
+    ></v-breadcrumbs>
     <v-card flat class="pa-0 mb-4">
       <v-sheet class="font-weight-bold text-heading-3 pa-0">
         {{ moduleQuizzes.title }}
@@ -46,7 +50,7 @@
         <div class="flex justify-between items-center mb-4">
           <h3 class="text-body-large-1 font-semibold text-gray-800 pl-4">Quiz List</h3>
           <v-col cols="auto">
-            <v-btn color="primary" @click="generateQuiz">Generate Quiz</v-btn>
+            <v-btn color="primary" @click="generateQuiz">Add Quiz</v-btn>
           </v-col>
         </div>
         <v-col cols="12" v-for="quiz in moduleQuizzes.quizzes" :key="quiz.id">
@@ -58,8 +62,8 @@
                   {{ quiz.name }}
                 </v-col>
                 <v-col cols="auto" class="text-right">
-                  <span v-if="quiz.status === 'completed'" class="text-white bg-red rounded-full px-2 py-2 text-body-large-4">
-                    {{ quiz.score }}
+                  <span v-if="quiz.status === 'completed'" class="text-red px-2 py-2 text-body-large-4">
+                    {{ quiz.score }} điểm
                   </span>
                 </v-col>
               </v-row>
@@ -102,9 +106,10 @@
   </v-container>
 </template>
 <script lang="ts" setup>
-
 import { moduleService } from "@/services/module";
 import { ModuleQuizResponse,ClearAnswerResponse } from "@/types/Exercise";
+import { useBreadcrumbsStore } from "@/stores/breadcrumbs";
+import { Breadcrumbs } from "@/types/Breadcrumbs";
 
 const moduleQuizzes = ref<ModuleQuizResponse>({
   module_id: "",
@@ -117,13 +122,21 @@ const router = useRouter();
 const route = useRoute();
 const moduleId = route.params.moduleId as string;
 const lessonId = route.params.lessonId as string;
-function doQuiz(quizId: string, status: string) {
+
+const breadcrumbsStore = useBreadcrumbsStore();
+const routeState = route.state as { breadcrumbs?: Breadcrumbs[] };
+
+// Gán breadcrumbs từ route state nếu có
+if (routeState?.breadcrumbs) {
+  breadcrumbsStore.setBreadcrumbs(routeState.breadcrumbs);
+}
+
+const breadcrumbs = computed(() => breadcrumbsStore.breadcrumbs);
+
+async function doQuiz(quizId: string, status: string): Promise<void> {
   const path = `/lessonRecommend/${lessonId}/module/${moduleId}/Quiz/${quizId}`;
   if (status === "completed") {
-    clearQuizAnswers(quizId);
-    if (clearSuccess.value) {
-      router.push(path);
-    }
+    await clearQuizAnswers(quizId);
   }
   router.push(path);
 }
