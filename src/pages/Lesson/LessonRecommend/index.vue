@@ -1,6 +1,5 @@
-<template class="tailwind-scope">
+<template>
   <v-container fluid class="px-12" v-if="lesson">
-    <!-- Header Section -->
       <v-breadcrumbs class="ma-0 pa-0"
       :items="breadcrumbsStore.breadcrumbs"
       divider="/"
@@ -21,7 +20,6 @@
       </v-col>
     </v-row>
 
-    <!-- Details Section -->
     <v-col cols="3" class="text-body-base-4 mb-4">
       <v-row>
         <v-icon color="primary" class="mr-2">mdi-book-open-outline</v-icon> 
@@ -29,7 +27,6 @@
       </v-row>
     </v-col>
 
-    <!-- Recommend Content & Learning Outcomes -->
     <v-row class="mb-4">
       <v-col cols="8">
         <v-card flat class="pa-0 mb-2">
@@ -65,14 +62,13 @@
       </v-col>
     </v-row>
 
-    <!-- Module List -->
     <v-row>
       <v-col cols="12">
         <v-card-title class="font-weight-bold text-heading-4 pa-0">
           Modules:
         </v-card-title>
       </v-col>
-      <v-col cols="4" v-for="module in lesson.modules" :key="module.id">
+      <v-col cols="4" v-for="module in lesson.modules" :key="module.module_id">
         <v-card
           class="p-4 text-center bg-secondary hover:bg-secondary-variant cursor-pointer"
           @click="openDialog(module)"
@@ -82,7 +78,6 @@
       </v-col>
     </v-row>
 
-    <!-- Dialog Component -->
     <DialogLearningType
       :module="selectedModule"
       :dialog="showDialog"
@@ -99,27 +94,35 @@ import { lessonsService } from '@/services/recommendLesson';
 import { Lesson, Module } from "@/types/Lesson";
 import { renderStatusLabel } from "@/utils/functions/render";
 import { useBreadcrumbsStore } from "@/stores/breadcrumbs";
-import { Breadcrumbs } from '@/types/Breadcrumbs';
 
-const lesson = ref<Lesson[]>();
+interface RouteParams {
+  lessonId: string;
+}
+
+const lesson = ref<Lesson | null>(null);
 const showDialog = ref(false);
 const selectedModule = ref<Module>({} as Module);
 
-const route=useRoute();
-const lessonId = route.params.lessonId as string;
-const courseName = computed(() => route.query.courseName);
+const route = useRoute();
+const {  lessonId } = route.params as RouteParams;
+const courseName = computed(() => {
+  const name = route.query.courseName;
+  return typeof name === 'string' ? name : '';
+});
 
 const showError = inject("showError") as (message: string) => void;
 const breadcrumbsStore = useBreadcrumbsStore();
 
 function openDialog(module: Module) {
   selectedModule.value = module;
-
   showDialog.value = true;
 }
+
 const fetchRecommendedLesson = async () => {
   try {
-    lesson.value = await lessonsService.fetchRecommendedLesson(showError, lessonId);
+    const fetchedLesson = await lessonsService.fetchRecommendedLesson(showError, lessonId);
+    lesson.value = fetchedLesson;
+    
     if (lesson.value) {
       breadcrumbsStore.setBreadcrumbs([
         { title: courseName.value, disabled: true },

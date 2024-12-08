@@ -1,7 +1,6 @@
-import { b } from "node_modules/vite/dist/node/types.d-aGj9QkWt";
-
+import { UUID} from "@/utils/commonType"
 export interface QuizQuestion {
-    id: string,
+    id: UUID,
     image?: string,
     question: string,
     options: string[],
@@ -10,7 +9,7 @@ export interface QuizQuestion {
     chooseUser?: string
   }
 export interface QuizExercise {
-    id: string;
+    id: UUID;
     status: 'new' | 'on going' | 'completed';
     name: string;
     quizList: QuizQuestion[];
@@ -18,7 +17,7 @@ export interface QuizExercise {
     score?: number;
 }
 export interface QuizList {
-  id: string;  // UUID
+  id: UUID; 
   name: string;
   status: 'new' | 'on going' | 'completed'; 
   difficulty: 'easy' | 'medium' | 'hard';
@@ -26,13 +25,13 @@ export interface QuizList {
 }
 
 export interface ModuleQuizResponse {
-  moduleId: string;    // UUID
+  module_id: UUID; 
   title: string;
   objectives: string[];
   quizzes: QuizList[];
 }
 export interface QuizQuestionResponse {
-  id: string;
+  id: UUID;
   question: string;
   image?: string;
   options: string[];
@@ -42,7 +41,7 @@ export interface QuizQuestionResponse {
 }
 
 export interface QuizExerciseResponse {
-  id: string;
+  id: UUID;
   name: string;
   status: string;
   difficulty: string;
@@ -50,7 +49,7 @@ export interface QuizExerciseResponse {
   questions: QuizQuestionResponse[];
 }
 export interface QuizAnswerRequest {
-  quizId: string
+  quizId: UUID
   answers: (number | null)[];
 }
 export interface QuizQuestionResult {
@@ -59,7 +58,7 @@ export interface QuizQuestionResult {
 }
 
 export interface QuizScoreResponse {
-  quiz_id: string;
+  quiz_id: UUID;
   total_questions: number;
   correct_answers: number;
   score: number;

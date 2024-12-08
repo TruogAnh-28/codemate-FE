@@ -3,13 +3,13 @@ import { Document } from './Document';
 export interface Lesson {
     id: string;
     name: string;
-    learningOutcomes: string[];
+    learning_outcomes: string[];
     content: string;
     description: string;
     recommendTime: string;
     progress: number;
     status: string;
-    recommendContent: string;
+    recommend_content: string;
     explain: string;
     modules: Module[];
   }
