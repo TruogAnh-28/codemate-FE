@@ -110,47 +110,50 @@
 </template>
 <script lang="ts" setup>
 import { moduleService } from "@/services/module";
-import { documentData } from "@/constants/document";
-import { Document, DocumentResponse } from "@/types/Document";
+import { DocumentResponse } from "@/types/Document";
 import { useBreadcrumbsStore } from "@/stores/breadcrumbs";
 import { Breadcrumbs } from "@/types/Breadcrumbs";
 
-// Khởi tạo dữ liệu
-const doc = ref<Document>(documentData);
-const document = ref<DocumentResponse>();
+interface RouteParams {
+  moduleId: string;
+}
+const document = ref<DocumentResponse | null>();
 const route = useRoute();
-const moduleId = route.params.moduleId as string;
 
-// Breadcrumbs Store
+const {  moduleId } = route.params as RouteParams;
+
 const breadcrumbsStore = useBreadcrumbsStore();
-const routeState = route.state as { breadcrumbs?: Breadcrumbs[] };
+const routeState = computed(() => {
+  const state = (route as any & { state?: { breadcrumbs?: Breadcrumbs[] } }).state;
+  return state?.breadcrumbs ? { breadcrumbs: state.breadcrumbs } : {};
+});
 
-// Gán breadcrumbs từ route state nếu có
-if (routeState?.breadcrumbs) {
-  breadcrumbsStore.setBreadcrumbs(routeState.breadcrumbs);
+if (routeState.value.breadcrumbs) {
+  breadcrumbsStore.setBreadcrumbs(routeState.value.breadcrumbs);
 }
 
 const breadcrumbs = computed(() => breadcrumbsStore.breadcrumbs);
 
-// Hàm xử lý câu trả lời
-const submitAnswer = (index: number) => {
-  const question = doc.value.summaryAndReview.reviewQuestions[index];
-  const userAnswer = question.inputUser?.trim().toLowerCase() || "";
-  question.score = userAnswer === question.answer.toLowerCase() ? question.maxscore : 0;
-};
+// const submitAnswer = (index: number) => {
+//   const question = doc.value.summaryAndReview.reviewQuestions[index];
+//   const userAnswer = question.inputUser?.trim().toLowerCase() || "";
+//   question.score = userAnswer === question.answer.toLowerCase() ? question.maxscore : 0;
+//   return question.score;
+// };
 
-// Inject hàm hiển thị lỗi
-const showError = inject("showError") as (message: string) => void;
+const showError = inject<(message: string) => void>("showError");
 
-// Lấy chi tiết tài liệu
 const fetchDocumentDetails = async () => {
   try {
-    document.value = await moduleService.fetchDocumentDetails(showError, moduleId);
+    if (moduleId) {
+      if (showError) {
+        document.value = await moduleService.fetchDocumentDetails(showError, moduleId);
+      }
+    }
   } catch (error) {
     console.error("Error fetching document details:", error);
   }
 };
 
-// Tự động gọi hàm khi component mounted
 onMounted(fetchDocumentDetails);
 </script>

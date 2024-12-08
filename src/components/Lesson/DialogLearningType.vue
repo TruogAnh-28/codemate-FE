@@ -53,7 +53,7 @@
       </v-card-text>
 
       <v-card-actions>
-        <v-btn text @click="closeDialog" variant="text">Cancel</v-btn>
+        <v-btn @click="closeDialog" variant="text">Cancel</v-btn>
         <v-btn @click="confirmSelection" color="text-primary" elevation="2" class="px-2">
           Confirm
         </v-btn>
@@ -61,7 +61,6 @@
     </v-card>
   </v-dialog>
 </template>
-
 <script lang="ts">
 import { useBreadcrumbsStore } from "@/stores/breadcrumbs";
 import type { Module } from "@/types/Lesson";
@@ -75,7 +74,7 @@ export default defineComponent({
       required: true
     },
     module: {
-      type: Object as () => Module,
+      type: Object as PropType<Module>,
       required: true,
       default: () => ({ id: '', title: '', objectives: [] })
     },
@@ -85,7 +84,7 @@ export default defineComponent({
     }
   },
   emits: ['update:dialog', 'confirm'],
-  setup(props: { dialog: boolean; module: Module; lessonId: string }, { emit }: { emit: (event: string, ...args: any[]) => void }) {
+  setup(props: { dialog: boolean; module: Module; lessonId: string }, { emit }: { emit: (event: 'update:dialog' | 'confirm', ...args: any[]) => void }) {
     const router = useRouter();
     const selectedOption = ref('');
     const localDialog = ref(props.dialog);
@@ -95,7 +94,7 @@ export default defineComponent({
     });
 
     const closeDialog = () => {
-      emit('update:dialog', false); 
+      emit('update:dialog', false);
     };
 
     const confirmSelection = () => {
@@ -110,14 +109,12 @@ export default defineComponent({
       };
       const breadcrumbsStore = useBreadcrumbsStore();
       breadcrumbsStore.addBreadcrumbs(breadcrumbsModule);
-      console.log(breadcrumbsStore.breadcrumbs);
 
       switch (selectedOption.value) {
         case 'quizzes':
           router.push(`/lessonRecommend/${lessonId}/module/${moduleId}/Quiz`);
           break;
         case 'exercises':
-          // router.push(`/lessonRecommend/${lessonId}/module/${moduleId}/Code`);
           router.push(`/lessonRecommend/${lessonId}/module/${moduleId}/Quiz`);
           break;
         case 'reading':
@@ -128,7 +125,7 @@ export default defineComponent({
 
     return {
       selectedOption,
-      localDialog, 
+      localDialog,
       closeDialog,
       confirmSelection
     };

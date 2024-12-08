@@ -1,6 +1,5 @@
 <template>
   <v-container fluid class="ma-0" v-if="quizExercise">
-    <!-- Hiển thị câu hỏi hoặc kết quả -->
     <v-breadcrumbs class="ma-0 pa-0 mb-4"
       :items="breadcrumbs"
       divider="/"
@@ -11,13 +10,11 @@
         :key="index"
         cols="12"
       >
-        <!-- Nếu trạng thái là hoàn thành, hiển thị kết quả -->
         <CardQuizResult
           v-if="quizExercise.status === 'completed'"
           :question="question"
           :ordinal="index + 1"
         />
-        <!-- Nếu chưa hoàn thành, hiển thị câu hỏi -->
         <CardQuestionQuiz
           v-else
           :question="question"
@@ -32,7 +29,6 @@
       </v-col>
     </v-row>
 
-    <!-- Dialogs -->
     <v-dialog v-model="isConfirmDialogOpen" max-width="400">
       <v-card>
         <v-card-title>Confirm Submission</v-card-title>
@@ -40,7 +36,7 @@
           Are you sure you want to submit your answers? This action cannot be undone.
         </v-card-text>
         <v-card-actions>
-          <v-btn text @click="isConfirmDialogOpen = false">Cancel</v-btn>
+          <v-btn @click="isConfirmDialogOpen = false">Cancel</v-btn>
           <v-btn color="primary" @click="confirmSubmit" elevation="2">Confirm</v-btn>
         </v-card-actions>
       </v-card>
@@ -66,6 +62,11 @@ import { QuizExerciseResponse, QuizAnswerRequest, QuizScoreResponse } from "@/ty
 import { useBreadcrumbsStore } from "@/stores/breadcrumbs";
 import { Breadcrumbs } from "@/types/Breadcrumbs";
 
+interface RouteParams {
+  quizId: string;
+  moduleId: string;
+}
+
 const quizExercise = ref<QuizExerciseResponse | null>(null);
 const answers = ref<(number | null)[]>([]);
 const isConfirmDialogOpen = ref(false);
@@ -74,55 +75,43 @@ const score = ref(0);
 const quizResult = ref<QuizScoreResponse | null>(null);
 
 const route = useRoute();
-const quizId = route.params.quizId as string;
-const moduleId = route.params.moduleId as string;
+const { quizId, moduleId } = route.params as RouteParams;
 
 const breadcrumbsStore = useBreadcrumbsStore();
-const routeState = route.state as { breadcrumbs?: Breadcrumbs[] };
-
-// Gán breadcrumbs từ route state nếu có
+const routeState = (route as any).state as { breadcrumbs?: Breadcrumbs[] } | undefined;
 if (routeState?.breadcrumbs) {
   breadcrumbsStore.setBreadcrumbs(routeState.breadcrumbs);
 }
-
 const breadcrumbs = computed(() => breadcrumbsStore.breadcrumbs);
 
-
-// Open confirmation dialog
 function openConfirmDialog() {
   isConfirmDialogOpen.value = true;
 }
 
-// Confirm submission and show result
 async function confirmSubmit() {
   isConfirmDialogOpen.value = false;
   await submitQuizAnswers();
   isResultDialogOpen.value = true;
 }
 
-// Handle user's answer
 function handleAnswer(questionIndex: number, selectedAnswerIndex: number) {
   answers.value[questionIndex] = selectedAnswerIndex;
 }
 
-// Finish the quiz and mark it as completed
 async function finishQuiz() {
   isResultDialogOpen.value = false;
   await fetchQuizDetails();
 }
 
-// Fetch quiz details
 const fetchQuizDetails = async () => {
   const data = await moduleService.fetchQuizDetails(showError, moduleId, quizId);
   quizExercise.value = data;
 
-  // Initialize answers array based on number of questions
   if (data?.questions) {
     answers.value = new Array(data.questions.length).fill(null);
   }
 };
 
-// Submit quiz answers
 const submitQuizAnswers = async () => {
   if (!quizExercise.value) return;
 

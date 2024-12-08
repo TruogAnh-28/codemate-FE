@@ -111,27 +111,34 @@ import { ModuleQuizResponse,ClearAnswerResponse } from "@/types/Exercise";
 import { useBreadcrumbsStore } from "@/stores/breadcrumbs";
 import { Breadcrumbs } from "@/types/Breadcrumbs";
 
+interface RouteParams {
+  moduleId: string,
+  lessonId: string
+}
+
 const moduleQuizzes = ref<ModuleQuizResponse>({
   module_id: "",
   title: "",
   objectives: [],
   quizzes: []
 });
+
 const clearSuccess = ref<ClearAnswerResponse | null>(null);
 const router = useRouter();
 const route = useRoute();
-const moduleId = route.params.moduleId as string;
-const lessonId = route.params.lessonId as string;
-
+const {  moduleId, lessonId } = route.params as RouteParams;
 const breadcrumbsStore = useBreadcrumbsStore();
-const routeState = route.state as { breadcrumbs?: Breadcrumbs[] };
+const routeState = computed(() => {
+  const state = (route as any & { state?: { breadcrumbs?: Breadcrumbs[] } }).state;
+  return state?.breadcrumbs ? { breadcrumbs: state.breadcrumbs } : {};
+});
 
-// Gán breadcrumbs từ route state nếu có
-if (routeState?.breadcrumbs) {
-  breadcrumbsStore.setBreadcrumbs(routeState.breadcrumbs);
+if (routeState.value.breadcrumbs) {
+  breadcrumbsStore.setBreadcrumbs(routeState.value.breadcrumbs);
 }
 
 const breadcrumbs = computed(() => breadcrumbsStore.breadcrumbs);
+
 
 async function doQuiz(quizId: string, status: string): Promise<void> {
   const path = `/lessonRecommend/${lessonId}/module/${moduleId}/Quiz/${quizId}`;
@@ -163,7 +170,12 @@ const showError = inject("showError") as (message: string) => void;
 
 
 const fetchModuleQuizzes = async () => {
-  moduleQuizzes.value = await moduleService.fetchModuleQuizzes(showError, moduleId) || "";
+  moduleQuizzes.value = await moduleService.fetchModuleQuizzes(showError, moduleId) ||{
+    module_id: "",
+    title: "",
+    objectives: [],
+    quizzes: []
+  };
 };
 const clearQuizAnswers = async (quizId:string) => {
   clearSuccess.value = await moduleService.clearQuizAnswers(showError, moduleId, quizId) || "";

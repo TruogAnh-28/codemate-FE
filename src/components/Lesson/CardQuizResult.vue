@@ -10,7 +10,6 @@
     </v-card-subtitle>
 
     <v-card-text>
-      <!-- Radio buttons -->
       <v-radio-group v-model="selectedAnswer" hide-details readonly>
         <v-radio
           v-for="(option, index) in question.options"
@@ -22,7 +21,6 @@
         ></v-radio>
       </v-radio-group>
 
-      <!-- Correct answer and explanation -->
       <p class="text-body-base-4"><strong>Correct Answer:</strong> {{ question.correct_answer }}</p>
       <p class="text-body-base-4"><strong>Explanation:</strong> {{ question.explanation }}</p>
     </v-card-text>
@@ -32,27 +30,27 @@
 <script lang="ts" setup>
 import { QuizQuestionResponse } from "@/types/Exercise";
 
-// Cập nhật kiểu của question để sử dụng QuizQuestionResponse
 const props = defineProps<{
   question: QuizQuestionResponse;
   ordinal: number;
 }>();
 
 const selectedAnswer = ref<number | null>(null);
+const userChoiceIndex = 
+  typeof props.question.user_choice === 'number' ? 
+  props.question.user_choice : 
+  null;
 
-// Lấy giá trị đã chọn từ user_choice và cập nhật selectedAnswer
-selectedAnswer.value = props.question.options.indexOf(
-  props.question.options[props.question.user_choice ?? ''] // xử lý nếu user_choice không có giá trị
-);
+selectedAnswer.value = userChoiceIndex !== null ? userChoiceIndex : null;
 
-// Hàm để thay đổi màu sắc của lựa chọn
 const getOptionColor = (option: string): string => {
   if (option === props.question.correct_answer) return 'green';
-  if (option === props.question.options[props.question.user_choice ?? ''] && option !== props.question.correct_answer) return 'red';
+  if (
+    userChoiceIndex !== null &&
+    option === props.question.options[userChoiceIndex] &&
+    option !== props.question.correct_answer
+  )
+    return 'red';
   return 'inherit';
 };
 </script>
-
-<style scoped>
-/* Có thể thêm các style tùy chỉnh nếu cần */
-</style>
