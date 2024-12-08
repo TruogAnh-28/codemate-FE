@@ -1,8 +1,12 @@
 <template>
   <div class="space-y-6">
     <v-container>
+      <div v-if="exercises.length === 0" class="text-center font-semibold text-heading-4 text-primary-darker">
+        No exercises uploaded by your professor are available!
+      </div>
+
       <v-row
-        v-for="(exercise, index) in getAllExercises(course)"
+        v-for="(exercise, index) in exercises"
         :key="index"
         align="center"
       >
@@ -52,15 +56,16 @@ import {
 } from "@/types/Course";
 import { renderStatusLabel } from "@/utils/functions/render";
 
-interface ExtendedExercise extends ExerciseOriginalResponse {
-  lessonTitle: string;
-}
-
-defineProps<{
+const props = defineProps<{
   course: CourseDetailResponse;
 }>();
 
 const exercises = ref<ExtendedExercise[]>([]);
+
+interface ExtendedExercise extends ExerciseOriginalResponse {
+  lessonTitle: string;
+}
+
 function renderLabelButtonBasedOnStatus(status: string) {
   if (status === "Completed") {
     return "Review";
@@ -78,13 +83,23 @@ function getAllExercises(course: CourseDetailResponse) {
       lessonTitle: lesson.title,
     }))
   );
-  return exercises.value;
 }
+
+watch(
+  () => props.course,
+  (newCourse: CourseDetailResponse) => {
+    if (newCourse) {
+      getAllExercises(newCourse);
+    }
+  },
+  { immediate: true }
+);
 
 const startExercise = (exercise: ExtendedExercise) => {
   console.log(`Starting ${exercise.name}`);
 };
 </script>
+
 
 <style scoped>
 .v-row.m-0 {

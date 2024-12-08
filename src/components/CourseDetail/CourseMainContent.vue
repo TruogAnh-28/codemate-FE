@@ -49,7 +49,7 @@
 <script lang="ts" setup>
 import { CourseDetailResponse } from "@/types/Course";
 
-interface Tab {
+export interface Tab {
   label: string;
   value: string;
   tooltip: string;
