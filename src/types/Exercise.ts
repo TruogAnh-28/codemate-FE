@@ -1,4 +1,21 @@
 import { UUID} from "@/utils/commonType"
+export interface QuizQuestion {
+    id: UUID,
+    image?: string,
+    question: string,
+    options: string[],
+    correctAnswer: string,
+    explanation: string
+    chooseUser?: string
+  }
+export interface QuizExercise {
+    id: UUID;
+    status: 'new' | 'on going' | 'completed';
+    name: string;
+    quizList: QuizQuestion[];
+    difficulty: 'easy' | 'medium' | 'hard';
+    score?: number;
+}
 export interface QuizList {
   id: UUID; 
   name: string;
