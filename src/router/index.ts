@@ -1,3 +1,4 @@
+
 /**
  * router/index.ts
  *
@@ -5,7 +6,7 @@
  */
 
 // Composables
-import { createRouter, createWebHistory } from 'vue-router/auto'
+import { createRouter, createWebHistory } from 'vue-router'
 import { setupLayouts } from 'virtual:generated-layouts'
 import { routes as autoRoutes} from 'vue-router/auto-routes'
 
@@ -15,7 +16,7 @@ const StudentRoutes = [
     name: 'Dashboard',
     component: () => import('@/pages/Dashboard/index.vue'),
   },
-  
+
   {
     path: '/courselist',
     name: 'CourseList',
@@ -26,6 +27,44 @@ const StudentRoutes = [
     name: 'CourseDetail',
     component: () => import('@/pages/Course/CourseDetail/index.vue'),
     props: true,
+  },
+  {
+    path: '/lessonRecommend/:lessonId',
+    name: 'Lesson',
+    component: () => import('@/pages/Lesson/index.vue'),
+    props: true,
+    children: [
+      {
+        path: '',
+        name: 'LessonRecommend',
+        component: () => import('@/pages/Lesson/LessonRecommend/index.vue'),
+        props: true,
+      },
+      {
+        path: 'Module/:moduleId/Quiz',
+        name: 'LessonRecommendQuiz',
+        component: () => import('@/pages/Lesson/Quiz/index.vue'),
+        props: true,
+      },
+      {
+        path: 'Module/:moduleId/Quiz/:quizId',
+        name: 'LessonRecommendDoQuiz',
+        component: () => import('@/pages/Lesson/DoQuiz/index.vue'),
+        props: true,
+      },
+      {
+        path: 'Module/:moduleId/Code',
+        name: 'LessonRecommendCode',
+        component: () => import('@/pages/Lesson/Code/index.vue'),
+        props: true,
+      },
+      {
+        path: 'Module/:moduleId/Document',
+        name: 'LessonRecommendDocument',
+        component: () => import('@/pages/Lesson/Document/index.vue'),
+        props: true,
+      }
+    ]
   },
   {
     path: '/',
