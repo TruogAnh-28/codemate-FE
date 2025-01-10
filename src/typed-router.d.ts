@@ -22,6 +22,8 @@ declare module 'vue-router/auto-routes' {
     '/Course/CourseDetail/': RouteRecordInfo<'/Course/CourseDetail/', '/Course/CourseDetail', Record<never, never>, Record<never, never>>,
     '/Course/CourseList/': RouteRecordInfo<'/Course/CourseList/', '/Course/CourseList', Record<never, never>, Record<never, never>>,
     '/Dashboard/': RouteRecordInfo<'/Dashboard/', '/Dashboard', Record<never, never>, Record<never, never>>,
+    '/Dashboard/Admin': RouteRecordInfo<'/Dashboard/Admin', '/Dashboard/Admin', Record<never, never>, Record<never, never>>,
+    '/Dashboard/Professor': RouteRecordInfo<'/Dashboard/Professor', '/Dashboard/Professor', Record<never, never>, Record<never, never>>,
     '/Lesson/': RouteRecordInfo<'/Lesson/', '/Lesson', Record<never, never>, Record<never, never>>,
     '/Lesson/Code/': RouteRecordInfo<'/Lesson/Code/', '/Lesson/Code', Record<never, never>, Record<never, never>>,
     '/Lesson/Document/': RouteRecordInfo<'/Lesson/Document/', '/Lesson/Document', Record<never, never>, Record<never, never>>,
@@ -29,5 +31,7 @@ declare module 'vue-router/auto-routes' {
     '/Lesson/LessonRecommend/': RouteRecordInfo<'/Lesson/LessonRecommend/', '/Lesson/LessonRecommend', Record<never, never>, Record<never, never>>,
     '/Lesson/Quiz/': RouteRecordInfo<'/Lesson/Quiz/', '/Lesson/Quiz', Record<never, never>, Record<never, never>>,
     '/Login/': RouteRecordInfo<'/Login/', '/Login', Record<never, never>, Record<never, never>>,
+    '/Login/ForgotPassword': RouteRecordInfo<'/Login/ForgotPassword', '/Login/ForgotPassword', Record<never, never>, Record<never, never>>,
+    '/Login/ResetPassword': RouteRecordInfo<'/Login/ResetPassword', '/Login/ResetPassword', Record<never, never>, Record<never, never>>,
   }
 }
