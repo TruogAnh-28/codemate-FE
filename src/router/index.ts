@@ -12,20 +12,28 @@ const LoginRoute = [
   {
     path: "/login",
     name: "Login",
-    component: () => import("@/pages/Login/index.vue"),
+    component: () => import("@/layouts/Login.vue"),
     meta: { requiresAuth: false },
-  },
-  {
-    path: "/forgot-password",
-    name: "ForgotPassword",
-    component: () => import("@/pages/Login/ForgotPassword.vue"),
-    meta: { requiresAuth: false },
-  },
-  {
-    path: "/reset-password/:token",
-    name: "ResetPassword",
-    component: () => import("@/pages/Login/ResetPassword.vue"),
-    meta: { requiresAuth: false },
+    children: [
+      {
+        path: "",
+        name: "LoginPage",
+        component: () => import("@/pages/Login/index.vue"),
+        meta: { requiresAuth: false },
+      },
+      {
+        path: "/forgot-password",
+        name: "ForgotPassword",
+        component: () => import("@/pages/Login/ForgotPassword.vue"),
+        meta: { requiresAuth: false },
+      },
+      {
+        path: "/reset-password/:token",
+        name: "ResetPassword",
+        component: () => import("@/pages/Login/ResetPassword.vue"),
+        meta: { requiresAuth: false },
+      },
+    ],
   },
   {
     path: "/",
