@@ -64,7 +64,7 @@
               density="compact"
             />
             <a
-              href="#"
+              href="/forgot-password"
               class="text-body-small-medium text-gray-600 hover:text-gray-900"
             >
               Forget your password
