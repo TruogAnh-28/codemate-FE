@@ -31,8 +31,12 @@ declare module 'vue' {
     FeedbackCard: typeof import('./components/Dashboard/FeedbackCard.vue')['default']
     FeedbackLesson: typeof import('./components/CourseDetail/FeedbackLesson.vue')['default']
     GetGoalsModal: typeof import('./components/CourseDetail/GetGoalsModal.vue')['default']
+    GoogleLoginButton: typeof import('./components/Login/GoogleLoginButton.vue')['default']
+    LanguageSelect: typeof import('./components/LanguageSelect.vue')['default']
     LearningOutcomes: typeof import('./components/CourseList/LearningOutcomes.vue')['default']
     LearningOutcomesModal: typeof import('./components/CourseList/LearningOutcomesModal.vue')['default']
+    LoginForm: typeof import('./components/Login/LoginForm.vue')['default']
+    PasswordModal: typeof import('./components/Login/PasswordModal.vue')['default']
     ProgressStats: typeof import('./components/CourseDetail/ProgressStats.vue')['default']
     RecentActivityCard: typeof import('./components/Dashboard/RecentActivityCard.vue')['default']
     RecentCourses: typeof import('./components/CourseList/RecentCourses.vue')['default']
@@ -42,6 +46,7 @@ declare module 'vue' {
     ShowDocumentsModal: typeof import('./components/CourseDetail/ShowDocumentsModal.vue')['default']
     Sidebar: typeof import('./components/Sidebar.vue')['default']
     SuccessAlert: typeof import('./components/SuccessAlert.vue')['default']
+    VerifyCode: typeof import('./components/Login/VerifyCode.vue')['default']
     WelcomeCard: typeof import('./components/Dashboard/WelcomeCard.vue')['default']
   }
 }
