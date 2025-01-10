@@ -113,4 +113,15 @@ export const authenService = {
       return null;
     }
   },
+  async protected(showError: (message: string) => void) {
+    try {
+      const response = await ApiService.get<any>("auth/protected");
+      if (response && response.isSuccess) {
+        return response;
+      }
+    } catch (error) {
+      showError(error as unknown as string);
+      return null;
+    }
+  }
 };

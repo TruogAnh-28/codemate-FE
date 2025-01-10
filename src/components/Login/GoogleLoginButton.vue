@@ -5,6 +5,7 @@ import { googleApiLink } from "@/common/config";
 import { FetchUserInformationFromGoogleResponse } from "@/types/Auth";
 import { authenService } from "@/services/authenServices";
 import googleLogo from "@/assets/login/googleLogo.vue";
+import { useAuthSessionStore } from "@/stores/authSession";
 
 const passwordFromModal = ref("");
 const isModalVisible = ref(false);
@@ -26,8 +27,6 @@ const handleDialogClose = (isOpen: boolean) => {
   isModalVisible.value = isOpen;
   loading.value = false;
 };
-
-const router = useRouter();
 const showError = inject("showError") as (message: string) => void;
 const showSuccess = inject("showSuccess") as (message: string) => void;
 
@@ -67,7 +66,20 @@ const login = async () => {
             showModal();
           } else if (sendGoogleTokenResponse.message === "Login successfully") {
             showSuccess("Login successfully");
-            router.push("/dashboard");
+            if (
+              sendGoogleTokenResponse.data &&
+              "access_token" in sendGoogleTokenResponse.data
+            ) {
+              useAuthSessionStore().setAuthSession(
+                sendGoogleTokenResponse.data.access_token,
+                {
+                  role: sendGoogleTokenResponse.data.role,
+                  email: sendGoogleTokenResponse.data.email,
+                  name: sendGoogleTokenResponse.data.name,
+                  rememberMe: "false",
+                }
+              );
+            }
           }
         } else {
           showError("Authentication failed. Please try again later.");
@@ -107,7 +119,14 @@ watch(
           });
           if (response) {
             showSuccess("Login successfully");
-            router.push("/dashboard");
+            if (response.data && "access_token" in response.data) {
+              useAuthSessionStore().setAuthSession(response.data.access_token, {
+                role: response.data.role,
+                email: response.data.email,
+                name: response.data.name,
+                rememberMe: "false",
+              });
+            }
           }
         } else {
           showError("Cannot fetch your email from google");
