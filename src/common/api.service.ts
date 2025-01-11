@@ -2,11 +2,11 @@ import axios, { AxiosError } from "axios";
 import { V1_API_URL } from "@/common/config";
 import { IResponseData } from "@/modals/apis/response";
 import router from "@/router";
-const PUBLIC_ROUTES = [
-  '/login',
-  '/register',
-  '/forgot-password',
-  '/reset-password',
+export const PUBLIC_ROUTES = [
+  "/login",
+  "/",
+  "/forgot-password",
+  "/reset-password",
 ];
 interface ApiService {
   init(): void;
@@ -60,12 +60,12 @@ const ApiService: ApiService = {
 
     axios.interceptors.request.use(
       (config) => {
-        const url = config.url || '';
+        const url = config.url || "";
 
         if (!this.isPublicRoute(url)) {
           if (this.checkTokenExpiration()) {
             this.handleTokenExpiration();
-            return Promise.reject(new Error('Token expired'));
+            return Promise.reject(new Error("Token expired"));
           }
 
           const token = this.getToken();
@@ -82,11 +82,11 @@ const ApiService: ApiService = {
     axios.interceptors.response.use(
       (response) => response,
       (error) => {
-        const url = error.config?.url || '';
+        const url = error.config?.url || "";
 
         if (!this.isPublicRoute(url) && error.response?.status === 401) {
           this.handleTokenExpiration();
-          return Promise.reject(new Error('Token expired'));
+          return Promise.reject(new Error("Token expired"));
         }
         return Promise.reject(error);
       }
@@ -94,7 +94,7 @@ const ApiService: ApiService = {
   },
 
   isPublicRoute(url: string): boolean {
-    return PUBLIC_ROUTES.some(route => url.includes(route));
+    return PUBLIC_ROUTES.some((route) => url.includes(route));
   },
 
   getToken(): string | null {
@@ -110,8 +110,12 @@ const ApiService: ApiService = {
     const token = this.getToken();
     if (!token) return true;
 
+    if (this.isPublicRoute(router.currentRoute.value.path) || !token) {
+      return false;
+    }
+
     try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
+      const payload = JSON.parse(atob(token.split(".")[1]));
       return Date.now() >= payload.exp * 1000;
     } catch {
       return true;
@@ -127,11 +131,11 @@ const ApiService: ApiService = {
   },
 
   handleTokenExpiration(): void {
-    if (router.currentRoute.value.path !== '/login') {
-      sessionStorage.setItem('redirectUrl', router.currentRoute.value.fullPath);
+    if (router.currentRoute.value.path !== "/login") {
+      sessionStorage.setItem("redirectUrl", router.currentRoute.value.fullPath);
       this.clearAuthData();
-      alert('Your session has expired. Please log in again.');
-      router.push('/login');
+      alert("Your session has expired. Please log in again.");
+      router.push("/login");
     }
   },
 
@@ -226,8 +230,8 @@ const ApiService: ApiService = {
   },
 
   handleError(error: AxiosError, showError?: (message: string) => void) {
-    const url = error.config?.url || '';
-    if (error.message === 'Token expired' && !this.isPublicRoute(url)) {
+    const url = error.config?.url || "";
+    if (error.message === "Token expired" && !this.isPublicRoute(url)) {
       throw error;
     }
 
@@ -253,12 +257,30 @@ export const startExpirationTimer = () => {
     clearInterval(expirationTimer);
   }
 
-  expirationTimer = window.setInterval(() => {
-    if (ApiService.checkTokenExpiration()) {
-      ApiService.handleTokenExpiration();
+  if (!ApiService.isPublicRoute(router.currentRoute.value.path)) {
+    expirationTimer = window.setInterval(() => {
+      if (ApiService.checkTokenExpiration()) {
+        ApiService.handleTokenExpiration();
+        clearInterval(expirationTimer);
+      }
+    }, 60000);
+  }
+};
+
+export const manageExpirationTimer = () => {
+  if (ApiService.isPublicRoute(router.currentRoute.value.path)) {
+    if (expirationTimer) {
       clearInterval(expirationTimer);
     }
-  }, 60000);
+  } else {
+    startExpirationTimer();
+  }
+};
+
+export const clearExpirationTimer = () => {
+  if (expirationTimer) {
+    clearInterval(expirationTimer);
+  }
 };
 
 export default ApiService;

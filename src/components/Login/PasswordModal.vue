@@ -181,14 +181,14 @@ const confirmPasswordRules = {
 
 const submitForm = () => {
   if (!password.value || !confirmPassword.value) {
-    errorMessage.value = "Vui lòng nhập đầy đủ thông tin.";
+    errorMessage.value = "Please fill in all fields.";
     return;
   }
   if (password.value === confirmPassword.value) {
     emit("passwordSubmitted", password.value);
     isDialogOpen.value = false;
   } else {
-    errorMessage.value = "Mật khẩu không khớp. Vui lòng kiểm tra lại.";
+    errorMessage.value = "Passwords do not match.";
   }
 };
 

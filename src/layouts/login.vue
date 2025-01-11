@@ -4,11 +4,11 @@
       <v-app-bar
         class="flex justify-between items-center px-4 bg-white shadow-md"
       >
-        <div class="flex items-center space-x-4">
+        <div class="flex items-center space-x-4 logo-container" @click="goToHome">
           <v-icon icon="mdi-circle" size="large"></v-icon>
-          <v-toolbar-title class="text-heading-4 text-secondary-variant"
-            >CODEMATE</v-toolbar-title
-          >
+          <v-toolbar-title class="text-heading-4 text-secondary-variant logo-text">
+            CODEMATE
+          </v-toolbar-title>
         </div>
         <div class="ml-auto">
           <LanguageSelect />
@@ -26,15 +26,9 @@
           </div>
 
           <div className="flex space-x-6">
-            <a href="#" className="text-body-xs-3 hover:text-secondary-variant"
-              >Marketplace</a
-            >
-            <a href="#" className="text-body-xs-3 hover:text-secondary-variant"
-              >Blog</a
-            >
-            <a href="#" className="text-body-xs-3 hover:text-secondary-variant"
-              >License</a
-            >
+            <a href="#" className="text-body-xs-3 hover:text-secondary-variant">Marketplace</a>
+            <a href="#" className="text-body-xs-3 hover:text-secondary-variant">Blog</a>
+            <a href="#" className="text-body-xs-3 hover:text-secondary-variant">License</a>
           </div>
         </v-container>
       </v-footer>
@@ -43,11 +37,18 @@
 </template>
 
 <script setup lang="ts">
-import loginAssets from "@/assets/login/loginAssets.vue";
+const router = useRouter();
+const goToHome = () => {
+  router.push("/");
+};
 </script>
 
-<style>
-/* #login {
-  background: url(../../assets/background.jpg) ;
-} */
+<style scoped>
+.logo-container {
+  cursor: pointer;
+}
+
+.logo-text {
+  cursor: pointer;
+}
 </style>

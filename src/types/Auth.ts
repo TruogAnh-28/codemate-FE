@@ -37,6 +37,7 @@ export interface LoginRequestVerifyEmail {
 export interface VerifyEmailRequest {
   email: string;
   code: string;
+  reset_password?: boolean;
 }
 
 export interface ResetPasswordRequest {

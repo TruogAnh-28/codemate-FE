@@ -109,6 +109,7 @@
 
 <script setup lang="ts">
 import { authenService } from "@/services/authenServices";
+import { useResetPasswordEmailStore } from "@/stores/resetPasswordEmail";
 import { NUMBER_PATTERN } from "@/utils/constant";
 
 const verifyCodeRules = [
@@ -127,6 +128,10 @@ const props = defineProps({
     type: String,
     required: true,
   },
+  resetPassword:{
+    type: Boolean,
+    default: false,
+  }
 });
 const isDialogVisible = ref(true);
 const verifyCode = ref("");
@@ -150,22 +155,22 @@ const submitCode = async () => {
     loading.value = true;
     try {
       const response = await authenService.verifyEmail(showError, {
-        email: props.email,
+        email: props.email || props.resetPassword === true ? useResetPasswordEmailStore().email : "",
         code: verifyCode.value,
+        reset_password: props.resetPassword,
       });
       if (response?.data?.is_email_verified) {
         showSuccess("Email verified successfully");
+        emit('verifyCode', verifyCode.value);
         closeDialog();
       } else {
-        showError("Verification failed");
+        showError("Verification failed. Please try again.");
       }
     } catch (error) {
       showError("Error during verification: " + error);
     } finally {
       loading.value = false;
     }
-  } else {
-    showError("Verify code must be 6 characters long");
   }
 };
 
@@ -194,7 +199,6 @@ const resendVerifyCode = async () => {
   font-size: 1.125rem;
 }
 
-/* Optional: Add smooth transitions */
 .dialog-bottom-transition-enter-active,
 .dialog-bottom-transition-leave-active {
   transition: all 0.3s ease-in-out;

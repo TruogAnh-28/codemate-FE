@@ -8,11 +8,12 @@
 import { createRouter, createWebHistory } from "vue-router";
 import { setupLayouts } from "virtual:generated-layouts";
 import { routes as autoRoutes } from "vue-router/auto-routes";
+import { manageExpirationTimer, PUBLIC_ROUTES } from "@/common/api.service";
 const LoginRoute = [
   {
     path: "/login",
     name: "Login",
-    component: () => import("@/layouts/Login.vue"),
+    component: () => import("@/layouts/login.vue"),
     meta: { requiresAuth: false },
     children: [
       {
@@ -28,7 +29,7 @@ const LoginRoute = [
         meta: { requiresAuth: false },
       },
       {
-        path: "/reset-password/:token",
+        path: "/reset-password",
         name: "ResetPassword",
         component: () => import("@/pages/Login/ResetPassword.vue"),
         meta: { requiresAuth: false },
@@ -125,14 +126,11 @@ const ProfessorRoutes = [
   },
 ];
 
-const publicRoutes = ['/login', '/forgot-password', '/reset-password', '/'];
-
 const isValidToken = (token: string | null): boolean => {
   if (!token) return false;
 
   try {
-
-    const tokenData = JSON.parse(atob(token.split('.')[1]));
+    const tokenData = JSON.parse(atob(token.split(".")[1]));
     return tokenData.exp * 1000 > Date.now();
   } catch {
     return false;
@@ -141,34 +139,45 @@ const isValidToken = (token: string | null): boolean => {
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
-  routes: [...LoginRoute, ...setupLayouts([...autoRoutes, ...StudentRoutes, ...AdminRoutes, ...ProfessorRoutes])],
+  routes: [
+    ...LoginRoute,
+    ...setupLayouts([
+      ...autoRoutes,
+      ...StudentRoutes,
+      ...AdminRoutes,
+      ...ProfessorRoutes,
+    ]),
+  ],
 });
 
 router.beforeEach(async (to, from, next) => {
-  const token = localStorage.getItem('access_token') || sessionStorage.getItem('access_token');
-  const role = localStorage.getItem('role') || sessionStorage.getItem('role');
+  const token =
+    localStorage.getItem("access_token") ||
+    sessionStorage.getItem("access_token");
+  const role = localStorage.getItem("role") || sessionStorage.getItem("role");
 
-  if (publicRoutes.includes(to.path)) {
+  if (PUBLIC_ROUTES.includes(to.path)) {
     return next();
   }
 
   if (!token || !isValidToken(token)) {
-    sessionStorage.setItem('redirectUrl', to.fullPath);
-    return next('/login');
+    sessionStorage.setItem("redirectUrl", to.fullPath);
+    return next("/login");
   }
 
   if (to.meta.role && to.meta.role !== role) {
     switch (role) {
-      case 'admin':
-        return next('/admin-dashboard');
-      case 'professor':
-        return next('/professor-dashboard');
-      case 'student':
-        return next('/dashboard');
+      case "admin":
+        return next("/admin-dashboard");
+      case "professor":
+        return next("/professor-dashboard");
+      case "student":
+        return next("/dashboard");
       default:
-        return next('/login');
+        return next("/login");
     }
   }
+  manageExpirationTimer();
   next();
 });
 
