@@ -23,6 +23,7 @@ export interface LoginWithEmailRequest {
 }
 export interface LoginSuccessResponse {
   access_token: string;
+  refresh_token: string;
   role: string;
   name: string;
   email: string;

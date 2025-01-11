@@ -123,5 +123,5 @@ export const authenService = {
       showError(error as unknown as string);
       return null;
     }
-  }
+  },
 };

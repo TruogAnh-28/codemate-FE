@@ -1,49 +1,80 @@
+import ApiService from '@/common/api.service';
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 
-export interface UserInfor {
+export interface UserInfo {
   name: string;
   email: string;
   role: string;
+  is_email_verified?: boolean;
   rememberMe: string;
 }
 
 export const useAuthStore = defineStore('auth', () => {
-  const user = ref<UserInfor>({
+
+  const user = ref<UserInfo>({
     name: '',
     email: '',
     role: '',
+    is_email_verified: false,
     rememberMe: "false"
   });
-  const token = ref(localStorage.getItem('access_token') || null);
 
-  const setUser = (userInfo: UserInfor) => {
+  const storedUser = localStorage.getItem('user');
+  if (storedUser) {
+    user.value = JSON.parse(storedUser);
+  }
+
+  const setUser = (userInfo: UserInfo) => {
     user.value = userInfo;
-    localStorage.setItem('user', JSON.stringify(userInfo));
+
+    const storage = userInfo.rememberMe === "true" ? localStorage : sessionStorage;
+    storage.setItem('user', JSON.stringify(userInfo));
+    storage.setItem('rememberMe', userInfo.rememberMe);
   };
 
-  const setToken = (newToken: string) => {
-    token.value = newToken;
-    localStorage.setItem('access_token', newToken);
+  const setTokens = (accessToken: string, refreshToken: string) => {
+    const storage = user.value.rememberMe === "true" ? localStorage : sessionStorage;
+    storage.setItem('access_token', accessToken);
+    storage.setItem('refresh_token', refreshToken);
   };
 
   const logout = () => {
+
     user.value = {
       name: '',
       email: '',
       role: '',
+      is_email_verified: false,
       rememberMe: "false"
     };
-    token.value = null;
+
     localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
     localStorage.removeItem('user');
+    localStorage.removeItem('role');
+    localStorage.removeItem('rememberMe');
+
+    sessionStorage.removeItem('access_token');
+    sessionStorage.removeItem('refresh_token');
+    sessionStorage.removeItem('user');
+    sessionStorage.removeItem('role');
+    sessionStorage.removeItem('rememberMe');
   };
+
+  const isAuthenticated = () => {
+    const storage = user.value.rememberMe === "true" ? localStorage : sessionStorage;
+    return !!storage.getItem('access_token');
+  };
+
+  const getUser = () => user.value;
 
   return {
     user,
-    token,
     setUser,
-    setToken,
-    logout
+    setTokens,
+    logout,
+    isAuthenticated,
+    getUser
   };
 });

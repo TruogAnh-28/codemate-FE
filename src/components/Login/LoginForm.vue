@@ -96,8 +96,8 @@
 <script setup lang="ts">
 import { authenService } from "@/services/authenServices";
 import { useAuthStore } from "@/stores/auth";
-import { useAuthSessionStore } from "@/stores/authSession";
 import { EMAIL_PATTERN, PASSWORD_PATTERN } from "@/utils/constant";
+
 const email = ref("");
 const password = ref("");
 const rememberMe = ref(false);
@@ -107,6 +107,10 @@ const loading = ref(false);
 const messageToVerifyModal = ref("");
 const verifyCode = ref("");
 const isModalVisible = ref(false);
+
+const authStore = useAuthStore();
+const router = useRouter();
+
 const rememberMeDefault = localStorage.getItem("user");
 if (rememberMeDefault) {
   rememberMe.value = JSON.parse(rememberMeDefault).rememberMe === "true";
@@ -144,7 +148,7 @@ const passwordRules = [
 
 const showError = inject("showError") as (message: string) => void;
 const showSuccess = inject("showSuccess") as (message: string) => void;
-const router = useRouter();
+
 const handleSubmit = async () => {
   if (!isValid.value) return;
 
@@ -154,6 +158,7 @@ const handleSubmit = async () => {
       email: email.value,
       password: password.value,
     });
+
     if (
       handleLogin?.message ===
         "User not found. Verification code sent to email" ||
@@ -170,42 +175,30 @@ const handleSubmit = async () => {
     } else if (handleLogin?.message === "Login successfully") {
       showSuccess("Login successfully");
       loading.value = false;
+
       if (handleLogin.data && "access_token" in handleLogin.data) {
-        let userRole = "";
-        if (rememberMe.value) {
-          useAuthStore().setToken(handleLogin.data.access_token);
-          const user_infor = {
-            role: handleLogin.data.role,
-            email: handleLogin.data.email,
-            name: handleLogin.data.name,
-            rememberMe: "true",
-          };
-          useAuthStore().setUser(user_infor);
-          const user = localStorage.getItem("user");
-          if (user) {
-            userRole = JSON.parse(user).role;
-          }
-        } else {
-          useAuthSessionStore().setAuthSession(handleLogin.data.access_token, {
-            role: handleLogin.data.role,
-            email: handleLogin.data.email,
-            name: handleLogin.data.name,
-            rememberMe: "false",
-          });
-          useAuthStore().logout();
-          const user = sessionStorage.getItem("user");
-          if (user) {
-            userRole = JSON.parse(user).role;
-          }
-        }
-        if (userRole === "student") {
-          router.push(`/dashboard`);
-        } else if (userRole === "professor") {
+        const userInfo = {
+          role: handleLogin.data.role,
+          email: handleLogin.data.email,
+          name: handleLogin.data.name,
+          rememberMe: rememberMe.value ? "true" : "false",
+        };
+
+        authStore.setUser(userInfo);
+        authStore.setTokens(
+          handleLogin.data.access_token,
+          handleLogin.data.refresh_token
+        );
+
+        const user = authStore.getUser();
+        if (user.role === "student") {
+          router.push("/dashboard");
+        } else if (user.role === "professor") {
           // router.push({ name: "DashboardProfessor" });
-        } else if (userRole === "admin") {
+        } else if (user.role === "admin") {
           // router.push({ name: "DashboardAdmin" });
         } else {
-          router.push(`/login`);
+          router.push("/login");
         }
       }
     }
@@ -215,5 +208,4 @@ const handleSubmit = async () => {
   }
 };
 </script>
-
 <style scoped></style>
