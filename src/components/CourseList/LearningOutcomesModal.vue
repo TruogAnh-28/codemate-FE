@@ -6,7 +6,7 @@
     scrollable
     transition="dialog-bottom-transition"
   >
-    <v-card class="rounded-lg shadow-xl bg-white transform transition-all">
+    <v-card class="rounded-lg shadow-xl bg-on-primary transform transition-all">
       <v-card-title class="text-heading-4 font-semibold">
         <div class="text-center">
           Learning Outcomes

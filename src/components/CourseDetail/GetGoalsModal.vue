@@ -1,6 +1,6 @@
 <template>
   <v-dialog v-model="internalDialog" max-width="500" class="rounded-lg">
-    <div class="bg-white p-6 rounded-lg">
+    <div class="bg-on-primary p-6 rounded-lg">
       <div class="p-2 rounded-full">
         <CheckCircle />
       </div>

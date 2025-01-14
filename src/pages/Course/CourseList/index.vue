@@ -108,7 +108,6 @@ const fetchCourses = async () => {
   }
 };
 
-// Watch for changes in currentPage and trigger API call
 watch(currentPage, () => {
   fetchCourses();
 });

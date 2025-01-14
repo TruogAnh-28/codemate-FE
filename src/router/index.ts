@@ -154,7 +154,8 @@ router.beforeEach(async (to, from, next) => {
   const token =
     localStorage.getItem("access_token") ||
     sessionStorage.getItem("access_token");
-  const role = localStorage.getItem("role") || sessionStorage.getItem("role");
+  const user = localStorage.getItem("user") || sessionStorage.getItem("user");
+  const role = user ? JSON.parse(user).role : null;
 
   if (PUBLIC_ROUTES.includes(to.path)) {
     return next();

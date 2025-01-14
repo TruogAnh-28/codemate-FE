@@ -2,7 +2,7 @@
   <div id="login">
     <v-container className="fill-height">
       <v-app-bar
-        class="flex justify-between items-center px-4 bg-white shadow-md"
+        class="flex justify-between items-center px-4 bg-on-primary shadow-md"
       >
         <div class="flex items-center space-x-4 logo-container" @click="goToHome">
           <v-icon icon="mdi-circle" size="large"></v-icon>
@@ -19,7 +19,7 @@
         <router-view />
       </v-main>
 
-      <v-footer app className="text-primary py-6 bg-white">
+      <v-footer app className="text-primary py-6 bg-on-primary">
         <v-container fluid className="flex flex-col items-center text-center">
           <div className="text-body-xs-1 mb-4">
             <p>&copy; 2024, Made with ❤️ by Group 6 for a better future</p>

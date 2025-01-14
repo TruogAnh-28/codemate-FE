@@ -196,7 +196,8 @@ const handleSubmit = async () => {
         } else if (user.role === "professor") {
           // router.push({ name: "DashboardProfessor" });
         } else if (user.role === "admin") {
-          // router.push({ name: "DashboardAdmin" });
+          showSuccess("Admin login successfully");
+          router.push("/admin-dashboard");
         } else {
           router.push("/login");
         }

@@ -5,8 +5,9 @@ import { googleApiLink } from "@/common/config";
 import { FetchUserInformationFromGoogleResponse } from "@/types/Auth";
 import { authenService } from "@/services/authenServices";
 import googleLogo from "@/assets/login/googleLogo.vue";
-import { useAuthSessionStore } from "@/stores/authSession";
-
+import { useAuthStore } from "@/stores/auth";
+const authStore = useAuthStore();
+const router = useRouter();
 const passwordFromModal = ref("");
 const isModalVisible = ref(false);
 const loading = ref(false);
@@ -70,15 +71,29 @@ const login = async () => {
               sendGoogleTokenResponse.data &&
               "access_token" in sendGoogleTokenResponse.data
             ) {
-              useAuthSessionStore().setAuthSession(
+              const userInfo = {
+                role: sendGoogleTokenResponse.data.role,
+                email: sendGoogleTokenResponse.data.email,
+                name: sendGoogleTokenResponse.data.name,
+                rememberMe: "false",
+              };
+
+              authStore.setUser(userInfo);
+              authStore.setTokens(
                 sendGoogleTokenResponse.data.access_token,
-                {
-                  role: sendGoogleTokenResponse.data.role,
-                  email: sendGoogleTokenResponse.data.email,
-                  name: sendGoogleTokenResponse.data.name,
-                  rememberMe: "false",
-                }
+                sendGoogleTokenResponse.data.refresh_token
               );
+
+              const user = authStore.getUser();
+              if (user.role === "student") {
+                router.push("/dashboard");
+              } else if (user.role === "professor") {
+                // router.push({ name: "DashboardProfessor" });
+              } else if (user.role === "admin") {
+                router.push("/admin-dashboard");
+              } else {
+                router.push("/login");
+              }
             }
           }
         } else {
@@ -120,12 +135,29 @@ watch(
           if (response) {
             showSuccess("Login successfully");
             if (response.data && "access_token" in response.data) {
-              useAuthSessionStore().setAuthSession(response.data.access_token, {
+              const userInfo = {
                 role: response.data.role,
                 email: response.data.email,
                 name: response.data.name,
                 rememberMe: "false",
-              });
+              };
+
+              authStore.setUser(userInfo);
+              authStore.setTokens(
+                response.data.access_token,
+                response.data.refresh_token
+              );
+
+              const user = authStore.getUser();
+              if (user.role === "student") {
+                router.push("/dashboard");
+              } else if (user.role === "professor") {
+                // router.push({ name: "DashboardProfessor" });
+              } else if (user.role === "admin") {
+                router.push("/admin-dashboard");
+              } else {
+                router.push("/login");
+              }
             }
           }
         } else {
