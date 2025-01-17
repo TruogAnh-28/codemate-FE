@@ -165,7 +165,7 @@ const submitCode = async () => {
         reset_password: props.resetPassword,
       });
       if (response?.data?.is_email_verified) {
-        showSuccess("Email verified successfully");
+        showSuccess("Email verified successfully! Please log in~");
         emit("verifyCode", verifyCode.value);
         closeDialog();
       } else {

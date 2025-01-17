@@ -173,7 +173,7 @@ const handleSubmit = async () => {
           : "Your email hasn't been verified. Please verify your email to login.";
       showModal();
 
-    } else if (handleLogin?.message === "Login successfully") {
+    } else if (handleLogin?.message === "Login successfully" && handleLogin.data?.is_email_verified && 'is_active' in handleLogin.data && handleLogin.data.is_active) {
       showSuccess("Login successfully");
       loading.value = false;
 
