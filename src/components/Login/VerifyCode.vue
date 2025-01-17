@@ -128,10 +128,10 @@ const props = defineProps({
     type: String,
     required: true,
   },
-  resetPassword:{
+  resetPassword: {
     type: Boolean,
     default: false,
-  }
+  },
 });
 const isDialogVisible = ref(true);
 const verifyCode = ref("");
@@ -154,14 +154,19 @@ const submitCode = async () => {
   if (verifyCode.value.length === 6) {
     loading.value = true;
     try {
+
+      const emailToUse = props.resetPassword
+        ? useResetPasswordEmailStore().email
+        : props.email;
+
       const response = await authenService.verifyEmail(showError, {
-        email: props.email || props.resetPassword === true ? useResetPasswordEmailStore().email : "",
+        email: emailToUse,
         code: verifyCode.value,
         reset_password: props.resetPassword,
       });
       if (response?.data?.is_email_verified) {
         showSuccess("Email verified successfully");
-        emit('verifyCode', verifyCode.value);
+        emit("verifyCode", verifyCode.value);
         closeDialog();
       } else {
         showError("Verification failed. Please try again.");

@@ -172,6 +172,7 @@ const handleSubmit = async () => {
           ? "Your account hasn't been registered. Please verify your email to create an account."
           : "Your email hasn't been verified. Please verify your email to login.";
       showModal();
+
     } else if (handleLogin?.message === "Login successfully") {
       showSuccess("Login successfully");
       loading.value = false;
@@ -206,6 +207,9 @@ const handleSubmit = async () => {
   } catch {
     loading.value = false;
     showError("Invalid email or password");
+  }
+  finally{
+    loading.value = false;
   }
 };
 </script>

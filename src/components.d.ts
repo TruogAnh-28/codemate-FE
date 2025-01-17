@@ -35,8 +35,6 @@ declare module 'vue' {
     FeedbackLesson: typeof import('./components/CourseDetail/FeedbackLesson.vue')['default']
     GetGoalsModal: typeof import('./components/CourseDetail/GetGoalsModal.vue')['default']
     GoogleLoginButton: typeof import('./components/Login/GoogleLoginButton.vue')['default']
-    Header: typeof import('./components/LandingPage/Header.vue')['default']
-    Home: typeof import('./components/LandingPage/Home.vue')['default']
     LanguageSelect: typeof import('./components/LanguageSelect.vue')['default']
     LearningOutcomes: typeof import('./components/CourseList/LearningOutcomes.vue')['default']
     LearningOutcomesModal: typeof import('./components/CourseList/LearningOutcomesModal.vue')['default']

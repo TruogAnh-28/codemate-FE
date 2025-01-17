@@ -61,3 +61,7 @@ export const courseCards = [
     text: "Enjoy personalized learning experiences and track your progress.",
   },
 ];
+
+export type ExcelFileHeaderToAddCourses = ["Course ID", "Course Name", "Credit", "Semester", "Professor Email", "Student Email List"]
+
+export const expectedHeaders: ExcelFileHeaderToAddCourses = ["Course ID", "Course Name", "Credit", "Semester", "Professor Email", "Student Email List"]

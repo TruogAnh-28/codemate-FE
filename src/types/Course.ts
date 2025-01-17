@@ -1,4 +1,20 @@
 import { UUID, DateString, DateTimeString, DocumentType, Status} from "@/utils/commonType"
+import { ExcelFileHeaderToAddCourses } from "@/utils/constant";
+export interface ExcelFileCourse {
+  courseId: string;
+  courseName: string;
+  credit: number;
+  nSemester: number;
+  professorEmail: string;
+  studentEmailList: string[];
+}
+
+export interface ImportData {
+  headers: ExcelFileHeaderToAddCourses;
+  courses: ExcelFileCourse[];
+}
+
+
 export interface CoursesListDashBoardRequest{
   student_id: UUID
   offset?: number
