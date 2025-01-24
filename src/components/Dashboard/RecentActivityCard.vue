@@ -5,61 +5,86 @@
         Recent Activity
       </h3>
     </v-card-title>
-    <v-list class="max-h-96 overflow-y-auto px-2">
+    <v-list v-if="activities.length > 0 " class="max-h-96 overflow-y-auto px-2">
       <ActivityItem
         v-for="activity in activities"
         :key="activity.activity_id"
-        :icon="ACTIVITY_MAP[activity.activity_type]?.icon || 'mdi-information-outline'"
-        :description="`${ACTIVITY_MAP[activity.activity_type]?.label || 'Unknown Activity'}: ${activity.activity_description}`"
+        :icon="
+          ACTIVITY_MAP[activity.activity_type]?.icon ||
+          'mdi-information-outline'
+        "
+        :description="`${
+          ACTIVITY_MAP[activity.activity_type]?.label || 'Unknown Activity'
+        }: ${activity.activity_description}`"
         :timestamp="formatDateTime(activity.activity_date)"
         :iconColor="ACTIVITY_MAP[activity.activity_type]?.color || 'gray'"
       />
     </v-list>
+    <v-card-text v-else class="p-6 text-center text-gray-500">
+      You have no activities now
+    </v-card-text>
   </v-card>
 </template>
 
 <script setup lang="ts">
+import { dashboardService } from "@/services/dashboardService";
 import { RecentActivitiesResponse } from "@/types/Dashboard";
 import { formatDateTime } from "@/utils/functions/time";
 
-const ACTIVITY_MAP: Record<string, {
-  label: string,
-  icon: string,
-  color: string
-}> = {
+const ACTIVITY_MAP: Record<
+  string,
+  {
+    label: string;
+    icon: string;
+    color: string;
+  }
+> = {
   view_course: {
     label: "Viewed Course",
     icon: "mdi-book-open-outline",
-    color: "secondary"
+    color: "secondary",
   },
   resume_activity: {
     label: "Resumed Activity",
     icon: "mdi-play-circle",
-    color: "primary"
+    color: "primary",
   },
   enroll_course: {
     label: "Enrolled in Course",
     icon: "mdi-account-plus",
-    color: "yellow"
+    color: "yellow",
   },
   complete_lesson: {
     label: "Completed Lesson",
     icon: "mdi-checkbox-marked-circle",
-    color: "success"
+    color: "success",
   },
   complete_assignment: {
     label: "Completed Assignment",
     icon: "mdi-clipboard-check",
-    color: "secondary-variant"
+    color: "secondary-variant",
   },
   badge_earned: {
     label: "Earned Badge",
     icon: "mdi-trophy",
-    color: "warning"
-  }
+    color: "warning",
+  },
 };
 
-defineProps<{
-  activities: RecentActivitiesResponse[];
-}>();
+const activities = ref<RecentActivitiesResponse[]>([]);
+const showError = inject("showError") as (message: string) => void;
+const showSuccess = inject("showSuccess") as (message: string) => void;
+
+const fetchRecentActivities = async () => {
+  const recentActivities = await dashboardService.fetchRecentActivities({
+    showError,
+    showSuccess,
+  });
+  if (recentActivities) {
+    activities.value = recentActivities;
+  }
+};
+onMounted(() => {
+  fetchRecentActivities();
+});
 </script>

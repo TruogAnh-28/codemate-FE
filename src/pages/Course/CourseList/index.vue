@@ -1,7 +1,7 @@
 <template>
   <v-app>
     <v-main class="pt-0 pb-2 pl-4 pr-4 bg-gray-50">
-      <RecentCourses :courses="courses" />
+      <RecentCourses v-if="courses" :courses="courses?.content" />
       <section>
         <h2 class="text-heading-4 font-semibold mb-6">My Courses</h2>
         <v-text-field
@@ -30,7 +30,7 @@
           </template>
         </v-text-field>
         <div class="space-y-4 mt-6">
-          <CourseItem :courses="courses" />
+          <CourseItem v-if="courses" :courses="courses?.content" />
         </div>
         <v-pagination
           v-if="totalPages > 1"
@@ -45,11 +45,7 @@
 
 <script lang="ts" setup>
 import { coursesService } from "@/services/courseslistServices";
-import {
-  CoursesListDashBoardRequest,
-  CoursesListResponse,
-} from "@/types/Course";
-import { User } from "@/constants/user";
+import { CoursesListPaginatedResponse } from "@/types/Course";
 import useDebounce from "@/composables/useDebounce";
 import { PAGE_SIZE_OF_COURSE_LIST } from "@/constants/courses";
 
@@ -57,7 +53,7 @@ const searchQuery = ref<string>("");
 const currentPage = ref<number>(1);
 const totalPages = ref<number>(1);
 const isLoading = ref<boolean>(false);
-const courses = ref<CoursesListResponse[]>([]);
+const courses = ref<CoursesListPaginatedResponse>();
 
 const debouncedSearch = useDebounce.useDebounceFn(() => {
   fetchCourses();
@@ -75,37 +71,28 @@ const clearSearch = () => {
 };
 
 const showError = inject("showError") as (message: string) => void;
-
+const showSuccess = inject("showSuccess") as (message: string) => void;
 const fetchCourses = async () => {
   isLoading.value = true;
-  try {
-    const courseReviewRequest: CoursesListDashBoardRequest = {
-      student_id: User.id,
-      offset: (currentPage.value - 1) * PAGE_SIZE_OF_COURSE_LIST,
-      page_size: PAGE_SIZE_OF_COURSE_LIST,
-      search_query: searchQuery.value || undefined,
-    };
 
-    const response = (await coursesService.fetchCoursesList(
-      showError,
-      courseReviewRequest
-    )) || {
-      content: [],
-      currentPage: 0,
-      pageSize: 0,
-      totalRows: 0,
-      totalPages: 0,
-    };
+  const response = await coursesService.fetchCoursesList({
+    showError,
+    showSuccess,
+    search_query: searchQuery.value,
+  });
 
-    if (response) {
-      courses.value = response.content;
-      totalPages.value = response.totalPages;
+  if (response && "data" in response && response.data) {
+    courses.value = response.data as CoursesListPaginatedResponse;
+    console.log(courses.value);
+    if (
+      response.data &&
+      typeof response.data === "object" &&
+      "totalPages" in response.data
+    ) {
+      totalPages.value = response.data.totalPages as number;
     }
-  } catch (error) {
-    console.error("Error fetching courses:", error);
-  } finally {
-    isLoading.value = false;
   }
+  isLoading.value = false;
 };
 
 watch(currentPage, () => {

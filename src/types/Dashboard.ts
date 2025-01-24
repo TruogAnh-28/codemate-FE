@@ -1,5 +1,5 @@
 
-export interface WelcomeMessageResponse {
+export interface GetRecentCourseResponse {
   course: string
   course_id: string
   last_accessed: string

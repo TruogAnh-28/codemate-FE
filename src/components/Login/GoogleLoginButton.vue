@@ -37,86 +37,80 @@ const login = async () => {
   try {
     const responseFromGoogle = await googleTokenLogin();
 
-    if (responseFromGoogle.access_token) {
-      const params = { access_token: responseFromGoogle.access_token };
+    if (!responseFromGoogle.access_token) {
+      showError("No access token received from Google");
+    }
 
-      const googleUserInfo = await ApiService.query<
-        FetchUserInformationFromGoogleResponse,
-        FetchUserInformationFromGoogleResponse
-      >(googleApiLink, params);
-
-      if (googleUserInfo.email) {
-        googleUserInfo_Store.value = googleUserInfo;
-
-        const sendGoogleTokenResponse = await authenService.loginWithGoogle(
-          showError,
-          {
-            access_token: responseFromGoogle.access_token,
-            user_info: googleUserInfo,
-          }
-        );
-
-        if (sendGoogleTokenResponse?.isSuccess) {
-          if (
-            sendGoogleTokenResponse.message ===
-              "Google login successfully! Please add password to your account to complete your profile." ||
-            sendGoogleTokenResponse.message ===
-              "Your account hasn't had the password. Please add a password to your account to complete your profile."
-          ) {
-            googleLoginMessage.value = sendGoogleTokenResponse.message;
-            showModal();
-          } else if (sendGoogleTokenResponse.message === "Login successfully") {
-            showSuccess("Login successfully");
-            if (
-              sendGoogleTokenResponse.data &&
-              "access_token" in sendGoogleTokenResponse.data
-            ) {
-              const userInfo = {
-                role: sendGoogleTokenResponse.data.role,
-                email: sendGoogleTokenResponse.data.email,
-                name: sendGoogleTokenResponse.data.name,
-                rememberMe: "false",
-              };
-
-              authStore.setUser(userInfo);
-              authStore.setTokens(
-                sendGoogleTokenResponse.data.access_token,
-                sendGoogleTokenResponse.data.refresh_token
-              );
-
-              const user = authStore.getUser();
-              if (user.role === "student") {
-                router.push("/dashboard");
-              } else if (user.role === "professor") {
-                // router.push({ name: "DashboardProfessor" });
-              } else if (user.role === "admin") {
-                router.push("/admin-dashboard");
-              } else {
-                router.push("/login");
-              }
-            }
-          }
-        } else {
-          showError("Authentication failed. Please try again later.");
+    const googleUserInfo =
+      await ApiService.query<FetchUserInformationFromGoogleResponse>(
+        googleApiLink,
+        { access_token: responseFromGoogle.access_token },
+        {
+          parseResponse: (response) => response.data,
         }
-      } else {
-        showError(
-          "Unable to retrieve your email from Google. Please check your Google account settings."
-        );
+      );
+
+    if (!googleUserInfo?.email) {
+      showError("Unable to retrieve email from Google");
+    }
+
+    const sendGoogleTokenResponse = await authenService.loginWithGoogle(
+      { showError, showSuccess },
+      {
+        access_token: responseFromGoogle.access_token,
+        user_info: googleUserInfo,
+      }
+    );
+    if (sendGoogleTokenResponse?.isSuccess) {
+      if (
+        sendGoogleTokenResponse.message ===
+          "Google login successfully! Please add password to your account to complete your profile." ||
+        sendGoogleTokenResponse.message ===
+          "Your account hasn't had the password. Please add a password to your account to complete your profile."
+      ) {
+        googleLoginMessage.value = sendGoogleTokenResponse.message;
+        showModal();
+      } else if (sendGoogleTokenResponse.message === "Login successfully") {
+        showSuccess("Login successfully");
+        if (
+          sendGoogleTokenResponse.data &&
+          "access_token" in sendGoogleTokenResponse.data
+        ) {
+          const userInfo = {
+            role: sendGoogleTokenResponse.data.role,
+            email: sendGoogleTokenResponse.data.email,
+            name: sendGoogleTokenResponse.data.name,
+            rememberMe: "false",
+          };
+
+          authStore.setUser(userInfo);
+          authStore.setTokens(
+            sendGoogleTokenResponse.data.access_token,
+            sendGoogleTokenResponse.data.refresh_token
+          );
+
+          const user = authStore.getUser();
+          if (user.role === "student") {
+            router.push("/dashboard");
+          } else if (user.role === "professor") {
+            // router.push({ name: "DashboardProfessor" });
+          } else if (user.role === "admin") {
+            router.push("/admin-dashboard");
+          } else {
+            router.push("/login");
+          }
+        }
       }
     } else {
-      showError(
-        "Failed to authenticate with Google. Please ensure you have granted the necessary permissions."
-      );
+      showError("Authentication failed. Please try again later.");
     }
   } catch (error) {
-    if (error instanceof Error && error.message === "Popup window closed") {
-      showError("Google login process was canceled by the user.");
-    } else {
-      showError(
-        "An error occurred during Google login. Please try again later."
-      );
-    }
+    console.error("Google Login Error:", error);
+    showError(
+      error instanceof Error
+        ? error.message
+        : "An unexpected error occurred during Google login"
+    );
   } finally {
     loading.value = false;
   }
@@ -128,10 +122,13 @@ watch(
     if (newPassword) {
       try {
         if (googleUserInfo_Store.value?.email) {
-          const response = await authenService.loginWithEmail(showError, {
-            email: googleUserInfo_Store.value.email,
-            password: newPassword,
-          });
+          const response = await authenService.loginWithEmail(
+            { showError, showSuccess },
+            {
+              email: googleUserInfo_Store.value.email,
+              password: newPassword,
+            }
+          );
           if (response) {
             showSuccess("Login successfully");
             if (response.data && "access_token" in response.data) {

@@ -1,8 +1,8 @@
 <template>
   <v-container>
-    <v-row>
+    <v-row v-if="props.courses.length > 0">
       <v-col
-        v-for="course in props.courses"
+        v-for="course in coursesWithProfessors"
         :key="course.id"
         cols="12"
         class="mb-6"
@@ -13,7 +13,6 @@
           v-ripple
         >
           <div class="d-flex p-4 gap-4 course-content">
-            <!-- Course Image with zoom effect -->
             <div class="image-container">
               <v-img
                 class="flex-shrink-0 course-image"
@@ -34,19 +33,30 @@
               </v-img>
             </div>
 
-            <!-- Middle Content with fixed width -->
             <div class="flex-grow-1 middle-content">
               <div class="mb-4 course-header">
-                <h3 class="text-body-large-1 font-bold text-wrap mb-1 course-title">
+                <h3
+                  class="text-body-large-1 font-bold text-wrap mb-1 course-title"
+                >
                   {{ course.name }}
                 </h3>
-                <p class="text-body-small-1 text-text-tetiary course-date">
-                  {{ formatStart_EndDate(course.start_date)  }} to {{ formatStart_EndDate(course.end_date)  }}
+
+                <p
+                  v-if="
+                    course.start_date !== 'None' && course.end_date !== 'None'
+                  "
+                  class="text-body-small-1 text-wrap"
+                >
+                  {{ formatStart_EndDate(course.start_date) }} to
+                  {{ formatStart_EndDate(course.end_date) }}
+                </p>
+                <p v-else class="text-body-small-1 text-wrap">
+                  Your professor haven't set the start and end date yet
                 </p>
               </div>
 
               <AvatarStack
-                :students="course.student_list"
+                :courses="course"
                 :max-visible="3"
                 class="avatar-stack"
               />
@@ -54,15 +64,19 @@
 
             <!-- Learning Outcomes with fixed width -->
             <div class="outcomes-section">
-              <LearningOutcomes :outcomes="course.learning_outcomes" :nameCourse="course.name" />
+              <LearningOutcomes
+                :outcomes="course.learning_outcomes"
+                :nameCourse="course.name"
+              />
             </div>
-
             <!-- Professor Info and Status -->
-            <div class="d-flex flex-column justify-space-between align-end info-section">
+            <div
+              class="d-flex flex-column justify-space-between align-end info-section"
+            >
               <div class="text-end mb-2">
                 <p class="text-body-base-4 mb-4 professor-info">
                   <strong>Professor:</strong>
-                  {{ course.professor.professor_name }}
+                  {{ course.professorInfo?.professor_name || "N/A" }}
                 </p>
                 <v-chip
                   :color="renderStatusLabel(course.status)"
@@ -91,17 +105,76 @@
         </v-card>
       </v-col>
     </v-row>
+    <v-row v-else>
+      <v-col cols="12">
+        <v-card class="rounded-lg shadow-md p-6">
+          <h3 class="text-heading-4 font-semibold text-center">
+            You have not enrolled any courses
+          </h3>
+        </v-card>
+      </v-col>
+    </v-row>
   </v-container>
 </template>
 
 <script lang="ts" setup>
-import { CoursesListResponse } from "@/types/Course";
+import { coursesService } from "@/services/courseslistServices";
+import { CoursesListResponse, ProfessorInformation } from "@/types/Course";
 import { renderStatusLabel } from "@/utils/functions/render";
 import { formatStart_EndDate } from "@/utils/functions/time";
+
 const props = defineProps<{
   courses: CoursesListResponse[];
 }>();
+const showError = inject("showError") as (message: string) => void;
+const showSuccess = inject("showSuccess") as (message: string) => void;
 
+// Reactive array to store courses with their professor information
+const coursesWithProfessors = ref<
+  (CoursesListResponse & { professorInfo?: ProfessorInformation })[]
+>([]);
+
+// Function to fetch professor for a single course
+const fetchProfessorForCourse = async (courseId: string) => {
+  try {
+    const response = await coursesService.getProfessorForCourse(
+      { showError, showSuccess },
+      courseId
+    );
+
+    if (response && "data" in response && response.data) {
+      return response.data as ProfessorInformation;
+    }
+    return undefined;
+  } catch (error) {
+    showError("Failed to fetch professor information");
+    return undefined;
+  }
+};
+
+// Function to fetch professors for all courses
+const fetchProfessorsForCourses = async () => {
+  // Create a copy of courses to modify
+  const coursesWithProfs = [...props.courses];
+
+  // Use Promise.all to fetch professors concurrently
+  const professorPromises = coursesWithProfs.map((course) =>
+    fetchProfessorForCourse(course.id)
+  );
+
+  const professorResults = await Promise.all(professorPromises);
+
+  // Combine courses with their respective professor information
+  coursesWithProfessors.value = coursesWithProfs.map((course, index) => ({
+    ...course,
+    professorInfo: professorResults[index],
+  }));
+};
+
+// Fetch professors when component mounts
+onMounted(() => {
+  fetchProfessorsForCourses();
+});
 </script>
 
 <style scoped>

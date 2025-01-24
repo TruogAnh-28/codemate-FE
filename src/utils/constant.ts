@@ -62,6 +62,106 @@ export const courseCards = [
   },
 ];
 
-export type ExcelFileHeaderToAddCourses = ["Course ID", "Course Name", "Credit", "Semester", "Professor Email", "Student Email List"]
+export type ExcelFileHeaderToAddCourses = [
+  "Course ID",
+  "Course Name",
+  "Credit",
+  "Semester",
+  "Professor Email",
+  "Student Email List"
+];
 
-export const expectedHeaders: ExcelFileHeaderToAddCourses = ["Course ID", "Course Name", "Credit", "Semester", "Professor Email", "Student Email List"]
+export const expectedHeaders: ExcelFileHeaderToAddCourses = [
+  "Course ID",
+  "Course Name",
+  "Credit",
+  "Semester",
+  "Professor Email",
+  "Student Email List",
+];
+
+export const chartDataa = {
+  labels: ["Module 1", "Module 2", "Module 3"],
+  datasets: [
+    {
+      borderColor: "#f87979",
+      backgroundColor: "#FFC0CB",
+      label: "Lesson 3",
+      data: [75, 80, 65],
+      showLine: true,
+    },
+    {
+      borderColor: "#191970",
+      backgroundColor: "#FFA07A",
+      label: "Lesson 5",
+      data: [50, 70, 60],
+      showLine: true,
+    },
+    {
+      borderColor: "#6200EE",
+      backgroundColor: "#FFD700",
+      label: "Lesson 7",
+      data: [90, 85, 70],
+      showLine: true,
+    },
+  ],
+};
+
+export const chartOptionss = {
+  responsive: true,
+  maintainAspectRatio: false,
+  scales: {
+    y: {
+      beginAtZero: true,
+      max: 100,
+      ticks: {
+        stepSize: 10,
+        callback: function (value: number) {
+          return value + "%";
+        },
+      },
+    },
+    x: {
+      title: {
+        display: true,
+        text: "Module Name",
+      },
+    },
+  },
+};
+
+export const barChartData = {
+  labels: ["Lesson 1", "Lesson 2", "Lesson 3"],
+  datasets: [
+    {
+      label: "Help Requests",
+      data: [5, 8, 3],
+      backgroundColor: "#4CAF50",
+      borderColor: "#388E3C",
+      borderWidth: 1,
+      barThickness: 24,
+    },
+  ],
+};
+
+export const barChartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  scales: {
+    y: {
+      beginAtZero: true,
+      ticks: {
+        stepSize: 1,
+        callback: function (value: number) {
+          return value + " times";
+        },
+      },
+    },
+    x: {
+      title: {
+        display: true,
+        text: "Lesson",
+      },
+    },
+  },
+};

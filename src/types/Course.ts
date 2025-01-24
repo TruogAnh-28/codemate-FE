@@ -1,19 +1,46 @@
 import { UUID, DateString, DateTimeString, DocumentType, Status} from "@/utils/commonType"
 import { ExcelFileHeaderToAddCourses } from "@/utils/constant";
-export interface ExcelFileCourse {
-  courseId: string;
-  courseName: string;
-  credit: number;
-  nSemester: number;
-  professorEmail: string;
-  studentEmailList: string[];
+export interface CreateCourseResponse {
+  course_id: string
+  courseID: string
+  name: string
+  professor_id: string
+  start_date: string
+  end_date: string
+  status: string
+  nCredit: number
+  nSemester: number
+  learning_outcomes: string
+  image_url: string
+  student_courses_list: StudentCoursesList[]
 }
 
-export interface ImportData {
-  headers: ExcelFileHeaderToAddCourses;
-  courses: ExcelFileCourse[];
+export interface StudentCoursesList {
+  student_id: string
+  course_id: string
+  last_accessed: string
+  completed_lessons: number
+  time_spent: string
+  assignments_done: number
+}
+export interface CreateCourseRequest_Courses {
+  professor_email: string
+  name: string
+  nCredit: number
+  nSemester: number
+  student_list: string[]
+  courseID: string
 }
 
+// export interface ImportData {
+//   headers: ExcelFileHeaderToAddCourses;
+//   courses: ExcelFileCourse[];
+// }
+
+export interface CreateCourseRequest {
+  headers: string[]
+  courses: CreateCourseRequest_Courses[]
+}
 
 export interface CoursesListDashBoardRequest{
   student_id: UUID
@@ -32,15 +59,15 @@ export interface CoursesListPaginatedResponse {
 export interface CoursesListResponse {
   id: UUID
   name: string
-  start_date: DateTimeString
-  end_date: DateTimeString
-  student_list: StudentOfCourseListModal[]
+  start_date: DateString
+  end_date: DateString
   learning_outcomes: string[]
-  professor: ProfessorInformation
   status: Status
-  image: string
-  percentage_complete: string
   last_accessed: DateTimeString
+  nCredit: number
+  nSemester: number
+  courseID: string
+  image: string
 }
 
 export interface StudentOfCourseListModal {
@@ -62,27 +89,21 @@ export interface CourseDetailResponse {
   course_start_date: DateString
   course_end_date: DateString
   course_learning_outcomes: string[]
-  course_professor: ProfessorInformation
   course_status: Status
   course_image: string
   course_percentage_complete: string
-  course_last_accessed: string
+  course_last_accessed: DateTimeString
   completed_lessons: number
   time_spent: string
   assignments_done: number
-  lessons: LessonOriginalResponse[]
 }
 
 export interface LessonOriginalResponse {
   id: UUID
   title: string
   description: string
-  lesson_type: string
-  bookmark: boolean
+  learning_outcomes: string[]
   order: number
-  status: string
-  exercises: ExerciseOriginalResponse[]
-  documents: DocumentOriginalResponse[]
 }
 
 export interface ExerciseOriginalResponse {

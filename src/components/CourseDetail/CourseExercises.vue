@@ -1,15 +1,14 @@
 <template>
   <div class="space-y-6">
     <v-container>
-      <div v-if="exercises.length === 0" class="text-center font-semibold text-heading-4 text-primary-darker">
-        No exercises uploaded by your professor are available!
+      <div v-if="exercises.length === 0">
+        <v-card-title class="text-heading-4 font-semibold"
+          >Exercises:</v-card-title
+        >
+        <v-card-text>No lessons available</v-card-text>
       </div>
 
-      <v-row
-        v-for="(exercise, index) in exercises"
-        :key="index"
-        align="center"
-      >
+      <v-row v-for="(exercise, index) in exercises" :key="index" align="center">
         <v-col cols="12">
           <v-card class="rounded-lg shadow-md p-4">
             <v-row align="center" class="m-0">
@@ -49,14 +48,10 @@
 </template>
 
 <script lang="ts" setup>
-import {
-  CourseDetailResponse,
-  ExerciseOriginalResponse,
-  LessonOriginalResponse,
-} from "@/types/Course";
+import { CourseDetailResponse, ExerciseOriginalResponse } from "@/types/Course";
 import { renderStatusLabel } from "@/utils/functions/render";
 
-const props = defineProps<{
+defineProps<{
   course: CourseDetailResponse;
 }>();
 
@@ -76,30 +71,10 @@ function renderLabelButtonBasedOnStatus(status: string) {
   }
 }
 
-function getAllExercises(course: CourseDetailResponse) {
-  exercises.value = course.lessons.flatMap((lesson: LessonOriginalResponse) =>
-    lesson.exercises.map((exercise) => ({
-      ...exercise,
-      lessonTitle: lesson.title,
-    }))
-  );
-}
-
-watch(
-  () => props.course,
-  (newCourse: CourseDetailResponse) => {
-    if (newCourse) {
-      getAllExercises(newCourse);
-    }
-  },
-  { immediate: true }
-);
-
 const startExercise = (exercise: ExtendedExercise) => {
   console.log(`Starting ${exercise.name}`);
 };
 </script>
-
 
 <style scoped>
 .v-row.m-0 {

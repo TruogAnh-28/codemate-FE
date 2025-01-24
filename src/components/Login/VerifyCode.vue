@@ -154,16 +154,17 @@ const submitCode = async () => {
   if (verifyCode.value.length === 6) {
     loading.value = true;
     try {
-
       const emailToUse = props.resetPassword
         ? useResetPasswordEmailStore().email
         : props.email;
-
-      const response = await authenService.verifyEmail(showError, {
-        email: emailToUse,
-        code: verifyCode.value,
-        reset_password: props.resetPassword,
-      });
+      const response = await authenService.verifyEmail(
+        { showError, showSuccess },
+        {
+          email: emailToUse,
+          code: verifyCode.value,
+          reset_password: props.resetPassword,
+        }
+      );
       if (response?.data?.is_email_verified) {
         showSuccess("Email verified successfully! Please log in~");
         emit("verifyCode", verifyCode.value);
@@ -171,8 +172,6 @@ const submitCode = async () => {
       } else {
         showError("Verification failed. Please try again.");
       }
-    } catch (error) {
-      showError("Error during verification: " + error);
     } finally {
       loading.value = false;
     }
@@ -183,14 +182,12 @@ const resendVerifyCode = async () => {
   loading.value = true;
   try {
     const response = await authenService.resendVerifyEmail(
-      showError,
+      { showError, showSuccess },
       props.email
     );
     if (response?.isSuccess) {
       showSuccess("Verification code sent again");
     }
-  } catch (error) {
-    showError("Error sending verification code: " + error);
   } finally {
     loading.value = false;
   }

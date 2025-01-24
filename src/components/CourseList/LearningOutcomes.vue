@@ -1,12 +1,16 @@
 <template>
-  <div class="learning-outcomes">
+  <div class="learning-outcomes" v-if="outcomes.length > 0">
     <p class="text-body-large-4 text-text-primary font-sans font-bold mb-2">
       Learning Outcomes:
     </p>
 
     <!-- List the displayed outcomes -->
-    <ul class="mx-auto" :class="{ 'dense': outcomes.length <= maxDisplay }">
-      <li v-for="(outcome, index) in displayedOutcomes" :key="index" class="mb-1 line-clamp-1">
+    <ul class="mx-auto" :class="{ dense: outcomes.length <= maxDisplay }">
+      <li
+        v-for="(outcome, index) in displayedOutcomes"
+        :key="index"
+        class="mb-1 line-clamp-1"
+      >
         {{ outcome }}
       </li>
     </ul>
@@ -30,21 +34,24 @@
       :nameCourse="nameCourse"
     />
   </div>
+  <div v-else>
+    <p class="text-body-small-1">No learning outcomes available</p>
+  </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
-import LearningOutcomesModal from './LearningOutcomesModal.vue';
+import { ref, computed } from "vue";
+import LearningOutcomesModal from "./LearningOutcomesModal.vue";
 
 const props = defineProps({
   outcomes: {
     type: Array,
-    required: true
+    required: true,
   },
   nameCourse: {
     type: String,
-    required: true
-  }
+    required: true,
+  },
 });
 
 const maxDisplay = 2;

@@ -50,7 +50,12 @@ const StudentRoutes = [
     component: () => import("@/pages/Dashboard/index.vue"),
     meta: { requiresAuth: true, role: "student" },
   },
-
+  {
+    path: "/progress-tracking",
+    name: "ProgressTracking",
+    component: () => import("@/pages/ProgressTracking/index.vue"),
+    meta: { requiresAuth: true, role: "student" },
+  },
   {
     path: "/courselist",
     name: "CourseList",

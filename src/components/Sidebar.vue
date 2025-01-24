@@ -19,8 +19,7 @@
         value="dashboard"
         :to="'/dashboard'"
         router
-        class="hover:bg-secondary-variant dark:hover:bg-secondary-variant
-               text-text-primary dark:text-text-primary"
+        class="hover:bg-secondary-variant dark:hover:bg-secondary-variant text-text-primary dark:text-text-primary"
       ></v-list-item>
       <v-list-item
         prepend-icon="mdi-school"
@@ -28,9 +27,17 @@
         value="course"
         :to="'/courselist'"
         router
-        class="hover:bg-secondary-variant dark:hover:bg-secondary-variant
-               text-text-primary dark:text-text-primary"
+        class="hover:bg-secondary-variant dark:hover:bg-secondary-variant text-text-primary dark:text-text-primary"
+      ></v-list-item>
+      <v-list-item
+        prepend-icon="mdi-chart-pie"
+        title="Progress Tracking"
+        value="progress-tracking"
+        :to="'/progress-tracking'"
+        router
+        class="hover:bg-secondary-variant dark:hover:bg-secondary-variant text-text-primary dark:text-text-primary"
       ></v-list-item>
     </v-list>
   </v-navigation-drawer>
 </template>
+<script lang="ts" setup></script>

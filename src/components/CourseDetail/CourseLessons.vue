@@ -1,6 +1,6 @@
 <template>
-  <v-card class="p-6">
-    <div v-for="lesson in course.lessons" :key="lesson.id" class="mb-6">
+  <v-card class="p-6" v-if="lessons.length > 0">
+    <div v-for="lesson in lessons" :key="lesson.id" class="mb-6">
       <v-row class="mb-4 m-0">
         <v-col cols="12" md="8" class="border-b-2">
           <div class="font-bold text-body-large-1">{{ lesson.title }}</div>
@@ -33,6 +33,10 @@
       </v-row>
     </div>
   </v-card>
+  <v-card v-else>
+    <v-card-title class="text-heading-4 font-semibold">Lessons:</v-card-title>
+    <v-card-text>No lessons available</v-card-text>
+  </v-card>
 
   <FeedbackLesson
     :lessonId="selectedLessonId"
@@ -55,7 +59,6 @@ import {
   CourseDetailResponse
 } from "@/types/Course";
 import { coursesService } from "@/services/courseslistServices";
-import { User } from "@/constants/user";
 const props = defineProps<{
   course: CourseDetailResponse;
 }>();
@@ -68,19 +71,18 @@ const showDocumentsModal = ref(false);
 const showFeedbackModal = ref(false);
 const selectedLessonId = ref<string | undefined>(undefined);
 const selectedDocuments = ref<DocumentOriginalResponse[]>([]);
+const lessons = ref<LessonOriginalResponse[]>([]);
+const documents = ref<DocumentOriginalResponse[]>([]);
 
 const handleButtonClick = (button: any, lesson: LessonOriginalResponse) => {
   switch (button.index) {
     case 0:
-      showDocuments(lesson.documents);
+      showDocuments(documents.value);
       break;
     case 1:
-      bookmarkLesson(lesson);
-      break;
-    case 2:
       downloadDocuments(lesson.id);
       break;
-    case 3:
+    case 2:
       openFeedbackModal(lesson.id);
       break;
     default:
@@ -96,24 +98,17 @@ const showDocuments = (documentList: DocumentOriginalResponse[] | string) => {
     console.error("Invalid argument for showDocuments:", documentList);
   }
 };
-const showError = inject("showError") as (message: string) => void;
-const showSuccess = inject("showSuccess") as (message: string) => void;
-const bookmarkLesson = async (lesson: LessonOriginalResponse) => {
-  const response = await coursesService.bookmarkLesson(
-    showError,
-    User.id,
-    props.course.course_id,
-    lesson.id
+const fetchLessons = async () => {
+  const response = await coursesService.getLessonsForCourse(
+    { showError, showSuccess },
+    props.course.course_id
   );
-
-  if (response?.valueOf) {
-    lesson.bookmark = !lesson.bookmark;
-    const message = lesson.bookmark ? "Lesson Bookmarked Successfully!" : "Lesson Unbookmarked Successfully!";
-    showSuccess(message);
-  } else {
-    showError("Failed to bookmark lesson.");
+  if (response) {
+    lessons.value = response;
   }
 };
+const showError = inject("showError") as (message: string) => void;
+const showSuccess = inject("showSuccess") as (message: string) => void;
 
 
 const downloadDocuments = (lessonId: string) => {
@@ -147,23 +142,20 @@ const actionButtons = (lesson: LessonOriginalResponse) => [
   },
   {
     index: 1,
-    icon: lesson.bookmark ? "mdi-bookmark" : "mdi-bookmark-outline",
-    value: lesson.bookmark ? "Unbookmark Lesson" : "Bookmark Lesson",
-    class: lesson.bookmark ? "text-error" : "text-text-primary",
-  },
-  {
-    index: 2,
     icon: "mdi-download",
     value: "Download Documents",
     class: "text-text-primary",
   },
   {
-    index: 3,
+    index: 2,
     icon: "mdi-comment-text-outline",
     value: "Feedback Lesson",
     class: "text-text-primary",
   },
 ];
+onMounted(() => {
+  fetchLessons();
+});
 </script>
 
 <style scoped>

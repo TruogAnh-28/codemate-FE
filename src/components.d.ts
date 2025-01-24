@@ -39,6 +39,7 @@ declare module 'vue' {
     LearningOutcomes: typeof import('./components/CourseList/LearningOutcomes.vue')['default']
     LearningOutcomesModal: typeof import('./components/CourseList/LearningOutcomesModal.vue')['default']
     LoginForm: typeof import('./components/Login/LoginForm.vue')['default']
+    OverallProgress: typeof import('./components/ProgressTracking/OverallProgress.vue')['default']
     PasswordModal: typeof import('./components/Login/PasswordModal.vue')['default']
     ProgressStats: typeof import('./components/CourseDetail/ProgressStats.vue')['default']
     RecentActivityCard: typeof import('./components/Dashboard/RecentActivityCard.vue')['default']

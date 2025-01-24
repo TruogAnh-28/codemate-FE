@@ -14,6 +14,7 @@
           :course="course"
           :dialog="dialog"
           @open-recommendation="openRecommendationModal"
+          @open-course-recommendations="openCourseRecommendationsModal"
           @update:dialog="dialog = $event"
           @submit-goal="handleGoalSubmission"
         />
@@ -23,9 +24,8 @@
 </template>
 
 <script lang="ts" setup>
-import { CourseDetailResponse } from "@/types/Course";
+import { CourseDetailResponse, ProfessorInformation } from "@/types/Course";
 import { coursesService } from "@/services/courseslistServices";
-import { User } from "@/constants/user";
 import { Tab } from "@/components/CourseDetail/CourseMainContent.vue";
 
 const props = defineProps<{
@@ -33,9 +33,11 @@ const props = defineProps<{
 }>();
 const id = props.id;
 const course = ref<CourseDetailResponse | null>(null);
+const professor_information = ref<ProfessorInformation | null>(null);
 const activeTab = ref("description");
 const dialog = ref(false);
 const showError = inject("showError") as (message: string) => void;
+const showSuccess = inject("showSuccess") as (message: string) => void;
 
 const tabs = ref<Tab[]>([
   {
@@ -56,18 +58,31 @@ const tabs = ref<Tab[]>([
 ]);
 
 const fetchCourseDetail = async () => {
-  const response = (await coursesService.fetchCourseDetail(
-    showError,
-    id,
-    User.id
-  )) as CourseDetailResponse;
+  const response = await coursesService.fetchCourseDetail(
+    { showError, showSuccess },
+    id
+  );
+  if (response && "data" in response && response.data) {
+    course.value = response.data as CourseDetailResponse;
+  }
+};
+
+const fetchProfessorInformation = async () => {
+  const response = await coursesService.getProfessorForCourse(
+    { showError, showSuccess },
+    id
+  );
   if (response) {
-    course.value = response;
+    professor_information.value = response;
   }
 };
 
 const openRecommendationModal = () => {
   dialog.value = true;
+};
+
+const openCourseRecommendationsModal = () => {
+
 };
 
 const handleGoalSubmission = (goal: string) => {
@@ -76,10 +91,10 @@ const handleGoalSubmission = (goal: string) => {
 };
 
 watch(
-  () => course.value,
-  (newCourse: CourseDetailResponse | null) => {
-    if (newCourse && newCourse.course_professor) {
-      const professorName = newCourse.course_professor.professor_name;
+  () => professor_information.value,
+  (professor_information_new: ProfessorInformation | null) => {
+    if (professor_information_new && professor_information_new.professor_name) {
+      const professorName = professor_information_new.professor_name;
       tabs.value = [
         {
           label: "Description",
@@ -103,5 +118,6 @@ watch(
 
 onMounted(() => {
   fetchCourseDetail();
+  fetchProfessorInformation();
 });
 </script>
