@@ -26,7 +26,7 @@ export const dashboardService = {
     { showError, showSuccess }: AuthConfig,
     request: AddActivityRequest
   ) {
-    return await ApiService.post("dashboard/student-activities/", request, {
+    return await ApiService.post<boolean>("dashboard/student-activities/", request, {
       showError,
       showSuccess,
     });

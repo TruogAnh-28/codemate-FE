@@ -4,7 +4,7 @@
       <div class="flex flex-col space-y-6 w-1/2">
         <WelcomeCard />
 
-        <FeedbackCard @open-feedback="openFeedback" />
+        <FeedbackCard @open-feedback="openFeedback" type="system" />
       </div>
 
       <RecentActivityCard/>

@@ -1,27 +1,29 @@
 <template>
   <v-card
-    class="system-feedback-card border-2 border-primary/10 hover:shadow-md transition-shadow"
+    class="feedback-card border-2 border-primary/10 hover:shadow-md transition-shadow"
     elevation="1"
   >
     <v-card-text class="p-4">
       <div class="flex items-center space-x-4">
-        <v-icon color="primary" size="36" class="mt-1">mdi-cog-outline</v-icon>
+        <v-icon :color="iconColor" size="36" class="mt-1">{{
+          iconName
+        }}</v-icon>
         <div class="flex-grow">
           <div class="flex items-center justify-between">
             <p class="text-body-large-1 font-semibold text-gray-800">
-              System Feedback
+              {{ typeLabel }} Feedback
             </p>
             <v-chip
-              color="primary"
+              :color="chipColor"
               variant="outlined"
               size="small"
               class="text-xs"
             >
-              Help Us Improve
+              {{ chipText }}
             </v-chip>
           </div>
           <p class="text-gray-600 mt-1">
-            Share your thoughts on our platform's functionality
+            {{ description }}
           </p>
         </div>
       </div>
@@ -29,23 +31,31 @@
         block
         class="mt-4 bg-secondary-variant text-white font-medium"
         elevation="2"
-        @click="openSystemFeedbackModal"
+        @click="openFeedbackModal"
       >
-        Provide System Feedback
+        Provide {{ typeLabel }} Feedback
         <v-icon end icon="mdi-send" />
       </v-btn>
     </v-card-text>
   </v-card>
 
-  <v-dialog v-model="showSystemFeedbackModal" max-width="500">
+  <v-dialog v-model="showFeedbackModal" max-width="500">
     <v-card>
       <v-card-title class="text-h6 bg-primary/10 px-6 py-4">
-        <v-icon color="primary" class="mr-3">mdi-cog-outline</v-icon>
-        System Feedback
+        <v-icon :color="iconColor" class="mr-3">{{ iconName }}</v-icon>
+        {{ typeLabel }} Feedback
       </v-card-title>
 
       <v-card-text class="pt-6">
-        <v-form @submit.prevent="submitSystemFeedback">
+        <v-form @submit.prevent="submitFeedback">
+          <v-text-field
+            v-model="feedbackTitle"
+            label="Feedback Title"
+            variant="outlined"
+            class="mb-4"
+            required
+          />
+
           <v-select
             v-model="feedbackCategory"
             :items="feedbackCategories"
@@ -55,13 +65,29 @@
           />
 
           <v-textarea
-            v-model="systemFeedbackText"
+            v-model="feedbackText"
             label="Your Feedback"
             variant="outlined"
             rows="4"
             placeholder="What can we improve?"
             required
           />
+
+          <div class="flex justify-center items-center my-4">
+            <div class="flex space-x-2">
+              <v-icon
+                v-for="star in 5"
+                :key="star"
+                :color="
+                  star <= feedbackRate ? 'yellow-darken-2' : 'grey-lighten-1'
+                "
+                @click="feedbackRate = star"
+                class="cursor-pointer"
+              >
+                mdi-star
+              </v-icon>
+            </div>
+          </div>
 
           <div class="flex items-center space-x-2 mt-2">
             <v-checkbox
@@ -81,11 +107,11 @@
       </v-card-text>
 
       <v-card-actions class="px-6 pb-6">
-        <v-btn variant="text" @click="showSystemFeedbackModal = false">
+        <v-btn variant="text" @click="showFeedbackModal = false">
           Cancel
         </v-btn>
         <v-spacer />
-        <v-btn color="primary" variant="elevated" @click="submitSystemFeedback">
+        <v-btn color="primary" variant="elevated" @click="submitFeedback">
           Submit Feedback
         </v-btn>
       </v-card-actions>
@@ -94,35 +120,91 @@
 </template>
 
 <script setup lang="ts">
-const showSystemFeedbackModal = ref(false);
-const systemFeedbackText = ref("");
-const feedbackCategory = ref("");
+import { reloadManager } from "@/modals/manager/reload";
+import { dashboardService } from "@/services/dashboardService";
+import { feedbackServices } from "@/services/feedbackServices";
+import { CreateFeedbackRequest } from "@/types/Feedback";
+import { FeedbackCategory } from "@/utils/constant";
+
+interface Props {
+  type: "system" | "course";
+}
+
+const props = defineProps<Props>();
+
+const showFeedbackModal = ref(false);
+const feedbackTitle = ref("");
+const feedbackText = ref("");
+const feedbackCategory = ref<FeedbackCategory>();
+const feedbackRate = ref(3);
 const allowContact = ref(false);
 
 const feedbackCategories = [
-  "User Interface",
-  "Performance",
-  "Feature Request",
-  "Bug Report",
-  "Other",
+  "user_interface",
+  "performance",
+  "feature_request",
+  "bug_report",
+  "other",
 ];
+const typeConfig = computed(() => {
+  return props.type === "system"
+    ? {
+        iconName: "mdi-cog-outline",
+        iconColor: "primary",
+        chipColor: "primary",
+        chipText: "Help Us Improve",
+        description: "Share your thoughts on our platform's functionality",
+        typeLabel: "System",
+      }
+    : {
+        iconName: "mdi-book-open-outline",
+        iconColor: "secondary",
+        chipColor: "secondary",
+        chipText: "Course Feedback",
+        description: "Help us enhance your learning experience",
+        typeLabel: "Course",
+      };
+});
 
-const openSystemFeedbackModal = () => {
-  showSystemFeedbackModal.value = true;
+const openFeedbackModal = () => {
+  showFeedbackModal.value = true;
 };
 
-const submitSystemFeedback = () => {
-  // Implement feedback submission logic
-  console.log({
-    category: feedbackCategory.value,
-    feedback: systemFeedbackText.value,
-    allowContact: allowContact.value,
-  });
+const showError = inject("showError") as (message: string) => void;
+const showSuccess = inject("showSuccess") as (message: string) => void;
 
-  showSystemFeedbackModal.value = false;
-  // Add success notification
+const submitFeedback = async () => {
+  const feedbackData: CreateFeedbackRequest = {
+    type: props.type,
+    title: feedbackTitle.value,
+    category: feedbackCategory.value || "other",
+    description: feedbackText.value,
+    rate: feedbackRate.value,
+    status: "pending",
+  };
+
+  const response = await feedbackServices.sendFeedback(
+    { showError, showSuccess },
+    feedbackData
+  );
+  if (response) {
+    const add_feedback = await dashboardService.addActivity(
+      { showError, showSuccess },
+      {
+        type: "add_feedback",
+        description: feedbackData.title,
+      }
+    );
+    if (add_feedback) {
+      await reloadManager.trigger('activities');
+    }
+  }
+  showFeedbackModal.value = false;
 };
+const { iconName, iconColor, chipColor, chipText, description, typeLabel } =
+  typeConfig.value;
 defineEmits<{
+  (e: "submit-feedback", payload: object): void;
   (e: "open-feedback"): void;
 }>();
 </script>

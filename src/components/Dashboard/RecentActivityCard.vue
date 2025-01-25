@@ -5,7 +5,7 @@
         Recent Activity
       </h3>
     </v-card-title>
-    <v-list v-if="activities.length > 0 " class="max-h-96 overflow-y-auto px-2">
+    <v-list v-if="activities.length > 0" class="max-h-96 overflow-y-auto px-2">
       <ActivityItem
         v-for="activity in activities"
         :key="activity.activity_id"
@@ -27,6 +27,7 @@
 </template>
 
 <script setup lang="ts">
+import { reloadManager } from "@/modals/manager/reload";
 import { dashboardService } from "@/services/dashboardService";
 import { RecentActivitiesResponse } from "@/types/Dashboard";
 import { formatDateTime } from "@/utils/functions/time";
@@ -69,6 +70,11 @@ const ACTIVITY_MAP: Record<
     icon: "mdi-trophy",
     color: "warning",
   },
+  add_feedback: {
+    label: "Added Feedback",
+    icon: "mdi-comment-plus",
+    color: "info",
+  },
 };
 
 const activities = ref<RecentActivitiesResponse[]>([]);
@@ -76,13 +82,20 @@ const showError = inject("showError") as (message: string) => void;
 const showSuccess = inject("showSuccess") as (message: string) => void;
 
 const fetchRecentActivities = async () => {
-  const recentActivities = await dashboardService.fetchRecentActivities({
-    showError,
-    showSuccess,
+  reloadManager.on("activities", async () => {
+    const recentActivities = await dashboardService.fetchRecentActivities({
+      showError,
+      showSuccess,
+    });
+    if (
+      recentActivities &&
+      "data" in recentActivities &&
+      recentActivities.data
+    ) {
+      activities.value = recentActivities.data as RecentActivitiesResponse[];
+    }
   });
-  if (recentActivities) {
-    activities.value = recentActivities;
-  }
+  await reloadManager.trigger("activities");
 };
 onMounted(() => {
   fetchRecentActivities();

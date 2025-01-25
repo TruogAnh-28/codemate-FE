@@ -80,6 +80,26 @@ export const expectedHeaders: ExcelFileHeaderToAddCourses = [
   "Student Email List",
 ];
 
+export type FeedbackType = "system" | "course";
+
+export type FeedbackCategory =
+  | "user_interface"
+  | "performance"
+  | "feature_request"
+  | "bug_report"
+  | "other";
+
+export type FeedbackStatusType = "pending" | "in_progress" | "resolved";
+
+export type ActivityType =
+  | "view_course"
+  | "resume_activity"
+  | "complete_lesson"
+  | "complete_assignment"
+  | "enroll_course"
+  | "badge_earned"
+  | "add_feedback";
+
 export const chartDataa = {
   labels: ["Module 1", "Module 2", "Module 3"],
   datasets: [
