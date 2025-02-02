@@ -12,6 +12,44 @@ export const PASSWORD_PATTERN =
 
 export const NUMBER_PATTERN = /^[0-9]*$/;
 
+// constant.ts
+interface WebVitalTooltip {
+  title: string;
+  description: string;
+  thresholds: string[];
+}
+
+export const WEB_VITALS_TOOLTIPS: Record<string, WebVitalTooltip> = {
+  FCP: {
+    title: 'FCP (First Contentful Paint)',
+    description: 'Measures the time from when the page starts loading to when any part of the page\'s content is rendered on the screen.',
+    thresholds: [
+      'Good: ≤ 1.8 seconds',
+      'Needs Improvement: ≤ 3.0 seconds',
+      'Poor: > 3.0 seconds'
+    ]
+  },
+  LCP: {
+    title: 'LCP (Largest Contentful Paint)',
+    description: 'Measures loading performance. Marks the time at which the largest text or image element is rendered in the viewport.',
+    thresholds: [
+      'Good: ≤ 2.5 seconds',
+      'Needs Improvement: ≤ 4.0 seconds',
+      'Poor: > 4.0 seconds'
+    ]
+  },
+  INP: {
+    title: 'INP (Interaction to Next Paint)',
+    description: 'Measures responsiveness to user interactions. Quantifies the latency of all interactions a user has made with the page.',
+    thresholds: [
+      'Good: ≤ 200 milliseconds',
+      'Needs Improvement: ≤ 500 milliseconds',
+      'Poor: > 500 milliseconds'
+    ]
+  }
+}
+
+
 export const features = [
   {
     icon: "mdi-lightbulb",

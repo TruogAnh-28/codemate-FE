@@ -65,7 +65,10 @@ export default defineConfig({
       '.vue',
     ],
   },
-  server: {
-    port: 3000,
-  },
+    server: {
+      host: '0.0.0.0',
+      port: 5173,
+      strictPort: true
+    },
+    cacheDir: './.vite',
 })

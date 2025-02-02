@@ -35,6 +35,7 @@ declare module 'vue' {
     FeedbackLesson: typeof import('./components/CourseDetail/FeedbackLesson.vue')['default']
     GetGoalsModal: typeof import('./components/CourseDetail/GetGoalsModal.vue')['default']
     GoogleLoginButton: typeof import('./components/Login/GoogleLoginButton.vue')['default']
+    ImportExcel: typeof import('./components/AdminDashboard/ImportExcel.vue')['default']
     LanguageSelect: typeof import('./components/LanguageSelect.vue')['default']
     LearningOutcomes: typeof import('./components/CourseList/LearningOutcomes.vue')['default']
     LearningOutcomesModal: typeof import('./components/CourseList/LearningOutcomesModal.vue')['default']
@@ -50,8 +51,10 @@ declare module 'vue' {
     ShowDocumentsModal: typeof import('./components/CourseDetail/ShowDocumentsModal.vue')['default']
     Sidebar: typeof import('./components/Sidebar.vue')['default']
     SuccessAlert: typeof import('./components/SuccessAlert.vue')['default']
+    SumCard: typeof import('./components/AdminDashboard/SumCard.vue')['default']
     Teams: typeof import('./components/Login/Teams.vue')['default']
     VerifyCode: typeof import('./components/Login/VerifyCode.vue')['default']
+    WebVitals: typeof import('./components/AdminDashboard/WebVitals.vue')['default']
     WelcomeCard: typeof import('./components/Dashboard/WelcomeCard.vue')['default']
   }
 }
