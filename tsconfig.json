@@ -1,29 +1,65 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "jsx": "preserve",
+    "lib": ["DOM", "ESNext"],
+    "baseUrl": ".",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "paths": {
+      "@/*": ["src/*"]
+    },
+    "resolveJsonModule": true,
+    "types": [
+      "vite/client",
+      "vite-plugin-vue-layouts/client",
+      "unplugin-vue-router/client",
+      "vue",
+    ],
+    "allowJs": true,
+    "strict": true,
+    "strictNullChecks": true,
+    "noUnusedLocals": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "skipLibCheck": true
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.d.ts",
+    "src/**/*.tsx",
+    "src/**/*.vue"
+  ],
+  "exclude": ["dist", "node_modules", "cypress"],
+  "references": [{ "path": "./tsconfig.node.json" }],
+}
 // {
 //   "compilerOptions": {
 //     "target": "ESNext",
-//     "jsx": "preserve",
-//     "lib": ["DOM", "ESNext"],
-//     "baseUrl": ".",
+//     "useDefineForClassFields": true,
 //     "module": "ESNext",
-//     "moduleResolution": "Bundler",
-//     "paths": {
-//       "@/*": ["src/*"]
-//     },
-//     "resolveJsonModule": true,
-//     "types": [
-//       "vite/client",
-//       "vite-plugin-vue-layouts/client",
-//       "unplugin-vue-router/client",
-//       "vue",
-//     ],
-//     "allowJs": true,
+//     "moduleResolution": "bundler",
 //     "strict": true,
-//     "strictNullChecks": true,
-//     "noUnusedLocals": true,
-//     "esModuleInterop": true,
-//     "forceConsistentCasingInFileNames": true,
+//     "jsx": "preserve",
+//     "resolveJsonModule": true,
 //     "isolatedModules": true,
-//     "skipLibCheck": true
+//     "esModuleInterop": true,
+//     "lib": [
+//       "ESNext",
+//       "DOM"
+//     ],
+//     "skipLibCheck": true,
+//     "noEmit": true,
+//     "types": [
+//       "node",
+//       "estree"
+//     ],
+//     "paths": {
+//       "@/*": [
+//         "src/*"
+//       ]
+//     },
 //   },
 //   "include": [
 //     "src/**/*.ts",
@@ -31,25 +67,9 @@
 //     "src/**/*.tsx",
 //     "src/**/*.vue"
 //   ],
-//   "exclude": ["dist", "node_modules", "cypress"],
-//   "references": [{ "path": "./tsconfig.node.json" }],
+//   "references": [
+//     {
+//       "path": "./tsconfig.node.json"
+//     }
+//   ]
 // }
-{
-  "compilerOptions": {
-    "target": "ESNext",
-    "useDefineForClassFields": true,
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "strict": true,
-    "jsx": "preserve",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "esModuleInterop": true,
-    "lib": ["ESNext", "DOM"],
-    "skipLibCheck": true,
-    "noEmit": true,
-    "types": ["node", "estree"]
-  },
-  "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue"],
-  "references": [{ "path": "./tsconfig.node.json" }]
-}

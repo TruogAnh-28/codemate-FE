@@ -10,6 +10,7 @@ import {
   CreateCourseResponse,
 } from "@/types/Course";
 import { AuthConfig } from "./authenServices";
+import { IResponseData } from "@/modals/apis/response";
 export const coursesService = {
   async fetchCoursesList({ showError, showSuccess, search_query }: AuthConfig & { search_query?: string }) {
     return await ApiService.query<CoursesListPaginatedResponse>(
@@ -77,4 +78,11 @@ export const coursesService = {
       showSuccess,
     });
   },
+  async countCourses({ showError, showSuccess}: AuthConfig) {
+    return await ApiService.query<IResponseData<number>>(
+        "courses/count/",
+        undefined,
+        { showError, showSuccess }
+    );
+},
 };

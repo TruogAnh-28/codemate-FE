@@ -50,6 +50,7 @@ declare module 'vue' {
     RouterView: typeof import('vue-router')['RouterView']
     ShowDocumentsModal: typeof import('./components/CourseDetail/ShowDocumentsModal.vue')['default']
     Sidebar: typeof import('./components/Sidebar.vue')['default']
+    SparklineChart: typeof import('./components/AdminDashboard/SparklineChart.vue')['default']
     SuccessAlert: typeof import('./components/SuccessAlert.vue')['default']
     SumCard: typeof import('./components/AdminDashboard/SumCard.vue')['default']
     Teams: typeof import('./components/Login/Teams.vue')['default']
