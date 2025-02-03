@@ -22,3 +22,16 @@ export interface CreateFeedbackResponse {
   created_at: DateTimeString
   resolved_at: DateTimeString
 }
+
+export interface GetListFeedbackResponse {
+  id: string
+  type: string
+  title: string
+  category: string
+  description: string
+  rate: number
+  status: string
+  created_at: string
+  resolved_at: string
+  student_id: string
+}

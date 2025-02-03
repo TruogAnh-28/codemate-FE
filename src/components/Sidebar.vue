@@ -12,7 +12,9 @@
       ></v-list-item>
     </v-list>
     <v-divider class="border-border dark:border-border"></v-divider>
-    <v-list density="compact" nav>
+
+    <!-- Student Navigation -->
+    <v-list v-if="role === 'student'" density="compact" nav>
       <v-list-item
         prepend-icon="mdi-view-dashboard"
         title="Dashboard"
@@ -23,7 +25,7 @@
       ></v-list-item>
       <v-list-item
         prepend-icon="mdi-school"
-        title="Course"
+        title="My Courses"
         value="course"
         :to="'/courselist'"
         router
@@ -31,13 +33,51 @@
       ></v-list-item>
       <v-list-item
         prepend-icon="mdi-chart-pie"
-        title="Progress Tracking"
+        title="My Progress"
         value="progress-tracking"
         :to="'/progress-tracking'"
+        router
+        class="hover:bg-secondary-variant dark:hover:bg-secondary-variant text-text-primary dark:text-text-primary"
+      ></v-list-item>
+      <v-list-item
+        prepend-icon="mdi-calendar"
+        title="Schedule"
+        value="schedule"
+        :to="'/schedule'"
+        router
+        class="hover:bg-secondary-variant dark:hover:bg-secondary-variant text-text-primary dark:text-text-primary"
+      ></v-list-item>
+    </v-list>
+
+    <!-- Teacher Navigation -->
+    <v-list v-else-if="role === 'professor'" density="compact" nav>
+      <v-list-item
+        prepend-icon="mdi-view-dashboard"
+        title="Professor Dashboard"
+        value="dashboard"
+        :to="'/professor-dashboard'"
+        router
+        class="hover:bg-secondary-variant dark:hover:bg-secondary-variant text-text-primary dark:text-text-primary"
+      ></v-list-item>
+    </v-list>
+
+    <!-- Admin Navigation -->
+    <v-list v-else density="compact" nav>
+      <v-list-item
+        prepend-icon="mdi-view-dashboard"
+        title="Admin Dashboard"
+        value="admin-dashboard"
+        :to="'/admin-dashboard'"
         router
         class="hover:bg-secondary-variant dark:hover:bg-secondary-variant text-text-primary dark:text-text-primary"
       ></v-list-item>
     </v-list>
   </v-navigation-drawer>
 </template>
-<script lang="ts" setup></script>
+
+<script lang="ts" setup>
+import { useAuthStore } from "@/stores/auth";
+import { computed } from "vue";
+
+const role = computed(() => useAuthStore().getUser().role);
+</script>

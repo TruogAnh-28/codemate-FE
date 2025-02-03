@@ -1,33 +1,35 @@
 <template>
-  <v-container>
-    <v-row>
-      <v-col cols="12">
-        <WebVitals />
-      </v-col>
-    </v-row>
+  <v-layout>
+    <v-container>
+      <v-row>
+        <v-col cols="12">
+          <WebVitals />
+        </v-col>
+      </v-row>
 
-    <v-row justify="center" align="stretch">
-      <v-col cols="12" md="5" class="d-flex flex-grow-1">
-        <SumCard
-          title="Total Users"
-          :content="totalUsers_"
-          :iconComponent="totalUsers"
-          growth="8.5"
-        />
-      </v-col>
-      <v-col cols="12" md="5" class="d-flex flex-grow-1">
-        <SumCard
-          title="Total Courses"
-          :content="totalCourses_"
-          :iconComponent="totalCourses"
-          growth="8.5"
-        />
-      </v-col>
-    </v-row>
-    <v-row>
-      <SparklineChart />
-    </v-row>
-  </v-container>
+      <v-row justify="center" align="stretch">
+        <v-col cols="12" md="5" class="d-flex flex-grow-1">
+          <SumCard
+            title="Total Users"
+            :content="totalUsers_"
+            :iconComponent="totalUsers"
+            growth="8.5"
+          />
+        </v-col>
+        <v-col cols="12" md="5" class="d-flex flex-grow-1">
+          <SumCard
+            title="Total Courses"
+            :content="totalCourses_"
+            :iconComponent="totalCourses"
+            growth="8.5"
+          />
+        </v-col>
+      </v-row>
+      <v-row>
+        <SparklineChart />
+      </v-row>
+    </v-container>
+  </v-layout>
 </template>
 
 <script setup lang="ts">

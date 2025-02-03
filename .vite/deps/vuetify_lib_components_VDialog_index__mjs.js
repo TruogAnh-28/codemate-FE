@@ -1,38 +1,38 @@
 import {
-  VDialogTransition
-} from "./chunk-2RGHPH2B.js";
-import {
-  VDefaultsProvider
-} from "./chunk-ZC6VOQCQ.js";
-import {
   VOverlay,
   makeVOverlayProps
-} from "./chunk-NEMBN5NO.js";
+} from "./chunk-EZTUYQPG.js";
+import {
+  useScopeId
+} from "./chunk-LZ4GRPST.js";
+import "./chunk-WMKOTSCF.js";
+import "./chunk-L762JSBZ.js";
+import {
+  VDialogTransition
+} from "./chunk-LMWX4SRW.js";
 import {
   forwardRefs
 } from "./chunk-4TX3OV3G.js";
-import "./chunk-ZNOMJ2LV.js";
+import "./chunk-XCXQWXQX.js";
 import {
-  useScopeId
-} from "./chunk-FKCOJFQF.js";
-import "./chunk-S6JDGMD4.js";
-import "./chunk-JHDII2JF.js";
-import "./chunk-NQNZCBGM.js";
+  VDefaultsProvider
+} from "./chunk-4D6CWHFV.js";
+import "./chunk-ESYLCOPT.js";
+import "./chunk-4VXDIFS4.js";
+import "./chunk-CF3WB5LA.js";
+import "./chunk-EFWZQNSD.js";
 import {
   useProxiedModel
-} from "./chunk-HCIWNCCT.js";
+} from "./chunk-FB3AKH2O.js";
 import "./chunk-TP5SG6V2.js";
-import "./chunk-OPGBKIHZ.js";
-import "./chunk-3MLMI5NR.js";
-import "./chunk-DNZVU6LE.js";
-import "./chunk-5SNBRTN6.js";
+import "./chunk-V25JPCJF.js";
 import {
   IN_BROWSER,
   focusableChildren,
   genericComponent,
   propsFactory,
   useRender
-} from "./chunk-6PPR34VZ.js";
+} from "./chunk-3BSLPPLE.js";
 import {
   createVNode,
   mergeProps,
