@@ -71,6 +71,15 @@
         router
         class="hover:bg-secondary-variant dark:hover:bg-secondary-variant text-text-primary dark:text-text-primary"
       ></v-list-item>
+      <v-list-item
+        :prepend-icon="feedbackManagement"
+        title="Feedback Management"
+        value="feedback-management"
+        :to="'/feedback-management'"
+        router
+        class="hover:bg-secondary-variant dark:hover:bg-secondary-variant text-text-primary dark:text-text-primary"
+      >
+      </v-list-item>
     </v-list>
   </v-navigation-drawer>
 </template>
@@ -78,6 +87,7 @@
 <script lang="ts" setup>
 import { useAuthStore } from "@/stores/auth";
 import { computed } from "vue";
+import feedbackManagement from "@/assets/icons/feedbackManagement.vue";
 
 const role = computed(() => useAuthStore().getUser().role);
 </script>

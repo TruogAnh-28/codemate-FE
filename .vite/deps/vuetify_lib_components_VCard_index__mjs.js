@@ -1,78 +1,79 @@
 import {
-  makePositionProps,
-  usePosition
-} from "./chunk-YC7NQGXL.js";
-import {
   VAvatar
-} from "./chunk-GBUUOWTI.js";
+} from "./chunk-3SZ6FHVF.js";
 import {
   VImg
-} from "./chunk-4E6ISGGK.js";
-import {
-  makeBorderProps,
-  useBorder
-} from "./chunk-STKVJM52.js";
-import {
-  Ripple
-} from "./chunk-PG32VENP.js";
-import {
-  makeElevationProps,
-  useElevation
-} from "./chunk-26IEHTVX.js";
-import {
-  makeRouterProps,
-  useLink
-} from "./chunk-L762JSBZ.js";
-import {
-  genOverlays,
-  makeVariantProps,
-  useVariant
-} from "./chunk-TF3OHB7L.js";
-import "./chunk-3CU5VKDC.js";
+} from "./chunk-BRDY2Z2U.js";
+import "./chunk-SCOPPOCF.js";
 import {
   LoaderSlot,
   makeLoaderProps,
   useLoader
-} from "./chunk-BZOW6ZJL.js";
+} from "./chunk-XUJOWRNZ.js";
 import {
   makeDensityProps,
   useDensity
-} from "./chunk-Y6EZBCRA.js";
+} from "./chunk-DNVMGE2E.js";
 import {
-  VIcon
-} from "./chunk-XWOOUGWN.js";
-import "./chunk-VQ25MJHK.js";
-import "./chunk-XCXQWXQX.js";
+  makePositionProps,
+  usePosition
+} from "./chunk-IBNRTJ2F.js";
+import "./chunk-NQVLBSBA.js";
+import "./chunk-4AM27EJJ.js";
+import {
+  genOverlays,
+  makeVariantProps,
+  useVariant
+} from "./chunk-TXI77NTR.js";
+import {
+  makeRouterProps,
+  useLink
+} from "./chunk-D3VMBXOB.js";
+import {
+  makeBorderProps,
+  useBorder
+} from "./chunk-4E3GKBEK.js";
+import {
+  Ripple
+} from "./chunk-QNNQBKZ4.js";
 import {
   VDefaultsProvider
-} from "./chunk-4D6CWHFV.js";
+} from "./chunk-W4YUM6IS.js";
 import {
   makeDimensionProps,
   useDimension
-} from "./chunk-ESYLCOPT.js";
+} from "./chunk-IOMX4THI.js";
+import {
+  makeElevationProps,
+  useElevation
+} from "./chunk-Y2GC5DK2.js";
+import "./chunk-2OF4BO7E.js";
 import {
   makeLocationProps,
   useLocation
-} from "./chunk-3TVS2E4S.js";
-import "./chunk-OYVA53NA.js";
+} from "./chunk-IDXYNXDM.js";
+import {
+  VIcon
+} from "./chunk-AG66M7BA.js";
+import "./chunk-7URWXHLF.js";
 import {
   makeRoundedProps,
   useRounded
-} from "./chunk-UUOJC7GH.js";
-import "./chunk-4VXDIFS4.js";
+} from "./chunk-2SMYUG2D.js";
+import "./chunk-XE77TUOP.js";
 import {
   makeTagProps
-} from "./chunk-JATTYYQW.js";
+} from "./chunk-KQMOYNAH.js";
 import {
   IconValue
-} from "./chunk-TPSUBNYI.js";
-import "./chunk-EFWZQNSD.js";
-import "./chunk-FB3AKH2O.js";
+} from "./chunk-LLPFESVU.js";
+import "./chunk-2ON55NUK.js";
+import "./chunk-HGHZAKZY.js";
 import "./chunk-TP5SG6V2.js";
 import {
   makeThemeProps,
   provideTheme
-} from "./chunk-V25JPCJF.js";
+} from "./chunk-IMFWK6WZ.js";
 import {
   createSimpleFunctional,
   genericComponent,
@@ -80,7 +81,7 @@ import {
   propsFactory,
   provideDefaults,
   useRender
-} from "./chunk-3BSLPPLE.js";
+} from "./chunk-7ZHHBHXU.js";
 import {
   Fragment,
   computed,

@@ -1,17 +1,17 @@
 import {
   VIcon
-} from "./chunk-XWOOUGWN.js";
-import "./chunk-VQ25MJHK.js";
-import "./chunk-4VXDIFS4.js";
-import "./chunk-JATTYYQW.js";
+} from "./chunk-AG66M7BA.js";
+import "./chunk-7URWXHLF.js";
+import "./chunk-XE77TUOP.js";
+import "./chunk-KQMOYNAH.js";
 import {
   VClassIcon,
   VComponentIcon,
   VLigatureIcon,
   VSvgIcon
-} from "./chunk-TPSUBNYI.js";
-import "./chunk-V25JPCJF.js";
-import "./chunk-3BSLPPLE.js";
+} from "./chunk-LLPFESVU.js";
+import "./chunk-IMFWK6WZ.js";
+import "./chunk-7ZHHBHXU.js";
 import "./chunk-IJV5NOMV.js";
 import "./chunk-UVKRO5ER.js";
 export {

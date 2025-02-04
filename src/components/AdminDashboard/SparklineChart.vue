@@ -1,7 +1,17 @@
 <template>
   <v-container>
     <v-card>
-      <v-card-title>Feedback Status Trends by Month (2023)</v-card-title>
+      <v-card-title class="flex flex-row justify-between">
+        <p class="text-heading-3">Feedback Status Trend</p>
+        <v-select
+          v-model="selectedYear"
+          :items="years"
+          label="Year"
+          outlined
+          dense
+          class="w-32"
+        />
+      </v-card-title>
       <v-card-text>
         <Line :data="chartData" :options="chartOptions" class="h-64" />
       </v-card-text>
@@ -10,7 +20,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, inject } from "vue";
+import { ref, onMounted, watch, inject } from "vue";
 import { Line } from "vue-chartjs";
 import {
   Chart as ChartJS,
@@ -52,27 +62,35 @@ interface MonthlyDataAccumulator {
   };
 }
 
+const years = ref<number[]>([]);
+const selectedYear = ref<number | null>(null);
+const listFeedback = ref<GetListFeedbackResponse[]>([]);
+const showError = inject("showError") as (message: string) => void;
+const showSuccess = inject("showSuccess") as (message: string) => void;
+
 const chartData = ref<ChartData<"line">>({
   labels: [],
   datasets: [
     {
       label: "Resolved",
       data: [],
-      borderColor: "rgb(75, 192, 192)",
+      borderColor: "green",
       backgroundColor: "rgba(75, 192, 192, 0.1)",
       fill: true,
+      tension: 0.3,
     },
     {
       label: "Pending",
       data: [],
-      borderColor: "rgb(255, 159, 64)",
+      borderColor: "red",
       backgroundColor: "rgba(255, 159, 64, 0.1)",
       fill: true,
+      tension: 0.3,
     },
     {
       label: "In Progress",
       data: [],
-      borderColor: "rgb(54, 162, 235)",
+      borderColor: "blue",
       backgroundColor: "rgba(54, 162, 235, 0.1)",
       fill: true,
       tension: 0.3,
@@ -151,23 +169,9 @@ const processMonthlyData = (rawData: GetListFeedbackResponse[]): MonthlyStats =>
     );
 };
 
-const showError = inject("showError") as (message: string) => void;
-const showSuccess = inject("showSuccess") as (message: string) => void;
-
-const fetchFeedbackData = async () => {
-  try {
-    const response = await feedbackServices.getListFeedbacks(undefined, {
-      showError,
-      showSuccess,
-    });
-    if ("data" in response && response.data) {
-      return response.data;
-    }
-    return [];
-  } catch (error) {
-    console.error("Error fetching feedback data:", error);
-    return [];
-  }
+const getListYear = (rawData: GetListFeedbackResponse[]): number[] => {
+  const years = rawData.map((feedback) => new Date(feedback.created_at).getFullYear());
+  return Array.from(new Set(years)).sort((a, b) => b - a);
 };
 
 const months = [
@@ -185,9 +189,35 @@ const months = [
   "Dec",
 ];
 
-onMounted(async () => {
-  const rawData = await fetchFeedbackData();
-  const monthlyStats = processMonthlyData(rawData);
+const fetchFeedbackData = async (year?: number | null) => {
+  const response = await feedbackServices.getListFeedbacks(
+    { year: year ?? undefined },
+    {
+      showError,
+      showSuccess,
+    }
+  );
+
+  if ("data" in response && response.data) {
+    years.value = getListYear(response.data);
+    listFeedback.value = response.data;
+
+    if (!selectedYear.value && years.value.length > 0) {
+      selectedYear.value = years.value[0];
+    }
+    return response.data;
+  }
+  return [];
+};
+
+const updateChartData = (rawData: GetListFeedbackResponse[]) => {
+  const monthlyStats = processMonthlyData(
+    rawData.filter(
+      (feedback) =>
+        !selectedYear.value ||
+        new Date(feedback.created_at).getFullYear() === selectedYear.value
+    )
+  );
 
   chartData.value = {
     labels: monthlyStats.labels.map((month) => {
@@ -201,6 +231,7 @@ onMounted(async () => {
         borderColor: "green",
         backgroundColor: "rgba(75, 192, 192, 0.1)",
         fill: true,
+        tension: 0.3,
       },
       {
         label: "Pending",
@@ -208,6 +239,7 @@ onMounted(async () => {
         borderColor: "red",
         backgroundColor: "rgba(255, 159, 64, 0.1)",
         fill: true,
+        tension: 0.3,
       },
       {
         label: "In Progress",
@@ -215,8 +247,24 @@ onMounted(async () => {
         borderColor: "blue",
         backgroundColor: "rgba(54, 162, 235, 0.1)",
         fill: true,
+        tension: 0.3,
       },
     ],
   };
+};
+
+onMounted(async () => {
+  const rawData = await fetchFeedbackData();
+  if (rawData.length > 0) {
+    updateChartData(rawData);
+  }
 });
+
+watch(
+  selectedYear,
+  async (newYear) => {
+    updateChartData(listFeedback.value);
+  },
+  { immediate: true }
+);
 </script>
