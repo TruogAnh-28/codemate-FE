@@ -109,7 +109,6 @@
                             mdi-circle-medium
                           </v-icon>
                         </template>
-                        <v-list-item-title>{{ item.title }}</v-list-item-title>
                       </v-list-item>
                     </template>
                   </v-select>
