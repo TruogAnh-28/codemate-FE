@@ -80,6 +80,15 @@
         class="hover:bg-secondary-variant dark:hover:bg-secondary-variant text-text-primary dark:text-text-primary"
       >
       </v-list-item>
+      <v-list-item
+        prepend-icon="mdi-account-group"
+        title="User Management"
+        value="user-management"
+        :to="'/user-management'"
+        router
+        class="hover:bg-secondary-variant dark:hover:bg-secondary-variant text-text-primary dark:text-text-primary"
+      >
+      </v-list-item>
     </v-list>
   </v-navigation-drawer>
 </template>
