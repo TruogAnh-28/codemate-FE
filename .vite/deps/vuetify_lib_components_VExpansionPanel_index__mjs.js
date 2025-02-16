@@ -3,6 +3,24 @@ import {
   useLazy
 } from "./chunk-FTNIKNZL.js";
 import {
+  makeElevationProps,
+  useElevation
+} from "./chunk-Y2GC5DK2.js";
+import {
+  Ripple
+} from "./chunk-QNNQBKZ4.js";
+import {
+  VDefaultsProvider
+} from "./chunk-W4YUM6IS.js";
+import {
+  makeRoundedProps,
+  useRounded
+} from "./chunk-2SMYUG2D.js";
+import {
+  makeDimensionProps,
+  useDimension
+} from "./chunk-IOMX4THI.js";
+import {
   VExpandTransition
 } from "./chunk-OCQPVZMC.js";
 import {
@@ -12,33 +30,15 @@ import {
   useGroupItem
 } from "./chunk-JOZZHMQ6.js";
 import {
-  Ripple
-} from "./chunk-QNNQBKZ4.js";
-import {
-  VDefaultsProvider
-} from "./chunk-W4YUM6IS.js";
-import {
-  makeDimensionProps,
-  useDimension
-} from "./chunk-IOMX4THI.js";
-import {
-  makeElevationProps,
-  useElevation
-} from "./chunk-Y2GC5DK2.js";
-import {
   VIcon
-} from "./chunk-AG66M7BA.js";
+} from "./chunk-EWWA6K3J.js";
 import "./chunk-7URWXHLF.js";
-import {
-  makeRoundedProps,
-  useRounded
-} from "./chunk-2SMYUG2D.js";
-import {
-  useBackgroundColor
-} from "./chunk-XE77TUOP.js";
 import {
   makeTagProps
 } from "./chunk-KQMOYNAH.js";
+import {
+  useBackgroundColor
+} from "./chunk-XE77TUOP.js";
 import {
   IconValue
 } from "./chunk-LLPFESVU.js";

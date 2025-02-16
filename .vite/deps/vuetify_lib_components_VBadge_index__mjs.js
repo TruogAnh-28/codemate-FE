@@ -7,20 +7,20 @@ import {
   useLocation
 } from "./chunk-IDXYNXDM.js";
 import {
-  VIcon
-} from "./chunk-AG66M7BA.js";
-import "./chunk-7URWXHLF.js";
-import {
   makeRoundedProps,
   useRounded
 } from "./chunk-2SMYUG2D.js";
 import {
-  useBackgroundColor,
-  useTextColor
-} from "./chunk-XE77TUOP.js";
+  VIcon
+} from "./chunk-EWWA6K3J.js";
+import "./chunk-7URWXHLF.js";
 import {
   makeTagProps
 } from "./chunk-KQMOYNAH.js";
+import {
+  useBackgroundColor,
+  useTextColor
+} from "./chunk-XE77TUOP.js";
 import {
   IconValue
 } from "./chunk-LLPFESVU.js";

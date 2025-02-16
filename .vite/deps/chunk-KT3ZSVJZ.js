@@ -1,63 +1,63 @@
 import {
-  VDivider
-} from "./chunk-XNVQLXPL.js";
-import {
-  VAvatar
-} from "./chunk-3SZ6FHVF.js";
-import {
   useSsrBoot
 } from "./chunk-GXYLEPDC.js";
+import {
+  VAvatar
+} from "./chunk-KUTHJ2DU.js";
+import {
+  MaybeTransition
+} from "./chunk-2OF4BO7E.js";
+import {
+  VDivider
+} from "./chunk-XNVQLXPL.js";
 import {
   makeDensityProps,
   useDensity
 } from "./chunk-DNVMGE2E.js";
+import {
+  makeBorderProps,
+  useBorder
+} from "./chunk-4E3GKBEK.js";
+import {
+  makeElevationProps,
+  useElevation
+} from "./chunk-Y2GC5DK2.js";
+import {
+  Ripple
+} from "./chunk-QNNQBKZ4.js";
 import {
   genOverlays,
   makeVariantProps,
   useVariant
 } from "./chunk-TXI77NTR.js";
 import {
-  makeRouterProps,
-  useLink
-} from "./chunk-D3VMBXOB.js";
-import {
-  makeBorderProps,
-  useBorder
-} from "./chunk-4E3GKBEK.js";
-import {
-  VExpandTransition
-} from "./chunk-OCQPVZMC.js";
-import {
-  Ripple
-} from "./chunk-QNNQBKZ4.js";
-import {
   VDefaultsProvider
 } from "./chunk-W4YUM6IS.js";
-import {
-  makeDimensionProps,
-  useDimension
-} from "./chunk-IOMX4THI.js";
-import {
-  makeElevationProps,
-  useElevation
-} from "./chunk-Y2GC5DK2.js";
-import {
-  MaybeTransition
-} from "./chunk-2OF4BO7E.js";
-import {
-  VIcon
-} from "./chunk-AG66M7BA.js";
 import {
   makeRoundedProps,
   useRounded
 } from "./chunk-2SMYUG2D.js";
 import {
-  useBackgroundColor,
-  useTextColor
-} from "./chunk-XE77TUOP.js";
+  makeRouterProps,
+  useLink
+} from "./chunk-D3VMBXOB.js";
+import {
+  makeDimensionProps,
+  useDimension
+} from "./chunk-IOMX4THI.js";
+import {
+  VExpandTransition
+} from "./chunk-OCQPVZMC.js";
+import {
+  VIcon
+} from "./chunk-EWWA6K3J.js";
 import {
   makeTagProps
 } from "./chunk-KQMOYNAH.js";
+import {
+  useBackgroundColor,
+  useTextColor
+} from "./chunk-XE77TUOP.js";
 import {
   IconValue
 } from "./chunk-LLPFESVU.js";
@@ -1703,4 +1703,4 @@ export {
   VListItemAction,
   VListItemMedia
 };
-//# sourceMappingURL=chunk-4FH42WIC.js.map
+//# sourceMappingURL=chunk-KT3ZSVJZ.js.map

@@ -1,34 +1,34 @@
 import {
-  VMenu
-} from "./chunk-OFJD66IC.js";
-import {
-  VCheckboxBtn
-} from "./chunk-WMCWJWJW.js";
-import {
   VTextField,
   makeVTextFieldProps
-} from "./chunk-ERSGAMOI.js";
+} from "./chunk-IKDHAE4K.js";
+import {
+  VMenu
+} from "./chunk-WQBJSF74.js";
+import {
+  VCheckboxBtn
+} from "./chunk-MPTIK2E3.js";
 import {
   useForm
 } from "./chunk-O5D4IAYW.js";
-import {
-  VChip
-} from "./chunk-GJTFLGF2.js";
 import {
   VList,
   VListItem,
   makeItemsProps,
   useItems
-} from "./chunk-4FH42WIC.js";
-import {
-  VAvatar
-} from "./chunk-3SZ6FHVF.js";
+} from "./chunk-KT3ZSVJZ.js";
 import {
   forwardRefs
 } from "./chunk-4TX3OV3G.js";
 import {
-  VDialogTransition
-} from "./chunk-OCQPVZMC.js";
+  VChip
+} from "./chunk-22CHUZXD.js";
+import {
+  VAvatar
+} from "./chunk-KUTHJ2DU.js";
+import {
+  makeTransitionProps
+} from "./chunk-2OF4BO7E.js";
 import {
   VDefaultsProvider
 } from "./chunk-W4YUM6IS.js";
@@ -37,20 +37,17 @@ import {
   useDimension
 } from "./chunk-IOMX4THI.js";
 import {
-  makeTransitionProps
-} from "./chunk-2OF4BO7E.js";
+  VDialogTransition
+} from "./chunk-OCQPVZMC.js";
 import {
   VIcon
-} from "./chunk-AG66M7BA.js";
-import {
-  useDisplay
-} from "./chunk-CE5S2J4D.js";
+} from "./chunk-EWWA6K3J.js";
 import {
   IconValue
 } from "./chunk-LLPFESVU.js";
 import {
-  useResizeObserver
-} from "./chunk-PVYEV7FC.js";
+  useDisplay
+} from "./chunk-CE5S2J4D.js";
 import {
   useLocale
 } from "./chunk-2ON55NUK.js";
@@ -60,6 +57,9 @@ import {
 import {
   useToggleScope
 } from "./chunk-TP5SG6V2.js";
+import {
+  useResizeObserver
+} from "./chunk-PVYEV7FC.js";
 import {
   IN_BROWSER,
   checkPrintable,
@@ -969,4 +969,4 @@ export {
   useVirtual,
   VSelect
 };
-//# sourceMappingURL=chunk-KITWAHVG.js.map
+//# sourceMappingURL=chunk-O7ONQTSV.js.map

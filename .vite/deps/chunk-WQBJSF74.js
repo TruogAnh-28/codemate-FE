@@ -2,7 +2,7 @@ import {
   VMenuSymbol,
   VOverlay,
   makeVOverlayProps
-} from "./chunk-3BUFVB5Q.js";
+} from "./chunk-CKH6WGBP.js";
 import {
   useScopeId
 } from "./chunk-ZAL6CBZH.js";
@@ -10,11 +10,11 @@ import {
   forwardRefs
 } from "./chunk-4TX3OV3G.js";
 import {
-  VDialogTransition
-} from "./chunk-OCQPVZMC.js";
-import {
   VDefaultsProvider
 } from "./chunk-W4YUM6IS.js";
+import {
+  VDialogTransition
+} from "./chunk-OCQPVZMC.js";
 import {
   useRtl
 } from "./chunk-2ON55NUK.js";
@@ -235,4 +235,4 @@ var VMenu = genericComponent()({
 export {
   VMenu
 };
-//# sourceMappingURL=chunk-OFJD66IC.js.map
+//# sourceMappingURL=chunk-WQBJSF74.js.map

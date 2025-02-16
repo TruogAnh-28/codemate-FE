@@ -1,21 +1,21 @@
 import {
-  useIntersectionObserver
-} from "./chunk-4AM27EJJ.js";
-import {
   makeLocationProps,
   useLocation
 } from "./chunk-IDXYNXDM.js";
+import {
+  useIntersectionObserver
+} from "./chunk-4AM27EJJ.js";
 import {
   makeRoundedProps,
   useRounded
 } from "./chunk-2SMYUG2D.js";
 import {
+  makeTagProps
+} from "./chunk-KQMOYNAH.js";
+import {
   useBackgroundColor,
   useTextColor
 } from "./chunk-XE77TUOP.js";
-import {
-  makeTagProps
-} from "./chunk-KQMOYNAH.js";
 import {
   useRtl
 } from "./chunk-2ON55NUK.js";
@@ -224,4 +224,4 @@ var VProgressLinear = genericComponent()({
 export {
   VProgressLinear
 };
-//# sourceMappingURL=chunk-NQVLBSBA.js.map
+//# sourceMappingURL=chunk-DB2YRNXL.js.map

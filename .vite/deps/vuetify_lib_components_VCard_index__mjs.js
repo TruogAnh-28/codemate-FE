@@ -1,69 +1,69 @@
 import {
   VAvatar
-} from "./chunk-3SZ6FHVF.js";
+} from "./chunk-KUTHJ2DU.js";
 import {
   VImg
-} from "./chunk-BRDY2Z2U.js";
+} from "./chunk-2XQY4ZPA.js";
 import "./chunk-SCOPPOCF.js";
+import "./chunk-2OF4BO7E.js";
 import {
   LoaderSlot,
   makeLoaderProps,
   useLoader
-} from "./chunk-XUJOWRNZ.js";
+} from "./chunk-DNTQL5EA.js";
+import {
+  makePositionProps,
+  usePosition
+} from "./chunk-IBNRTJ2F.js";
+import "./chunk-DB2YRNXL.js";
+import {
+  makeLocationProps,
+  useLocation
+} from "./chunk-IDXYNXDM.js";
+import "./chunk-4AM27EJJ.js";
 import {
   makeDensityProps,
   useDensity
 } from "./chunk-DNVMGE2E.js";
 import {
-  makePositionProps,
-  usePosition
-} from "./chunk-IBNRTJ2F.js";
-import "./chunk-NQVLBSBA.js";
-import "./chunk-4AM27EJJ.js";
+  makeBorderProps,
+  useBorder
+} from "./chunk-4E3GKBEK.js";
+import {
+  makeElevationProps,
+  useElevation
+} from "./chunk-Y2GC5DK2.js";
+import {
+  Ripple
+} from "./chunk-QNNQBKZ4.js";
 import {
   genOverlays,
   makeVariantProps,
   useVariant
 } from "./chunk-TXI77NTR.js";
 import {
+  VDefaultsProvider
+} from "./chunk-W4YUM6IS.js";
+import {
+  makeRoundedProps,
+  useRounded
+} from "./chunk-2SMYUG2D.js";
+import {
   makeRouterProps,
   useLink
 } from "./chunk-D3VMBXOB.js";
-import {
-  makeBorderProps,
-  useBorder
-} from "./chunk-4E3GKBEK.js";
-import {
-  Ripple
-} from "./chunk-QNNQBKZ4.js";
-import {
-  VDefaultsProvider
-} from "./chunk-W4YUM6IS.js";
 import {
   makeDimensionProps,
   useDimension
 } from "./chunk-IOMX4THI.js";
 import {
-  makeElevationProps,
-  useElevation
-} from "./chunk-Y2GC5DK2.js";
-import "./chunk-2OF4BO7E.js";
-import {
-  makeLocationProps,
-  useLocation
-} from "./chunk-IDXYNXDM.js";
-import {
   VIcon
-} from "./chunk-AG66M7BA.js";
+} from "./chunk-EWWA6K3J.js";
 import "./chunk-7URWXHLF.js";
-import {
-  makeRoundedProps,
-  useRounded
-} from "./chunk-2SMYUG2D.js";
-import "./chunk-XE77TUOP.js";
 import {
   makeTagProps
 } from "./chunk-KQMOYNAH.js";
+import "./chunk-XE77TUOP.js";
 import {
   IconValue
 } from "./chunk-LLPFESVU.js";

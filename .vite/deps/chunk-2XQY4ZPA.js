@@ -2,10 +2,6 @@ import {
   intersect_default
 } from "./chunk-SCOPPOCF.js";
 import {
-  makeDimensionProps,
-  useDimension
-} from "./chunk-IOMX4THI.js";
-import {
   MaybeTransition,
   makeTransitionProps
 } from "./chunk-2OF4BO7E.js";
@@ -13,6 +9,10 @@ import {
   makeRoundedProps,
   useRounded
 } from "./chunk-2SMYUG2D.js";
+import {
+  makeDimensionProps,
+  useDimension
+} from "./chunk-IOMX4THI.js";
 import {
   useBackgroundColor
 } from "./chunk-XE77TUOP.js";
@@ -388,4 +388,4 @@ var VImg = genericComponent()({
 export {
   VImg
 };
-//# sourceMappingURL=chunk-BRDY2Z2U.js.map
+//# sourceMappingURL=chunk-2XQY4ZPA.js.map

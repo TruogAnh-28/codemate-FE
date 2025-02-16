@@ -1,30 +1,30 @@
 import {
   VImg
-} from "./chunk-BRDY2Z2U.js";
+} from "./chunk-2XQY4ZPA.js";
 import {
   makeBorderProps,
   useBorder
 } from "./chunk-4E3GKBEK.js";
 import {
-  VExpandTransition
-} from "./chunk-OCQPVZMC.js";
-import {
-  VDefaultsProvider
-} from "./chunk-W4YUM6IS.js";
-import {
   makeElevationProps,
   useElevation
 } from "./chunk-Y2GC5DK2.js";
+import {
+  VDefaultsProvider
+} from "./chunk-W4YUM6IS.js";
 import {
   makeRoundedProps,
   useRounded
 } from "./chunk-2SMYUG2D.js";
 import {
-  useBackgroundColor
-} from "./chunk-XE77TUOP.js";
+  VExpandTransition
+} from "./chunk-OCQPVZMC.js";
 import {
   makeTagProps
 } from "./chunk-KQMOYNAH.js";
+import {
+  useBackgroundColor
+} from "./chunk-XE77TUOP.js";
 import {
   useRtl
 } from "./chunk-2ON55NUK.js";
@@ -235,4 +235,4 @@ export {
   makeVToolbarProps,
   VToolbar
 };
-//# sourceMappingURL=chunk-4ZNCTC7A.js.map
+//# sourceMappingURL=chunk-N2TUU5ZK.js.map

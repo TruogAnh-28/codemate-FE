@@ -1,7 +1,7 @@
 import {
   VOverlay,
   makeVOverlayProps
-} from "./chunk-3BUFVB5Q.js";
+} from "./chunk-CKH6WGBP.js";
 import {
   useScopeId
 } from "./chunk-ZAL6CBZH.js";
@@ -111,4 +111,4 @@ var VTooltip = genericComponent()({
 export {
   VTooltip
 };
-//# sourceMappingURL=chunk-BZHJXAPC.js.map
+//# sourceMappingURL=chunk-COZKCTF2.js.map

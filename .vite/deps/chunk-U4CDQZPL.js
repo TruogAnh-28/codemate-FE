@@ -6,11 +6,11 @@ import {
   useSize
 } from "./chunk-7URWXHLF.js";
 import {
-  useTextColor
-} from "./chunk-XE77TUOP.js";
-import {
   makeTagProps
 } from "./chunk-KQMOYNAH.js";
+import {
+  useTextColor
+} from "./chunk-XE77TUOP.js";
 import {
   useResizeObserver
 } from "./chunk-PVYEV7FC.js";
@@ -154,4 +154,4 @@ var VProgressCircular = genericComponent()({
 export {
   VProgressCircular
 };
-//# sourceMappingURL=chunk-M5S64ENN.js.map
+//# sourceMappingURL=chunk-U4CDQZPL.js.map

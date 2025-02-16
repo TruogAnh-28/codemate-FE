@@ -1,25 +1,11 @@
 import {
-  VSelect
-} from "./chunk-O7ONQTSV.js";
-import "./chunk-IKDHAE4K.js";
-import "./chunk-YWPFNKHM.js";
-import "./chunk-WQBJSF74.js";
-import "./chunk-MPTIK2E3.js";
-import "./chunk-QTXO3P3W.js";
-import "./chunk-O5D4IAYW.js";
-import "./chunk-KT3ZSVJZ.js";
-import "./chunk-GXYLEPDC.js";
-import "./chunk-CKH6WGBP.js";
-import "./chunk-ZAL6CBZH.js";
-import "./chunk-4TX3OV3G.js";
-import "./chunk-FTNIKNZL.js";
-import "./chunk-22CHUZXD.js";
-import "./chunk-KUTHJ2DU.js";
-import "./chunk-2XQY4ZPA.js";
-import "./chunk-SCOPPOCF.js";
-import "./chunk-2OF4BO7E.js";
-import "./chunk-XNVQLXPL.js";
+  VPagination
+} from "./chunk-44PO4JPS.js";
+import "./chunk-2PSEIA2V.js";
+import "./chunk-SHRKJSJS.js";
 import "./chunk-DNTQL5EA.js";
+import "./chunk-U4CDQZPL.js";
+import "./chunk-IBNRTJ2F.js";
 import "./chunk-DB2YRNXL.js";
 import "./chunk-IDXYNXDM.js";
 import "./chunk-4AM27EJJ.js";
@@ -32,16 +18,16 @@ import "./chunk-W4YUM6IS.js";
 import "./chunk-2SMYUG2D.js";
 import "./chunk-D3VMBXOB.js";
 import "./chunk-IOMX4THI.js";
-import "./chunk-73OHAUS3.js";
-import "./chunk-OCQPVZMC.js";
 import "./chunk-JOZZHMQ6.js";
 import "./chunk-EWWA6K3J.js";
 import "./chunk-7URWXHLF.js";
 import "./chunk-KQMOYNAH.js";
 import "./chunk-XE77TUOP.js";
+import "./chunk-UW36Y3UN.js";
 import "./chunk-LLPFESVU.js";
 import "./chunk-6Y46KBOX.js";
 import "./chunk-CE5S2J4D.js";
+import "./chunk-R57R4RMC.js";
 import "./chunk-2ON55NUK.js";
 import "./chunk-HGHZAKZY.js";
 import "./chunk-TP5SG6V2.js";
@@ -51,6 +37,6 @@ import "./chunk-7ZHHBHXU.js";
 import "./chunk-IJV5NOMV.js";
 import "./chunk-UVKRO5ER.js";
 export {
-  VSelect
+  VPagination
 };
-//# sourceMappingURL=vuetify_lib_components_VSelect_index__mjs.js.map
+//# sourceMappingURL=vuetify_lib_components_VPagination_index__mjs.js.map

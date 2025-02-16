@@ -1,9 +1,9 @@
 import {
   VIcon
-} from "./chunk-AG66M7BA.js";
+} from "./chunk-EWWA6K3J.js";
 import "./chunk-7URWXHLF.js";
-import "./chunk-XE77TUOP.js";
 import "./chunk-KQMOYNAH.js";
+import "./chunk-XE77TUOP.js";
 import {
   VClassIcon,
   VComponentIcon,

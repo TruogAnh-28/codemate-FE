@@ -2,13 +2,13 @@ import {
   intersect_default
 } from "./chunk-SCOPPOCF.js";
 import {
-  makeDimensionProps,
-  useDimension
-} from "./chunk-IOMX4THI.js";
-import {
   MaybeTransition,
   makeTransitionProps
 } from "./chunk-2OF4BO7E.js";
+import {
+  makeDimensionProps,
+  useDimension
+} from "./chunk-IOMX4THI.js";
 import {
   makeTagProps
 } from "./chunk-KQMOYNAH.js";

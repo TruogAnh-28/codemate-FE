@@ -1,23 +1,23 @@
 import {
   VOverlay,
   makeVOverlayProps
-} from "./chunk-3BUFVB5Q.js";
+} from "./chunk-CKH6WGBP.js";
 import {
   useScopeId
 } from "./chunk-ZAL6CBZH.js";
 import {
   forwardRefs
 } from "./chunk-4TX3OV3G.js";
-import "./chunk-D3VMBXOB.js";
 import "./chunk-FTNIKNZL.js";
-import {
-  VDialogTransition
-} from "./chunk-OCQPVZMC.js";
+import "./chunk-2OF4BO7E.js";
 import {
   VDefaultsProvider
 } from "./chunk-W4YUM6IS.js";
+import "./chunk-D3VMBXOB.js";
 import "./chunk-IOMX4THI.js";
-import "./chunk-2OF4BO7E.js";
+import {
+  VDialogTransition
+} from "./chunk-OCQPVZMC.js";
 import "./chunk-XE77TUOP.js";
 import "./chunk-CE5S2J4D.js";
 import "./chunk-2ON55NUK.js";

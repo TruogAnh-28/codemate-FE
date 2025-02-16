@@ -3,11 +3,11 @@ import {
   useSize
 } from "./chunk-7URWXHLF.js";
 import {
-  useTextColor
-} from "./chunk-XE77TUOP.js";
-import {
   makeTagProps
 } from "./chunk-KQMOYNAH.js";
+import {
+  useTextColor
+} from "./chunk-XE77TUOP.js";
 import {
   IconValue,
   useIcon
@@ -104,4 +104,4 @@ var VIcon = genericComponent()({
 export {
   VIcon
 };
-//# sourceMappingURL=chunk-AG66M7BA.js.map
+//# sourceMappingURL=chunk-EWWA6K3J.js.map

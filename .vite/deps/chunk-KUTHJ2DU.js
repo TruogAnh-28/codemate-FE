@@ -1,33 +1,33 @@
 import {
   VImg
-} from "./chunk-BRDY2Z2U.js";
+} from "./chunk-2XQY4ZPA.js";
 import {
   makeDensityProps,
   useDensity
 } from "./chunk-DNVMGE2E.js";
+import {
+  makeBorderProps,
+  useBorder
+} from "./chunk-4E3GKBEK.js";
 import {
   genOverlays,
   makeVariantProps,
   useVariant
 } from "./chunk-TXI77NTR.js";
 import {
-  makeBorderProps,
-  useBorder
-} from "./chunk-4E3GKBEK.js";
-import {
   VDefaultsProvider
 } from "./chunk-W4YUM6IS.js";
-import {
-  VIcon
-} from "./chunk-AG66M7BA.js";
-import {
-  makeSizeProps,
-  useSize
-} from "./chunk-7URWXHLF.js";
 import {
   makeRoundedProps,
   useRounded
 } from "./chunk-2SMYUG2D.js";
+import {
+  VIcon
+} from "./chunk-EWWA6K3J.js";
+import {
+  makeSizeProps,
+  useSize
+} from "./chunk-7URWXHLF.js";
 import {
   makeTagProps
 } from "./chunk-KQMOYNAH.js";
@@ -132,4 +132,4 @@ var VAvatar = genericComponent()({
 export {
   VAvatar
 };
-//# sourceMappingURL=chunk-3SZ6FHVF.js.map
+//# sourceMappingURL=chunk-KUTHJ2DU.js.map

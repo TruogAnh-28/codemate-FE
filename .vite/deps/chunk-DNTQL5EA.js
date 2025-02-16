@@ -1,6 +1,6 @@
 import {
   VProgressLinear
-} from "./chunk-NQVLBSBA.js";
+} from "./chunk-DB2YRNXL.js";
 import {
   getCurrentInstanceName,
   propsFactory
@@ -47,4 +47,4 @@ export {
   useLoader,
   LoaderSlot
 };
-//# sourceMappingURL=chunk-XUJOWRNZ.js.map
+//# sourceMappingURL=chunk-DNTQL5EA.js.map

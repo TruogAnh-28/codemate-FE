@@ -3,7 +3,7 @@ import {
   VLabel,
   makeVInputProps,
   useFocus
-} from "./chunk-RE7NQTKC.js";
+} from "./chunk-QTXO3P3W.js";
 import {
   makeDensityProps,
   useDensity
@@ -13,7 +13,7 @@ import {
 } from "./chunk-QNNQBKZ4.js";
 import {
   VIcon
-} from "./chunk-AG66M7BA.js";
+} from "./chunk-EWWA6K3J.js";
 import {
   useBackgroundColor,
   useTextColor
@@ -489,4 +489,4 @@ export {
   VCheckboxBtn,
   VCheckbox
 };
-//# sourceMappingURL=chunk-WMCWJWJW.js.map
+//# sourceMappingURL=chunk-MPTIK2E3.js.map
