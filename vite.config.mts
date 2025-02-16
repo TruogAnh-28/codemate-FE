@@ -43,7 +43,7 @@ export default defineConfig({
     }),
     Fonts({
       google: {
-        families: [ {
+        families: [{
           name: 'Public Sans',
           styles: 'wght@100;300;400;500;700;900',
         }],
@@ -65,10 +65,17 @@ export default defineConfig({
       '.vue',
     ],
   },
-    server: {
-      host: '0.0.0.0',
-      port: 5173,
-      strictPort: true
+  server: {
+    host: '0.0.0.0',
+    port: 5173,
+    strictPort: true,
+    watch: {
+      usePolling: true,
+      interval: 100,
     },
-    cacheDir: './.vite',
+    hmr: {
+      overlay: true,
+    },
+  },
+  cacheDir: './.vite',
 })

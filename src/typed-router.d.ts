@@ -20,11 +20,14 @@ declare module 'vue-router/auto-routes' {
   export interface RouteNamedMap {
     '/': RouteRecordInfo<'/', '/', Record<never, never>, Record<never, never>>,
     '/Course/CourseDetail/': RouteRecordInfo<'/Course/CourseDetail/', '/Course/CourseDetail', Record<never, never>, Record<never, never>>,
+    '/Course/CourseDetail/Professor': RouteRecordInfo<'/Course/CourseDetail/Professor', '/Course/CourseDetail/Professor', Record<never, never>, Record<never, never>>,
     '/Course/CourseList/': RouteRecordInfo<'/Course/CourseList/', '/Course/CourseList', Record<never, never>, Record<never, never>>,
+    '/Course/CourseList/Professor': RouteRecordInfo<'/Course/CourseList/Professor', '/Course/CourseList/Professor', Record<never, never>, Record<never, never>>,
     '/Dashboard/': RouteRecordInfo<'/Dashboard/', '/Dashboard', Record<never, never>, Record<never, never>>,
     '/Dashboard/Admin': RouteRecordInfo<'/Dashboard/Admin', '/Dashboard/Admin', Record<never, never>, Record<never, never>>,
     '/Dashboard/Professor': RouteRecordInfo<'/Dashboard/Professor', '/Dashboard/Professor', Record<never, never>, Record<never, never>>,
     '/FeedbackManagement/': RouteRecordInfo<'/FeedbackManagement/', '/FeedbackManagement', Record<never, never>, Record<never, never>>,
+    '/FeedbackManagement/Professor': RouteRecordInfo<'/FeedbackManagement/Professor', '/FeedbackManagement/Professor', Record<never, never>, Record<never, never>>,
     '/Lesson/': RouteRecordInfo<'/Lesson/', '/Lesson', Record<never, never>, Record<never, never>>,
     '/Lesson/Code/': RouteRecordInfo<'/Lesson/Code/', '/Lesson/Code', Record<never, never>, Record<never, never>>,
     '/Lesson/Document/': RouteRecordInfo<'/Lesson/Document/', '/Lesson/Document', Record<never, never>, Record<never, never>>,
@@ -35,5 +38,6 @@ declare module 'vue-router/auto-routes' {
     '/Login/ForgotPassword': RouteRecordInfo<'/Login/ForgotPassword', '/Login/ForgotPassword', Record<never, never>, Record<never, never>>,
     '/Login/ResetPassword': RouteRecordInfo<'/Login/ResetPassword', '/Login/ResetPassword', Record<never, never>, Record<never, never>>,
     '/ProgressTracking/': RouteRecordInfo<'/ProgressTracking/', '/ProgressTracking', Record<never, never>, Record<never, never>>,
+    '/ProgressTracking/Professor': RouteRecordInfo<'/ProgressTracking/Professor', '/ProgressTracking/Professor', Record<never, never>, Record<never, never>>,
   }
 }

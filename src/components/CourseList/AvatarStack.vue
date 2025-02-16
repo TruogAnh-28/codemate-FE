@@ -37,10 +37,10 @@
 
 <script lang="ts" setup>
 import { coursesService } from "@/services/courseslistServices";
-import { CoursesListResponse, StudentOfCourseListModal } from "@/types/Course";
+import { CoursesListResponse, StudentOfCourseListModal, GetProfessorCoursesResponse } from "@/types/Course";
 import { getAvatarStudentUrl } from "@/utils/functions/functions";
 const props = defineProps<{
-  courses: CoursesListResponse;
+  courses: CoursesListResponse|GetProfessorCoursesResponse;
   maxVisible: number;
 }>();
 

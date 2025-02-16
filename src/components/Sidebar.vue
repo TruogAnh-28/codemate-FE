@@ -59,6 +59,30 @@
         router
         class="hover:bg-secondary-variant dark:hover:bg-secondary-variant text-text-primary dark:text-text-primary"
       ></v-list-item>
+      <v-list-item
+        prepend-icon="mdi-school"
+        title="My Courses"
+        value="courselist"
+        :to="'/professor-courselist'"
+        router
+        class="hover:bg-secondary-variant dark:hover:bg-secondary-variant text-text-primary dark:text-text-primary"
+      ></v-list-item>
+      <v-list-item
+        :prepend-icon="feedbackManagement"
+        title="Feedback Management"
+        value="professor-feedback"
+        :to="'/professor-feedback'"
+        router
+        class="hover:bg-secondary-variant dark:hover:bg-secondary-variant text-text-primary dark:text-text-primary"
+      ></v-list-item>
+      <v-list-item
+        prepend-icon="mdi-chart-pie"
+        title="Progress"
+        value="professor-progress"
+        :to="'/professor-progress'"
+        router
+        class="hover:bg-secondary-variant dark:hover:bg-secondary-variant text-text-primary dark:text-text-primary"
+      ></v-list-item>
     </v-list>
 
     <!-- Admin Navigation -->

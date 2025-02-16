@@ -24,3 +24,6 @@ pnpm-debug.log*
 # IDE
 yarn.lock
 package-lock.json
+
+#Vite
+.vite/
