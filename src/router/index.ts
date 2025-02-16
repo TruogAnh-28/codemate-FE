@@ -126,6 +126,12 @@ const AdminRoutes = [
     name: "FeedbackManagement",
     component: () => import("@/pages/FeedbackManagement/index.vue"),
     meta: { requiresAuth: true, role: "admin" },
+  },
+  {
+    path: "/user-management",
+    name: "UserManagement",
+    component: () => import("@/pages/UserManagement/index.vue"),
+    meta: { requiresAuth: true, role: "admin" },
   }
 ];
 const ProfessorRoutes = [
