@@ -6,23 +6,27 @@
 
     <v-col cols="8" md="8">
       <div class="text-heading-3 font-weight-bold mb-2">
-        {{ course?.course_name ?? "N/A" }}
+        {{ course?.course_name || "Course Not Available" }}
       </div>
 
-      <v-row class="d-flex align-center">
-        <CourseProgress v-if="course" :course="course" />
-        <CourseDetails
-          :course="course"
-        />
+      <v-row v-if="course" class="d-flex align-center">
+        <CourseProgress v-if="isCourseDetail" :course="course as CourseDetailResponse" />
+        <CourseDetails :course="course" />
+      </v-row>
+      <v-row v-else>
+        <v-col>No course information available</v-col>
       </v-row>
     </v-col>
   </v-row>
 </template>
 
 <script lang="ts" setup>
-import { CourseDetailResponse } from "@/types/Course";
+import { computed } from 'vue'
+import { CourseDetailResponse, GetCourseDetailProfessorResponse } from "@/types/Course"
 
-defineProps<{
-  course: CourseDetailResponse | null;
-}>();
+const props = defineProps<{
+  course: CourseDetailResponse | GetCourseDetailProfessorResponse | null
+}>()
+
+const isCourseDetail = computed(() => props.course !== null && 'course_percentage_complete' in props.course)
 </script>

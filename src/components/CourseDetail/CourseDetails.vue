@@ -23,11 +23,11 @@
 
 <script lang="ts" setup>
 import { coursesService } from "@/services/courseslistServices";
-import { CourseDetailResponse, ProfessorInformation } from "@/types/Course";
+import { CourseDetailResponse, ProfessorInformation, GetCourseDetailProfessorResponse } from "@/types/Course";
 import { formatStart_EndDate } from "@/utils/functions/time";
 
 const props = defineProps<{
-  course: CourseDetailResponse | null;
+  course: CourseDetailResponse | GetCourseDetailProfessorResponse | null;
 }>();
 const professor_information = ref<ProfessorInformation | null>(null);
 const showError = inject("showError") as (message: string) => void;

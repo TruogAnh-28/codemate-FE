@@ -1,3 +1,4 @@
+import { UUID, DateTimeString } from "@/utils/commonType"
 
 export interface GetRecentCourseResponse {
   course: string
@@ -5,7 +6,7 @@ export interface GetRecentCourseResponse {
   last_accessed: string
 }
 
-export interface RecentActivitiesRequest{
+export interface RecentActivitiesRequest {
   student_id: string
   limit: number
   offset?: number
@@ -19,4 +20,21 @@ export interface RecentActivitiesResponse {
 export interface AddActivityRequest {
   type: string
   description: string
+}
+
+//-------------------Professor-------------------------
+export interface Event {
+  exercise_id: UUID;
+  exercise_name: string;
+  exercise_deadline: DateTimeString;
+}
+
+export interface GetDashboardProfessorResponse {
+  professor_id: UUID;
+  professor_name: string;
+  nCourses: number;
+  nLessons: number;
+  nStudents: number;
+  nExercises: number;
+  upcoming_events?: Event[];
 }
