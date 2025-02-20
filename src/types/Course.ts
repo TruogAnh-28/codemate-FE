@@ -56,6 +56,25 @@ export interface CoursesListPaginatedResponse {
   totalPages: number
 }
 
+interface CoursesAdminListResponse {
+  id: string;
+  name: string;
+  courseID: string;
+  start_date: string;
+  end_date: string;
+  status: string;
+  nCredit: number;
+  nSemester: number;
+}
+
+export interface CoursesAdminListPaginatedResponse {
+  content: CoursesAdminListResponse[]
+  currentPage: number
+  pageSize: number
+  totalRows: number
+  totalPages: number
+}
+
 export interface CoursesListResponse {
   id: UUID
   name: string

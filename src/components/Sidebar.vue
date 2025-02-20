@@ -89,6 +89,14 @@
         class="hover:bg-secondary-variant dark:hover:bg-secondary-variant text-text-primary dark:text-text-primary"
       >
       </v-list-item>
+      <v-list-item
+      prepend-icon="mdi-code-tags"
+      title="Course Management"
+      value="course-management"
+      :to="'/course-management'"
+      router
+      class="hover:bg-secondary-variant dark:hover:bg-secondary-variant text-text-primary dark:text-text-primary"
+      ></v-list-item>
     </v-list>
   </v-navigation-drawer>
 </template>

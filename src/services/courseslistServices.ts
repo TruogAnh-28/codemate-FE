@@ -8,6 +8,7 @@ import {
   StudentOfCourseListModal,
   CreateCourseRequest,
   CreateCourseResponse,
+  CoursesAdminListPaginatedResponse,
 } from "@/types/Course";
 import { AuthConfig } from "./authenServices";
 import { IResponseData } from "@/modals/apis/response";
@@ -15,6 +16,13 @@ export const coursesService = {
   async fetchCoursesList({ showError, showSuccess, search_query }: AuthConfig & { search_query?: string }) {
     return await ApiService.query<CoursesListPaginatedResponse>(
       "courses/student",
+      search_query ? { search_query } : undefined,
+      { showError, showSuccess }
+    );
+  },
+  async fetchAdminCoursesList({showError, showSuccess, search_query}: AuthConfig & { search_query?: string}) {
+    return await ApiService.query<CoursesAdminListPaginatedResponse>(
+      "courses/admin",
       search_query ? { search_query } : undefined,
       { showError, showSuccess }
     );

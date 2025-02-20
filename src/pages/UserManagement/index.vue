@@ -37,9 +37,9 @@
               <!-- Search Filter -->
               <v-col cols="12" md="4">
                 <v-text-field
-                  v-model="filters.search_query"
+                  v-model="debouncedSearchQuery"
                   label="Search"
-                  placeholder="Search by name or email"
+                  placeholder="Search by MASO or email"
                   variant="outlined"
                   density="comfortable"
                   hide-details
@@ -137,9 +137,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import { usersService } from "@/services/usersServices";
 import type { GetAllUsersResponse } from "@/types/User";
+import debounce from "@/composables/useDebounce";
 
 const users = ref<GetAllUsersResponse[]>([]);
 const loading = ref(false);
@@ -155,6 +156,15 @@ const filters = ref<Filters>({
   search_query: "",
   role: "",
   status: undefined,
+});
+
+// Create a debounced search query
+const debouncedSearchQuery = debounce.useDebounce("", 500);
+
+// Watch for changes in the debounced search query
+watch(debouncedSearchQuery, (newValue) => {
+  filters.value.search_query = newValue;
+  fetchUsers();
 });
 
 const headers: Array<{
@@ -198,6 +208,7 @@ const getRoleColor = (role: string) => {
 };
 
 const resetFilters = () => {
+  debouncedSearchQuery.value = "";
   filters.value = {
     search_query: "",
     role: "",
