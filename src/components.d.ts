@@ -70,6 +70,7 @@ declare module 'vue' {
     SumCard: typeof import('./components/AdminDashboard/SumCard.vue')['default']
     Teams: typeof import('./components/Login/Teams.vue')['default']
     UpcomingEvents: typeof import('./components/Dashboard/UpcomingEvents.vue')['default']
+    Uploader: typeof import('./components/File/Uploader.vue')['default']
     VerifyCode: typeof import('./components/Login/VerifyCode.vue')['default']
     WebVitals: typeof import('./components/AdminDashboard/WebVitals.vue')['default']
     WelcomeCard: typeof import('./components/Dashboard/WelcomeCard.vue')['default']

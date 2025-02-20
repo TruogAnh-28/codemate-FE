@@ -57,7 +57,7 @@ export interface CoursesListPaginatedResponse {
   totalPages: number
 }
 
-interface CoursesAdminListResponse {
+export interface CoursesAdminListResponse {
   id: string;
   name: string;
   courseID: string;
