@@ -47,7 +47,6 @@
 import { coursesService } from "@/services/courseslistServices";
 import { CoursesListPaginatedResponse } from "@/types/Course";
 import useDebounce from "@/composables/useDebounce";
-import { PAGE_SIZE_OF_COURSE_LIST } from "@/constants/courses";
 
 const searchQuery = ref<string>("");
 const currentPage = ref<number>(1);

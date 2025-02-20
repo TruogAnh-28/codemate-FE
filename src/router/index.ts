@@ -125,7 +125,7 @@ const AdminRoutes = [
     path: "/feedback-management",
     name: "FeedbackManagement",
     component: () => import("@/pages/FeedbackManagement/index.vue"),
-    meta: { requiresAuth: true, role: "admin" }, 
+    meta: { requiresAuth: true, role: "admin" },
   },
   {
     path: "/user-management",
@@ -145,6 +145,31 @@ const ProfessorRoutes = [
     path: "/professor-dashboard",
     name: "ProfessorDashboard",
     component: () => import("@/pages/Dashboard/Professor.vue"),
+    meta: { requiresAuth: true, role: "professor" },
+  },
+  {
+    path: "/professor-courselist",
+    name: "ProfessorCourseList",
+    component: () => import("@/pages/Course/CourseList/Professor.vue"),
+    meta: { requiresAuth: true, role: "professor" },
+  },
+  {
+    path: "/professor-courselist/course/:id",
+    name: "ProfessorCourseDetail",
+    component: () => import("@/pages/Course/CourseDetail/Professor.vue"),
+    props: true,
+    meta: { requiresAuth: true, role: "professor" },
+  },
+  {
+    path: "/professor-feedback",
+    name: "ProfessorFeedback",
+    component: () => import("@/pages/FeedbackManagement/Professor.vue"),
+    meta: { requiresAuth: true, role: "professor" },
+  },
+  {
+    path: "/professor-progress",
+    name: "ProfessorProgress",
+    component: () => import("@/pages/ProgressTracking/Professor.vue"),
     meta: { requiresAuth: true, role: "professor" },
   },
 ];

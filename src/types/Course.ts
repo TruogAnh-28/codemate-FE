@@ -1,5 +1,6 @@
-import { UUID, DateString, DateTimeString, DocumentType, Status} from "@/utils/commonType"
+import { UUID, DateString, DateTimeString, DocumentType, Status } from "@/utils/commonType"
 import { ExcelFileHeaderToAddCourses } from "@/utils/constant";
+//---------------------------------Student---------------------------------
 export interface CreateCourseResponse {
   course_id: string
   courseID: string
@@ -42,7 +43,7 @@ export interface CreateCourseRequest {
   courses: CreateCourseRequest_Courses[]
 }
 
-export interface CoursesListDashBoardRequest{
+export interface CoursesListDashBoardRequest {
   student_id: UUID
   offset?: number
   page_size?: number
@@ -151,4 +152,98 @@ export interface GetRecommendedLessonsResponse {
   title: string
   description: string
   order: number
+}
+
+//---------------------------------Professor---------------------------------
+export interface PutLearningOutcomesCoursesResponse {
+  course_id: UUID;
+  learning_outcomes: string[];
+}
+
+export interface GetDocumentsProfessor {
+  id: UUID;
+  name: string;
+  type: DocumentType;
+  url: string;
+}
+
+export interface GetExercisesProfessor {
+  id: UUID;
+  name: string;
+  description: string;
+  type: string;
+}
+
+export interface GetLessonProfessor {
+  id: UUID;
+  title: string;
+  description: string;
+  order: number;
+  documents: GetDocumentsProfessor[];
+}
+
+export interface GetProfessorCoursesResponse {
+  id: UUID;
+  name: string;
+  start_date: DateString;
+  end_date: DateString;
+  student_list: StudentCoursesList[];
+  learning_outcomes: string[];
+  professor: ProfessorInformation;
+  status: Status;
+  image: string;
+}
+
+export interface GetProfessorCoursesPaginatedResponse {
+  content: GetProfessorCoursesResponse[];
+  currentPage: number;
+  pageSize: number;
+  totalRows: number;
+  totalPages: number;
+}
+
+export interface GetCourseDetailProfessorResponse {
+  course_id: UUID;
+  course_name: string;
+  course_start_date: DateString;
+  course_end_date: DateString;
+  course_learning_outcomes: string[];
+  course_professor: ProfessorInformation;
+  course_status: Status;
+  course_image: string;
+  exercises: GetExercisesProfessor[];
+  students: StudentCoursesList[];
+  lessons: GetLessonProfessor[];
+}
+export interface DocumentResponse {
+  name: string;
+  type: string;
+  documentUrl: string;
+  lessonId: UUID;
+}
+
+export interface CreateNewLessonResponse {
+  id: UUID;
+  title: string;
+  description: string;
+  courseId: UUID;
+  order: number;
+  learningOutcomes?: string[];
+  documents?: DocumentResponse[];
+}
+export interface CreateNewLessonRequest {
+  title: string;
+  description: string;
+  courseId: UUID;
+  order: number;
+  learningOutcomes?: string[];
+  documents?: File[];
+}
+
+export interface PutLessonResponse {
+  lessonId: UUID;
+  title: string;
+  description?: string;
+  order: number;
+  learningOutcomes?: string[];
 }
