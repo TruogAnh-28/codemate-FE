@@ -88,7 +88,7 @@ export const coursesService = {
   },
   async createCourse(
     { showError, showSuccess }: AuthConfig,
-    course: CreateCourseRequest
+    course: CreateCourseRequest[]
   ) {
     return await ApiService.post<CreateCourseResponse>("courses/", course, {
       showError,

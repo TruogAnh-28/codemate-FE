@@ -138,7 +138,21 @@ const AdminRoutes = [
     name: "CourseManagement",
     component: () => import("@/pages/CourseManagement/index.vue"),
     meta: { requiresAuth: true, role: "admin" },
-  }
+  },
+  {
+    path: "/add-course",
+    name: "AddCourse",
+    component: () => import("@/pages/CourseManagement/AddCourse.vue"),
+    props: true,
+    meta: { requiresAuth: true, role: "admin" },
+  },
+  {
+    path: "/add-user",
+    name: "AddUser",
+    component: () => import("@/pages/UserManagement/AddUser.vue"),
+    props: true,
+    meta: { requiresAuth: true, role: "admin" },
+  },
 ];
 const ProfessorRoutes = [
   {

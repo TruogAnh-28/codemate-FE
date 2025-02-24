@@ -1,5 +1,5 @@
 import { UUID, DateString, DateTimeString, DocumentType, Status } from "@/utils/commonType"
-import { ExcelFileHeaderToAddCourses } from "@/utils/constant";
+
 //---------------------------------Student---------------------------------
 export interface CreateCourseResponse {
   course_id: string
@@ -24,23 +24,17 @@ export interface StudentCoursesList {
   time_spent: string
   assignments_done: number
 }
-export interface CreateCourseRequest_Courses {
-  professor_email: string
-  name: string
-  nCredit: number
-  nSemester: number
-  student_list: string[]
-  courseID: string
-}
-
-// export interface ImportData {
-//   headers: ExcelFileHeaderToAddCourses;
-//   courses: ExcelFileCourse[];
-// }
 
 export interface CreateCourseRequest {
-  headers: string[]
-  courses: CreateCourseRequest_Courses[]
+  id: number
+  name: string
+  professorID: string
+  creditNumber: number
+  studentIDs: string[]
+  nSemester: number
+  courseID: string
+  startDate: Date
+  endDate: Date
 }
 
 export interface CoursesListDashBoardRequest {

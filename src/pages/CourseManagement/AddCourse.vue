@@ -1,170 +1,318 @@
 <script lang="ts" setup>
-import { ref } from 'vue'
-
-interface Course {
-  id: number
-  name: string
-  professorEmail: string
-  creditNumber: number
-  studentEmails: string[]
-}
-
+import { CreateCourseRequest } from "@/types/Course";
+import { coursesService } from "@/services/courseslistServices";
+import ImportExcel from "@/components/AdminDashboard/ImportExcel.vue";
 // State
-const courses = ref<Course[]>([{
-  id: 1,
-  name: '',
-  professorEmail: '',
-  creditNumber: 0,
-  studentEmails: []
-}])
+const courses = ref<CreateCourseRequest[]>([
+  {
+    id: 1,
+    name: "",
+    professorID: "",
+    creditNumber: 0,
+    studentIDs: [],
+    nSemester: 0,
+    courseID: "",
+    startDate: new Date(),
+    endDate: new Date(),
+  },
+]);
+
+const loading = ref(false);
+const snackbar = ref(false);
+const snackbarText = ref("");
+const snackbarColor = ref("success");
+const IDInput = ref("");
+const searchTerm = ref("");
 
 // Methods
 const addNewCourse = () => {
   courses.value.push({
     id: courses.value.length + 1,
-    name: '',
-    professorEmail: '',
+    name: "",
+    professorID: "",
     creditNumber: 0,
-    studentEmails: []
-  })
-}
+    studentIDs: [],
+    nSemester: 0,
+    courseID: "",
+    startDate: new Date(),
+    endDate: new Date(),
+  });
+};
 
-const addStudentEmail = (courseIndex: number, email: string) => {
-  if (email && !courses.value[courseIndex].studentEmails.includes(email)) {
-    courses.value[courseIndex].studentEmails.push(email)
+const showSnackbar = (text: string, color: string = "success") => {
+  snackbarText.value = text;
+  snackbarColor.value = color;
+  snackbar.value = true;
+};
+
+const addStudentID = (courseIndex: number, ID: string) => {
+  if (ID && !courses.value[courseIndex].studentIDs.includes(ID)) {
+    courses.value[courseIndex].studentIDs.push(ID);
+    IDInput.value = "";
+    showSnackbar("Student ID added successfully");
+  } else if (ID) {
+    showSnackbar("ID already exists", "error");
   }
-}
+};
 
-const removeStudentEmail = (courseIndex: number, emailIndex: number) => {
-  courses.value[courseIndex].studentEmails.splice(emailIndex, 1)
-}
+const removeStudentID = (courseIndex: number, IDIndex: number) => {
+  courses.value[courseIndex].studentIDs.splice(IDIndex, 1);
+  showSnackbar("Student ID removed");
+};
+
+const showError = inject("showError") as (message: string) => void;
+const showSuccess = inject("showSuccess") as (message: string) => void;
 
 const handleConfirm = async () => {
   try {
+    loading.value = true;
+
     // Validate data
-    const isValid = courses.value.every(course => 
-      course.name && 
-      course.professorEmail && 
-      course.creditNumber > 0
-    )
+    const isValid = courses.value.every(
+      (course) =>
+        course.name &&
+        course.professorID &&
+        course.creditNumber > 0 &&
+        course.courseID &&
+        course.nSemester > 0 &&
+        course.studentIDs.length > 0
+    );
 
     if (!isValid) {
-      alert('Please fill in all required fields')
-      return
+      showSnackbar("Please fill in all required fields", "error");
+      return;
     }
 
-    // TODO: Add your API call here
-    console.log('Submitting courses:', courses.value)
-    
-    // Reset form after successful submission
-    courses.value = [{
-      id: 1,
-      name: '',
-      professorEmail: '',
-      creditNumber: 0,
-      studentEmails: []
-    }]
-  } catch (error) {
-    console.error('Error submitting courses:', error)
-    alert('Failed to submit courses')
-  }
-}
+    courses.value.forEach((course) => {
+      const startDateString = course.startDate.toISOString().split("T")[0];
+      const endDateString = course.endDate.toISOString().split("T")[0];
 
-const handleImportExcel = () => {
-  // TODO: Implement Excel import functionality
-  console.log('Import Excel clicked')
-}
+      course.startDate = new Date(startDateString);
+      course.endDate = new Date(endDateString);
+      course.studentIDs = course.studentIDs.map((id) => id.toString());
+      course.professorID = course.professorID.toString();
+    });
+
+    const response = await coursesService.createCourse(
+      { showError, showSuccess },
+      courses.value
+    );
+    if (response && "data" in response) {
+      courses.value = response.data as CreateCourseRequest[];
+    }
+
+    // Reset form after successful submission
+    courses.value = [
+      {
+        id: 1,
+        name: "",
+        professorID: "",
+        creditNumber: 0,
+        studentIDs: [],
+        nSemester: 0,
+        courseID: "",
+        startDate: new Date(),
+        endDate: new Date(),
+      },
+    ];
+
+    showSnackbar("Courses submitted successfully");
+  } catch (error) {
+    console.error("Error submitting courses:", error);
+    showSnackbar("Failed to submit courses", "error");
+  } finally {
+    loading.value = false;
+  }
+};
+
+const handleImportExcel = (courseIndex: number) => {
+  const onImportSuccess = (studentIDs: string[]) => {
+    // Add new IDs while avoiding duplicates
+    const existingIDs = courses.value[courseIndex].studentIDs;
+    const newIDs = studentIDs.filter((id) => !existingIDs.includes(id));
+
+    if (newIDs.length > 0) {
+      courses.value[courseIndex].studentIDs.push(...newIDs);
+      showSnackbar(`Successfully imported ${newIDs.length} student IDs`);
+    } else {
+      showSnackbar("No new student IDs to import", "info");
+    }
+  };
+
+  return { onImportSuccess };
+};
+
+const removeCourse = (index: number) => {
+  courses.value.splice(index, 1);
+  showSnackbar("Course removed");
+};
 </script>
 
 <template>
-  <div class="p-6 max-w-6xl mx-auto">
-    <div class="flex justify-between items-center mb-6">
-      <h1 class="text-2xl font-bold">Add New Courses</h1>
-      <button
-        @click="handleImportExcel"
-        class="bg-violet-600 text-white px-6 py-2 rounded-lg hover:bg-violet-700 transition-colors"
-      >
-        Import Excel
-      </button>
-    </div>
+  <v-container class="max-w-7xl mx-auto py-8">
+    <v-card class="mb-8">
+      <v-card-title class="d-flex align-center justify-space-between py-4 px-6">
+        <h1 class="text-h4 font-weight-bold">Course Management</h1>
+        <v-text-field
+          v-model="searchTerm"
+          prepend-inner-icon="mdi-magnify"
+          label="Search courses"
+          density="compact"
+          hide-details
+          class="max-w-xs"
+        ></v-text-field>
+      </v-card-title>
 
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-      <!-- Table Header -->
-      <div class="grid grid-cols-5 gap-4 p-4 bg-gray-50 border-b border-gray-200">
-        <div class="font-semibold">ID</div>
-        <div class="font-semibold">NAME</div>
-        <div class="font-semibold">PROFESSOR EMAIL</div>
-        <div class="font-semibold">CREDIT NUMBER</div>
-        <div class="font-semibold">STUDENT EMAILS</div>
-      </div>
+      <v-card-text>
+        <v-expansion-panels>
+          <v-expansion-panel
+            v-for="(course, index) in courses"
+            :key="course.id"
+            :title="`Course ${course.id}`"
+            class="mb-4"
+          >
+            <v-expansion-panel-text>
+              <v-row>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="course.name"
+                    label="Course Name*"
+                    variant="outlined"
+                    :rules="[(v) => !!v || 'Course name is required']"
+                  ></v-text-field>
+                </v-col>
 
-      <!-- Table Body -->
-      <div class="divide-y divide-gray-200">
-        <div
-          v-for="(course, index) in courses"
-          :key="course.id"
-          class="grid grid-cols-5 gap-4 p-4 items-center"
-        >
-          <div>{{ course.id }}</div>
-          <input
-            v-model="course.name"
-            type="text"
-            class="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-violet-500"
-            placeholder="Course name"
-          />
-          <input
-            v-model="course.professorEmail"
-            type="email"
-            class="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-violet-500"
-            placeholder="professor@email.com"
-          />
-          <input
-            v-model.number="course.creditNumber"
-            type="number"
-            class="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-violet-500"
-            min="0"
-          />
-          <div class="relative">
-            <div class="flex flex-wrap gap-2 mb-2">
-              <span
-                v-for="(email, emailIndex) in course.studentEmails"
-                :key="emailIndex"
-                class="bg-gray-100 px-2 py-1 rounded-full text-sm flex items-center gap-1"
-              >
-                {{ email }}
-                <button
-                  @click="removeStudentEmail(index, emailIndex)"
-                  class="text-gray-500 hover:text-gray-700"
-                >
-                  ×
-                </button>
-              </span>
-            </div>
-            <input
-              type="email"
-              @keydown.enter="(e) => addStudentEmail(index, (e.target as HTMLInputElement).value)"
-              class="border border-gray-300 rounded px-3 py-2 w-full focus:outline-none focus:border-violet-500"
-              placeholder="Press Enter to add email"
-            />
-          </div>
-        </div>
-      </div>
-    </div>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="course.professorID"
+                    label="Professor ID*"
+                    variant="outlined"
+                    type="ID"
+                    :rules="[(v) => !!v || 'Professor ID is required']"
+                  ></v-text-field>
+                </v-col>
 
-    <!-- Action Buttons -->
-    <div class="flex gap-4 mt-6">
-      <button
+                <v-col cols="12" md="4">
+                  <v-text-field
+                    v-model.number="course.creditNumber"
+                    label="Credit Number*"
+                    variant="outlined"
+                    type="number"
+                    min="0"
+                    :rules="[(v) => v > 0 || 'Credit number must be greater than 0']"
+                  ></v-text-field>
+                </v-col>
+
+                <v-col cols="12" md="4">
+                  <v-text-field
+                    v-model.number="course.nSemester"
+                    label="Semester Number*"
+                    variant="outlined"
+                    type="number"
+                    min="1"
+                    :rules="[(v) => v > 0 || 'Semester number is required']"
+                  ></v-text-field>
+                </v-col>
+
+                <v-col cols="12" md="4">
+                  <v-text-field
+                    v-model="course.courseID"
+                    label="Course ID*"
+                    variant="outlined"
+                    :rules="[(v) => !!v || 'Course ID is required']"
+                  ></v-text-field>
+                </v-col>
+
+                <v-col cols="12" md="6">
+                  <v-date-picker
+                    v-model="course.startDate"
+                    label="Start Date"
+                    variant="outlined"
+                  ></v-date-picker>
+                </v-col>
+
+                <v-col cols="12" md="6">
+                  <v-date-picker
+                    v-model="course.endDate"
+                    label="End Date"
+                    variant="outlined"
+                  ></v-date-picker>
+                </v-col>
+
+                <v-col cols="12">
+                  <v-card variant="outlined" class="pa-4">
+                    <div class="d-flex align-center justify-space-between mb-4">
+                      <h3 class="text-h6">Student IDs</h3>
+                      <ImportExcel
+                        :onImportSuccess="handleImportExcel(index).onImportSuccess"
+                        columnName="MSSV"
+                        hasHeader
+                      />
+                    </div>
+
+                    <div class="mb-4">
+                      <v-chip-group>
+                        <v-chip
+                          v-for="(ID, IDIndex) in course.studentIDs"
+                          :key="IDIndex"
+                          closable
+                          @click:close="removeStudentID(index, IDIndex)"
+                        >
+                          {{ ID }}
+                        </v-chip>
+                      </v-chip-group>
+                    </div>
+
+                    <v-text-field
+                      v-model="IDInput"
+                      label="Add Student ID"
+                      variant="outlined"
+                      append-inner-icon="mdi-plus"
+                      @click:append-inner="addStudentID(index, IDInput)"
+                      @keyup.enter="addStudentID(index, IDInput)"
+                    ></v-text-field>
+                  </v-card>
+                </v-col>
+
+                <v-col cols="12" class="d-flex justify-end">
+                  <v-btn
+                    color="error"
+                    variant="outlined"
+                    class="mr-2"
+                    @click="removeCourse(index)"
+                  >
+                    Remove Course
+                  </v-btn>
+                </v-col>
+              </v-row>
+            </v-expansion-panel-text>
+          </v-expansion-panel>
+        </v-expansion-panels>
+      </v-card-text>
+    </v-card>
+
+    <div class="d-flex justify-end gap-4">
+      <v-btn
         @click="addNewCourse"
-        class="bg-gray-200 px-6 py-2 rounded-lg hover:bg-gray-300 transition-colors"
+        color="primary"
+        variant="outlined"
+        prepend-icon="mdi-plus"
       >
-        Add more
-      </button>
-      <button
-        @click="handleConfirm"
-        class="bg-gray-200 px-6 py-2 rounded-lg hover:bg-gray-300 transition-colors"
-      >
-        Confirm
-      </button>
+        Add Course
+      </v-btn>
+      <v-btn @click="handleConfirm" color="primary" :loading="loading">
+        Submit All Courses
+      </v-btn>
     </div>
-  </div>
+
+    <v-snackbar v-model="snackbar" :color="snackbarColor" :timeout="3000">
+      {{ snackbarText }}
+    </v-snackbar>
+  </v-container>
 </template>
+
+<style scoped>
+.v-expansion-panel {
+  margin-bottom: 1rem !important;
+}
+</style>

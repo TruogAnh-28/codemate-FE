@@ -16,6 +16,14 @@
               prepend-inner-icon="mdi-magnify"
               clearable
             ></v-text-field>
+            <v-btn
+              color="primary"
+              prepend-icon="mdi-plus"
+              :to="'/add-course'"
+              class="px-6"
+            >
+              Add Course
+            </v-btn>
           </div>
         </div>
       </div>
@@ -50,7 +58,7 @@
                   variant="outlined"
                   density="compact"
                   hide-details
-                  class="w-16"
+                  class="w-20"
                   @update:model-value="handlePageSizeChange"
                 >
                 </v-select>
@@ -69,15 +77,107 @@
           </template>
         </v-data-table>
       </v-card>
+
+      <!-- Add Course Dialog -->
+      <v-dialog v-model="showAddDialog" max-width="600px">
+        <v-card>
+          <v-card-title class="text-h5 pa-6">Add New Course</v-card-title>
+          <v-card-text>
+            <v-form ref="form" @submit.prevent="handleSubmit">
+              <v-container>
+                <v-row>
+                  <v-col cols="12">
+                    <v-text-field
+                      v-model="newCourse.name"
+                      label="Course Name"
+                      required
+                      variant="outlined"
+                    ></v-text-field>
+                  </v-col>
+                  <v-col cols="12">
+                    <v-text-field
+                      v-model="newCourse.description"
+                      label="Description"
+                      variant="outlined"
+                    ></v-text-field>
+                  </v-col>
+                  <v-col cols="12">
+                    <v-select
+                      v-model="newCourse.status"
+                      :items="['active', 'inactive', 'draft']"
+                      label="Status"
+                      required
+                      variant="outlined"
+                    ></v-select>
+                  </v-col>
+                </v-row>
+              </v-container>
+            </v-form>
+          </v-card-text>
+          <v-card-actions class="pa-6">
+            <v-spacer></v-spacer>
+            <v-btn color="grey-darken-1" variant="text" @click="showAddDialog = false">
+              Cancel
+            </v-btn>
+            <v-btn color="primary" @click="handleSubmit" :loading="submitting">
+              Save Course
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
     </v-main>
   </v-layout>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from "vue";
 import { coursesService } from "@/services/courseslistServices";
 import debounce from "@/composables/useDebounce";
 import { CoursesAdminListResponse } from "@/types/Course";
+import type { VForm } from "vuetify/components";
+
+interface NewCourse {
+  name: string;
+  description: string;
+  status: "active" | "inactive" | "draft";
+}
+
+const form = ref<VForm | null>(null);
+const submitting = ref(false);
+const showAddDialog = ref(false);
+
+const newCourse = ref<NewCourse>({
+  name: "",
+  description: "",
+  status: "draft",
+});
+
+const openAddCourseDialog = () => {
+  showAddDialog.value = true;
+};
+
+const handleSubmit = async () => {
+  const isValid = await form.value?.validate();
+
+  if (!isValid) return;
+
+  try {
+    submitting.value = true;
+    // Implement your submit logic here
+    // await addCourse(newCourse.value)
+
+    showAddDialog.value = false;
+    // Reset form
+    newCourse.value = {
+      name: "",
+      description: "",
+      status: "draft",
+    };
+  } catch (error) {
+    console.error("Error adding course:", error);
+  } finally {
+    submitting.value = false;
+  }
+};
 
 const courses = ref<CoursesAdminListResponse[]>([]);
 const loading = ref(false);

@@ -1,170 +1,239 @@
 <script lang="ts" setup>
-import { ref } from 'vue'
+import { usersService } from "@/services/usersServices";
+import { ref, inject } from "vue";
 
-interface Course {
-  id: number
-  name: string
-  professorEmail: string
-  creditNumber: number
-  studentEmails: string[]
+interface CreateUserRequest {
+  id?: number;
+  name: string;
+  fullname: string;
+  email: string;
+  date_of_birth: Date;
+  ms: string;
+  role: "student" | "professor" | "admin";
 }
 
 // State
-const courses = ref<Course[]>([{
-  id: 1,
-  name: '',
-  professorEmail: '',
-  creditNumber: 0,
-  studentEmails: []
-}])
+const users = ref<CreateUserRequest[]>([
+  {
+    name: "",
+    fullname: "",
+    email: "",
+    date_of_birth: new Date(),
+    ms: "",
+    role: "student",
+  },
+]);
+
+const loading = ref(false);
+const snackbar = ref(false);
+const snackbarText = ref("");
+const snackbarColor = ref("success");
+const searchTerm = ref("");
 
 // Methods
-const addNewCourse = () => {
-  courses.value.push({
-    id: courses.value.length + 1,
-    name: '',
-    professorEmail: '',
-    creditNumber: 0,
-    studentEmails: []
-  })
-}
+const addNewUser = () => {
+  users.value.push({
+    name: "",
+    fullname: "",
+    email: "",
+    date_of_birth: new Date(),
+    ms: "",
+    role: "student",
+  });
+};
 
-const addStudentEmail = (courseIndex: number, email: string) => {
-  if (email && !courses.value[courseIndex].studentEmails.includes(email)) {
-    courses.value[courseIndex].studentEmails.push(email)
-  }
-}
+const showSnackbar = (text: string, color: string = "success") => {
+  snackbarText.value = text;
+  snackbarColor.value = color;
+  snackbar.value = true;
+};
 
-const removeStudentEmail = (courseIndex: number, emailIndex: number) => {
-  courses.value[courseIndex].studentEmails.splice(emailIndex, 1)
-}
+const showError = inject("showError") as (message: string) => void;
+const showSuccess = inject("showSuccess") as (message: string) => void;
 
 const handleConfirm = async () => {
   try {
+    loading.value = true;
+
     // Validate data
-    const isValid = courses.value.every(course => 
-      course.name && 
-      course.professorEmail && 
-      course.creditNumber > 0
-    )
+    const isValid = users.value.every(
+      (user) => user.name && user.fullname && user.email && user.ms && user.role
+    );
 
     if (!isValid) {
-      alert('Please fill in all required fields')
-      return
+      showSnackbar("Please fill in all required fields", "error");
+      return;
     }
 
-    // TODO: Add your API call here
-    console.log('Submitting courses:', courses.value)
-    
-    // Reset form after successful submission
-    courses.value = [{
-      id: 1,
-      name: '',
-      professorEmail: '',
-      creditNumber: 0,
-      studentEmails: []
-    }]
-  } catch (error) {
-    console.error('Error submitting courses:', error)
-    alert('Failed to submit courses')
-  }
-}
+    const formattedUsers = users.value.map((user) => {
+      const dateOfBirth = new Date(user.date_of_birth);
 
-const handleImportExcel = () => {
-  // TODO: Implement Excel import functionality
-  console.log('Import Excel clicked')
-}
+      dateOfBirth.setUTCHours(0, 0, 0, 0);
+
+      return {
+        ...user,
+        date_of_birth: dateOfBirth.toISOString(),
+      };
+    });
+
+    const response = await usersService.createUser(formattedUsers, {
+      showError,
+      showSuccess,
+    });
+
+    if (response && response.isSuccess) {
+      // Reset form after successful submission
+      users.value = [
+        {
+          name: "",
+          fullname: "",
+          email: "",
+          date_of_birth: new Date(),
+          ms: "",
+          role: "student",
+        },
+      ];
+      showSnackbar("Users created successfully");
+    }
+  } catch (error) {
+    console.error("Error creating users:", error);
+    showSnackbar("Failed to create users", "error");
+  } finally {
+    loading.value = false;
+  }
+};
+
+const removeUser = (index: number) => {
+  users.value.splice(index, 1);
+  showSnackbar("User removed");
+};
 </script>
 
 <template>
-  <div class="p-6 max-w-6xl mx-auto">
-    <div class="flex justify-between items-center mb-6">
-      <h1 class="text-2xl font-bold">Add New Courses</h1>
-      <button
-        @click="handleImportExcel"
-        class="bg-violet-600 text-white px-6 py-2 rounded-lg hover:bg-violet-700 transition-colors"
+  <v-container class="max-w-7xl mx-auto py-8">
+    <v-card class="mb-8">
+      <v-card-title class="d-flex align-center justify-space-between py-4 px-6">
+        <h1 class="text-h4 font-weight-bold">User Management</h1>
+        <v-text-field
+          v-model="searchTerm"
+          prepend-inner-icon="mdi-magnify"
+          label="Search users"
+          density="compact"
+          hide-details
+          class="max-w-xs"
+        ></v-text-field>
+      </v-card-title>
+
+      <v-card-text>
+        <v-expansion-panels>
+          <v-expansion-panel
+            v-for="(user, index) in users"
+            :key="index"
+            :title="`User ${index + 1}`"
+            class="mb-4"
+          >
+            <v-expansion-panel-text>
+              <v-row>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="user.name"
+                    label="Username*"
+                    variant="outlined"
+                    :rules="[(v) => !!v || 'Username is required']"
+                  ></v-text-field>
+                </v-col>
+
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="user.fullname"
+                    label="Full Name*"
+                    variant="outlined"
+                    :rules="[(v) => !!v || 'Full name is required']"
+                  ></v-text-field>
+                </v-col>
+
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="user.email"
+                    label="Email*"
+                    variant="outlined"
+                    type="email"
+                    :rules="[
+                      (v) => !!v || 'Email is required',
+                      (v) => /.+@.+\..+/.test(v) || 'Email must be valid',
+                    ]"
+                  ></v-text-field>
+                </v-col>
+
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="user.ms"
+                    label="MS Number*"
+                    variant="outlined"
+                    :rules="[(v) => !!v || 'MS number is required']"
+                  ></v-text-field>
+                </v-col>
+
+                <v-col cols="12" md="6">
+                  <v-card>
+                    <v-card-title>Date of Birth</v-card-title>
+                    <v-date-picker
+                      v-model="user.date_of_birth"
+                      variant="outlined"
+                    ></v-date-picker>
+                  </v-card>
+                </v-col>
+
+                <v-col cols="12" md="6">
+                  <v-select
+                    v-model="user.role"
+                    label="Role*"
+                    variant="outlined"
+                    :items="['student', 'professor', 'admin']"
+                    :rules="[(v) => !!v || 'Role is required']"
+                  ></v-select>
+                </v-col>
+
+                <v-col cols="12" class="d-flex justify-end">
+                  <v-btn
+                    color="error"
+                    variant="outlined"
+                    class="mr-2"
+                    @click="removeUser(index)"
+                    :disabled="users.length === 1"
+                  >
+                    Remove User
+                  </v-btn>
+                </v-col>
+              </v-row>
+            </v-expansion-panel-text>
+          </v-expansion-panel>
+        </v-expansion-panels>
+      </v-card-text>
+    </v-card>
+
+    <div class="d-flex justify-end gap-4">
+      <v-btn
+        @click="addNewUser"
+        color="primary"
+        variant="outlined"
+        prepend-icon="mdi-plus"
       >
-        Import Excel
-      </button>
+        Add User
+      </v-btn>
+      <v-btn @click="handleConfirm" color="primary" :loading="loading">
+        Submit All Users
+      </v-btn>
     </div>
 
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-      <!-- Table Header -->
-      <div class="grid grid-cols-5 gap-4 p-4 bg-gray-50 border-b border-gray-200">
-        <div class="font-semibold">ID</div>
-        <div class="font-semibold">NAME</div>
-        <div class="font-semibold">PROFESSOR EMAIL</div>
-        <div class="font-semibold">CREDIT NUMBER</div>
-        <div class="font-semibold">STUDENT EMAILS</div>
-      </div>
-
-      <!-- Table Body -->
-      <div class="divide-y divide-gray-200">
-        <div
-          v-for="(course, index) in courses"
-          :key="course.id"
-          class="grid grid-cols-5 gap-4 p-4 items-center"
-        >
-          <div>{{ course.id }}</div>
-          <input
-            v-model="course.name"
-            type="text"
-            class="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-violet-500"
-            placeholder="Course name"
-          />
-          <input
-            v-model="course.professorEmail"
-            type="email"
-            class="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-violet-500"
-            placeholder="professor@email.com"
-          />
-          <input
-            v-model.number="course.creditNumber"
-            type="number"
-            class="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-violet-500"
-            min="0"
-          />
-          <div class="relative">
-            <div class="flex flex-wrap gap-2 mb-2">
-              <span
-                v-for="(email, emailIndex) in course.studentEmails"
-                :key="emailIndex"
-                class="bg-gray-100 px-2 py-1 rounded-full text-sm flex items-center gap-1"
-              >
-                {{ email }}
-                <button
-                  @click="removeStudentEmail(index, emailIndex)"
-                  class="text-gray-500 hover:text-gray-700"
-                >
-                  ×
-                </button>
-              </span>
-            </div>
-            <input
-              type="email"
-              @keydown.enter="(e) => addStudentEmail(index, (e.target as HTMLInputElement).value)"
-              class="border border-gray-300 rounded px-3 py-2 w-full focus:outline-none focus:border-violet-500"
-              placeholder="Press Enter to add email"
-            />
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Action Buttons -->
-    <div class="flex gap-4 mt-6">
-      <button
-        @click="addNewCourse"
-        class="bg-gray-200 px-6 py-2 rounded-lg hover:bg-gray-300 transition-colors"
-      >
-        Add more
-      </button>
-      <button
-        @click="handleConfirm"
-        class="bg-gray-200 px-6 py-2 rounded-lg hover:bg-gray-300 transition-colors"
-      >
-        Confirm
-      </button>
-    </div>
-  </div>
+    <v-snackbar v-model="snackbar" :color="snackbarColor" :timeout="3000">
+      {{ snackbarText }}
+    </v-snackbar>
+  </v-container>
 </template>
+
+<style scoped>
+.v-expansion-panel {
+  margin-bottom: 1rem !important;
+}
+</style>

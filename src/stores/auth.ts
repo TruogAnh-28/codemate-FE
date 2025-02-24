@@ -66,7 +66,12 @@ export const useAuthStore = defineStore('auth', () => {
     return !!storage.getItem('access_token');
   };
 
-  const getUser = () => user.value;
+  const getUser = () => {
+    const getUserInfo = localStorage.getItem('user') || sessionStorage.getItem('user');
+    if (getUserInfo) {
+      return JSON.parse(getUserInfo);
+    }
+  };
 
   return {
     user,

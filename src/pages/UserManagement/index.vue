@@ -21,6 +21,9 @@
                 class="ml-2"
               ></v-badge>
             </v-btn>
+            <v-btn color="primary" prepend-icon="mdi-plus" :to="'/add-user'" class="px-6">
+              Add User
+            </v-btn>
           </div>
         </div>
       </div>

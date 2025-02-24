@@ -1,7 +1,7 @@
 import ApiService from "@/common/api.service";
 import { AuthConfig } from "./authenServices";
 import { IResponseData } from "@/modals/apis/response";
-import { GetAllUsersResponse } from "@/types/User";
+import { GetAllUsersResponse, CreateUserRequest, CreateUserResponse } from "@/types/User";
 
 interface GetUserParams {
     search_query?: string
@@ -32,6 +32,19 @@ export const usersService = {
         return ApiService.query<IResponseData<GetAllUsersResponse[]>>(
             "users/",
             queryParams,
+            {
+                showError: config.showError,
+                showSuccess: config.showSuccess,
+            }
+        );
+    },
+    async createUser(
+        request: CreateUserRequest[],
+        config: { showError?: (message: string) => void; showSuccess?: (message: string) => void} = {}
+    ){
+        return ApiService.post<IResponseData<CreateUserResponse[]>>(
+            "users/",
+            request,
             {
                 showError: config.showError,
                 showSuccess: config.showSuccess,
