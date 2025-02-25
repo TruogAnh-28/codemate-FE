@@ -55,7 +55,7 @@ export const usersService = {
         config: { showError?: (message: string) => void; showSuccess?: (message: string) => void} = {}
     ){
         return ApiService.get<IResponseData<GetProfileResponse>>(
-            "users/",
+            "users",
             undefined,
             {
                 showError: config.showError,

@@ -82,9 +82,8 @@ const autoLogin = async () => {
     }
 
     // If access token is expired or invalid but refresh token exists
-    if (refreshToken) {
+    if (ApiService.checkTokenExpiration() && refreshToken) {
       const refreshed = await ApiService.refreshToken();
-
       if (refreshed) {
         // Successfully refreshed, get user info
         const userInfo = await getUserInfo();

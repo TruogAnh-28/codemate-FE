@@ -244,9 +244,7 @@ class ApiServiceClass {
    * Check if route is public
    */
   isPublicRoute(url: string): boolean {
-    // Extract path from URL if it contains a full URL
-    const path = url.includes('://') ? new URL(url).pathname : url;
-    return PUBLIC_ROUTES.some(route => path === route || path.startsWith(route));
+    return url in PUBLIC_ROUTES;
   }
 
   /**
@@ -254,10 +252,11 @@ class ApiServiceClass {
    */
   getToken(): string | null {
     try {
-      const rememberMe = localStorage.getItem("rememberMe") === "true";
+
       const localToken = localStorage.getItem("access_token");
       const sessionToken = sessionStorage.getItem("access_token");
 
+      const rememberMe = localStorage.getItem("rememberMe") === "true";
       return rememberMe ? localToken : sessionToken;
     } catch (error) {
       console.error("Error retrieving token:", error);
@@ -287,32 +286,38 @@ class ApiServiceClass {
     if (!refreshToken) return false;
 
     try {
-      const response = await this.request<{ access_token: string, refresh_token?: string }>(
+      const response = await this.request<IResponseData<{
+        access_token: string
+        name: string
+        email: string
+        is_email_verified: boolean
+        role: string
+      }>>(
         "POST",
         "/auth/refresh-token",
         { data: { refresh_token: refreshToken } }
       );
 
-      if (response.access_token) {
-        // Use the refresh token from response or the existing one
-        const newRefreshToken = response.refresh_token || refreshToken;
-        this.setTokens(response.access_token, newRefreshToken);
+      if (response && "data" in response) {
+        if (response.data?.access_token)
+          this.setTokens(response.data?.access_token, refreshToken);
         return true;
       }
       return false;
     } catch {
-      this.clearAuthData();
       return false;
     }
   }
 
   checkTokenExpiration(): boolean {
-    const token = this.getToken();
+    const token = this.getToken()
     if (!token) return true;
 
     try {
       const payload = JSON.parse(atob(token.split(".")[1]));
-      return Date.now() >= payload.exp * 1000;
+      const expirationTime = payload.exp;
+
+      return Date.now() / 1000 >= expirationTime;
     } catch {
       return true;
     }
@@ -320,35 +325,20 @@ class ApiServiceClass {
 
   clearAuthData(): void {
     [localStorage, sessionStorage].forEach((storage) => {
-      ["access_token", "refresh_token", "role", "rememberMe"].forEach((key) => {
+      ["access_token", "refresh_token", "role", "rememberMe", "user"].forEach((key) => {
         storage.removeItem(key);
       });
     });
   }
 
   handleTokenExpiration(): void {
-    const currentPath = router.currentRoute.value.path;
-
-    if (!this.isPublicRoute(currentPath)) {
+    if (router.currentRoute.value.path !== "/login") {
       sessionStorage.setItem("redirectUrl", router.currentRoute.value.fullPath);
       this.clearAuthData();
+      alert("Your session has expired. Please log in again.");
       router.push("/login");
     }
   }
-
-  // isTokenExpiringSoon(): boolean {
-  //   const token = this.getToken();
-  //   if (!token) return true;
-  
-  //   try {
-  //     const payload = JSON.parse(atob(token.split(".")[1]));
-  //     // Check if token expires within the next 5 minutes
-  //     return Date.now() >= (payload.exp * 1000) - (5 * 60 * 1000);
-  //   } catch {
-  //     return true;
-  //   }
-  // }
-
 
   query<T>(
     resource: string,
