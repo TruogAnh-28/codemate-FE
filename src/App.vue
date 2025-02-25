@@ -3,15 +3,17 @@
     <v-main :class="mainContentClass">
       <ErrorAlert ref="errorAlert" />
       <SuccessAlert ref="successAlert" />
+      <AutoLogin />
       <router-view />
     </v-main>
   </v-app>
 </template>
 
 <script lang="ts" setup>
-import { ref, computed } from "vue";
+import { ref, computed, provide } from "vue";
 import ErrorAlert from "./components/ErrorAlert.vue";
 import SuccessAlert from "./components/SuccessAlert.vue";
+import AutoLogin from "./components/AutoLogin.vue";
 
 const sidebarExpanded = ref(false);
 

@@ -33,3 +33,14 @@ export interface CreateUserResponse {
   mscb?: string
 
 }
+
+export interface GetProfileResponse {
+  id: string
+  name: string
+  fullname: any
+  avatar: any
+  email: string
+  ms: any
+  date_of_birth: any
+  role: string
+}

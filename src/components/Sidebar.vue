@@ -81,7 +81,7 @@ const drawer = computed({
 });
 
 const expanded = ref(false);
-const role = computed(() => useAuthStore().getUser().role);
+const role = computed(() => useAuthStore().userRole);
 
 const handleExpand = (value: boolean) => {
   expanded.value = value;

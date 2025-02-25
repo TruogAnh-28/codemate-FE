@@ -1,11 +1,5 @@
 <template>
-  <v-app-bar
-    class="custom-app-bar"
-    app
-    fixed
-    :elevation="0"
-    color="secondary variant"
-  >
+  <v-app-bar class="custom-app-bar" app fixed :elevation="0" color="secondary variant">
     <v-spacer></v-spacer>
 
     <v-btn icon="mdi-bell-outline" class="mr-2"></v-btn>
@@ -16,8 +10,8 @@
         <v-list-item
           v-bind="props"
           prepend-avatar="@/assets/codemate.png"
-          :title="userInfo.name"
-          :subtitle="userInfo.email"
+          :title="userInfo?.name"
+          :subtitle="userInfo?.email"
           class="cursor-pointer"
         >
           <template v-slot:prepend>
@@ -47,7 +41,7 @@ import { useAuthStore } from "@/stores/auth";
 const authStore = useAuthStore();
 const router = useRouter();
 
-const userInfo = authStore.getUser();
+const userInfo = authStore.user;
 const showSuccess = inject("showSuccess") as (message: string) => void;
 const handleLogout = () => {
   authStore.logout();

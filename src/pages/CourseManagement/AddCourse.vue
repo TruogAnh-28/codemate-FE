@@ -1,7 +1,8 @@
 <script lang="ts" setup>
+import { ref, inject } from "vue";
 import { CreateCourseRequest } from "@/types/Course";
 import { coursesService } from "@/services/courseslistServices";
-import ImportExcel from "@/components/AdminDashboard/ImportExcel.vue";
+
 // State
 const courses = ref<CreateCourseRequest[]>([
   {
@@ -18,11 +19,13 @@ const courses = ref<CreateCourseRequest[]>([
 ]);
 
 const loading = ref(false);
+const showDialog = ref(false);
 const snackbar = ref(false);
 const snackbarText = ref("");
 const snackbarColor = ref("success");
 const IDInput = ref("");
 const searchTerm = ref("");
+const currentCourseIndex = ref(0);
 
 // Methods
 const addNewCourse = () => {
@@ -125,21 +128,22 @@ const handleConfirm = async () => {
   }
 };
 
-const handleImportExcel = (courseIndex: number) => {
-  const onImportSuccess = (studentIDs: string[]) => {
-    // Add new IDs while avoiding duplicates
-    const existingIDs = courses.value[courseIndex].studentIDs;
-    const newIDs = studentIDs.filter((id) => !existingIDs.includes(id));
+const openImportDialog = (index: number) => {
+  currentCourseIndex.value = index;
+  showDialog.value = true;
+};
 
-    if (newIDs.length > 0) {
-      courses.value[courseIndex].studentIDs.push(...newIDs);
-      showSnackbar(`Successfully imported ${newIDs.length} student IDs`);
-    } else {
-      showSnackbar("No new student IDs to import", "info");
-    }
-  };
+const handleImportSuccess = (studentIDs: string[]) => {
+  // Add new IDs while avoiding duplicates
+  const existingIDs = courses.value[currentCourseIndex.value].studentIDs;
+  const newIDs = studentIDs.filter((id) => !existingIDs.includes(id));
 
-  return { onImportSuccess };
+  if (newIDs.length > 0) {
+    courses.value[currentCourseIndex.value].studentIDs.push(...newIDs);
+    showSnackbar(`Successfully imported ${newIDs.length} student IDs`);
+  } else {
+    showSnackbar("No new student IDs to import", "info");
+  }
 };
 
 const removeCourse = (index: number) => {
@@ -153,14 +157,6 @@ const removeCourse = (index: number) => {
     <v-card class="mb-8">
       <v-card-title class="d-flex align-center justify-space-between py-4 px-6">
         <h1 class="text-h4 font-weight-bold">Course Management</h1>
-        <v-text-field
-          v-model="searchTerm"
-          prepend-inner-icon="mdi-magnify"
-          label="Search courses"
-          density="compact"
-          hide-details
-          class="max-w-xs"
-        ></v-text-field>
       </v-card-title>
 
       <v-card-text>
@@ -168,7 +164,7 @@ const removeCourse = (index: number) => {
           <v-expansion-panel
             v-for="(course, index) in courses"
             :key="course.id"
-            :title="`Course ${course.id}`"
+            :title="`Course ${course.id}${course.name ? ': ' + course.name : ''}`"
             class="mb-4"
           >
             <v-expansion-panel-text>
@@ -242,26 +238,44 @@ const removeCourse = (index: number) => {
                 <v-col cols="12">
                   <v-card variant="outlined" class="pa-4">
                     <div class="d-flex align-center justify-space-between mb-4">
-                      <h3 class="text-h6">Student IDs</h3>
-                      <ImportExcel
-                        :onImportSuccess="handleImportExcel(index).onImportSuccess"
-                        columnName="MSSV"
-                        hasHeader
-                      />
+                      <div class="d-flex align-center">
+                        <v-icon icon="mdi-account-group" class="mr-2"></v-icon>
+                        <h3 class="text-h6">Student IDs</h3>
+                        <v-chip
+                          class="ml-2"
+                          color="primary"
+                          size="small"
+                          v-if="course.studentIDs.length > 0"
+                        >
+                          {{ course.studentIDs.length }}
+                        </v-chip>
+                      </div>
+                      <!-- Button to open dialog -->
+                      <v-btn
+                        color="primary"
+                        @click="openImportDialog(index)"
+                        prepend-icon="mdi-file-excel"
+                      >
+                        Import Excel
+                      </v-btn>
                     </div>
 
-                    <div class="mb-4">
-                      <v-chip-group>
-                        <v-chip
-                          v-for="(ID, IDIndex) in course.studentIDs"
-                          :key="IDIndex"
-                          closable
-                          @click:close="removeStudentID(index, IDIndex)"
-                        >
-                          {{ ID }}
-                        </v-chip>
-                      </v-chip-group>
-                    </div>
+                    <v-fade-transition>
+                      <div class="mb-4" v-if="course.studentIDs.length > 0">
+                        <v-chip-group class="student-ids-container">
+                          <v-chip
+                            v-for="(ID, IDIndex) in course.studentIDs"
+                            :key="IDIndex"
+                            closable
+                            size="small"
+                            class="ma-1"
+                            @click:close="removeStudentID(index, IDIndex)"
+                          >
+                            {{ ID }}
+                          </v-chip>
+                        </v-chip-group>
+                      </div>
+                    </v-fade-transition>
 
                     <v-text-field
                       v-model="IDInput"
@@ -270,15 +284,16 @@ const removeCourse = (index: number) => {
                       append-inner-icon="mdi-plus"
                       @click:append-inner="addStudentID(index, IDInput)"
                       @keyup.enter="addStudentID(index, IDInput)"
+                      placeholder="Enter ID and press Enter"
                     ></v-text-field>
                   </v-card>
                 </v-col>
-
                 <v-col cols="12" class="d-flex justify-end">
                   <v-btn
                     color="error"
                     variant="outlined"
                     class="mr-2"
+                    prepend-icon="mdi-delete"
                     @click="removeCourse(index)"
                   >
                     Remove Course
@@ -305,8 +320,18 @@ const removeCourse = (index: number) => {
       </v-btn>
     </div>
 
+    <!-- Import Excel Dialog -->
+    <ImportExcelDialog
+      :showDialog="showDialog"
+      @update:showDialog="showDialog = $event"
+      :onImportSuccess="handleImportSuccess"
+    />
+
     <v-snackbar v-model="snackbar" :color="snackbarColor" :timeout="3000">
       {{ snackbarText }}
+      <template v-slot:actions>
+        <v-btn color="white" variant="text" @click="snackbar = false"> Close </v-btn>
+      </template>
     </v-snackbar>
   </v-container>
 </template>
@@ -314,5 +339,13 @@ const removeCourse = (index: number) => {
 <style scoped>
 .v-expansion-panel {
   margin-bottom: 1rem !important;
+}
+
+.student-ids-container {
+  max-height: 200px;
+  overflow-y: auto;
+  padding: 8px;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
 }
 </style>

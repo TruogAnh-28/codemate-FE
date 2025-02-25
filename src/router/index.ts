@@ -8,7 +8,7 @@
 import { createRouter, createWebHistory } from "vue-router";
 import { setupLayouts } from "virtual:generated-layouts";
 import { routes as autoRoutes } from "vue-router/auto-routes";
-import { manageExpirationTimer, PUBLIC_ROUTES } from "@/common/api.service";
+import ApiService, { manageExpirationTimer, PUBLIC_ROUTES } from "@/common/api.service";
 const LoginRoute = [
   {
     path: "/login",
@@ -134,7 +134,7 @@ const AdminRoutes = [
     meta: { requiresAuth: true, role: "admin" },
   },
   {
-    path:"/course-management",
+    path: "/course-management",
     name: "CourseManagement",
     component: () => import("@/pages/CourseManagement/index.vue"),
     meta: { requiresAuth: true, role: "admin" },
@@ -212,22 +212,43 @@ const router = createRouter({
   ],
 });
 
+// Update the router.beforeEach to work with our new auto-login mechanism
 router.beforeEach(async (to, from, next) => {
   const token =
     localStorage.getItem("access_token") ||
     sessionStorage.getItem("access_token");
+  const refreshToken =
+    localStorage.getItem("refresh_token") ||
+    sessionStorage.getItem("refresh_token");
   const user = localStorage.getItem("user") || sessionStorage.getItem("user");
   const role = user ? JSON.parse(user).role : null;
 
+  // Always allow access to public routes
   if (PUBLIC_ROUTES.includes(to.path)) {
     return next();
   }
 
-  if (!token || !isValidToken(token)) {
+  // If we have a refresh token but no valid access token, try to refresh
+  if ((!token || !isValidToken(token)) && refreshToken) {
+    const refreshed = await ApiService.refreshToken();
+
+    // If refresh was unsuccessful, redirect to login
+    if (!refreshed) {
+      sessionStorage.setItem("redirectUrl", to.fullPath);
+      return next("/login");
+    }
+  }
+
+  // Re-check token after possible refresh
+  const currentToken = ApiService.getToken();
+
+  // If we still don't have a valid token, redirect to login
+  if (!currentToken || !isValidToken(currentToken)) {
     sessionStorage.setItem("redirectUrl", to.fullPath);
     return next("/login");
   }
 
+  // Check role-based access
   if (to.meta.role && to.meta.role !== role) {
     switch (role) {
       case "admin":
@@ -240,6 +261,8 @@ router.beforeEach(async (to, from, next) => {
         return next("/login");
     }
   }
+
+  // Start token expiration timer
   manageExpirationTimer();
   next();
 });
