@@ -13,12 +13,7 @@
       </v-app-bar-title>
 
       <v-app-bar-title>
-        <v-btn
-          variant="elevated"
-          color="on-primary"
-          :to="`/login`"
-          class="min-w-[100px]"
-        >
+        <v-btn variant="elevated" color="on-primary" :to="`/login`" class="min-w-[100px]">
           Log In
         </v-btn>
       </v-app-bar-title>
@@ -32,8 +27,8 @@
               <div class="flex-1 p-20">
                 <h2 class="text-heading-4 mb-4">Learn with us</h2>
                 <p>
-                  Empower your learning journey with our support, helping you
-                  achieve better academic success effortlessly!
+                  Empower your learning journey with our support, helping you achieve
+                  better academic success effortlessly!
                 </p>
                 <div class="flex flex-col items-center mt-8">
                   <loginAssets />
@@ -111,9 +106,7 @@
             <h1 class="text-heading-4 text-center">
               Streamline and Enhance Your Learning Journey with CodeMate
             </h1>
-            <p class="text-center text-gray-700 mt-4">
-              Who is CodeMate suitable for?
-            </p>
+            <p class="text-center text-gray-700 mt-4">Who is CodeMate suitable for?</p>
             <div class="flex flex-row justify-around p-16">
               <CoursesCard
                 v-for="(course, index) in courseCards"
@@ -132,14 +125,12 @@
               </div>
               <div class="flex-1">
                 <div class="p-20 bg-white rounded-lg shadow-lg">
-                  <h2 class="text-heading-4 mb-4">
-                    Unlock Your Potential with CodeMate
-                  </h2>
+                  <h2 class="text-heading-4 mb-4">Unlock Your Potential with CodeMate</h2>
                   <p>
-                    Discover a world of flexible, personalized learning. Our
-                    platform empowers you to navigate courses at your own pace,
-                    track your progress, and gain valuable insights with
-                    interactive exercises and guided milestones.
+                    Discover a world of flexible, personalized learning. Our platform
+                    empowers you to navigate courses at your own pace, track your
+                    progress, and gain valuable insights with interactive exercises and
+                    guided milestones.
                   </p>
                   <div class="flex flex-col items-center mt-8">
                     <v-btn
@@ -198,11 +189,7 @@
                 ></div>
               </div>
 
-              <v-expansion-panels
-                v-model="panel"
-                class="mb-16 bg-transparent"
-                multiple
-              >
+              <v-expansion-panels v-model="panel" class="mb-16 bg-transparent" multiple>
                 <v-expansion-panel
                   v-for="(section, i) in sections"
                   :key="i"
@@ -282,17 +269,27 @@
           </div>
         </v-lazy>
       </div>
-      <div v-if="selectedComponent === 'About Us'"><AboutUs /></div>
+      <div v-if="selectedComponent === 'About Us'">
+        <AboutUs @close="closeAboutUs" />
+      </div>
+
       <div v-if="selectedComponent === 'FAQs'">
         <FAQs :modelValue="isOpenFAQs" @update:modelValue="updateFAQsModal" />
       </div>
       <div v-if="selectedComponent === 'Teams'">
-        <Teams
-          :teamsValue="isOpenTeams"
-          @update:teamsValue="updateTeamsModal"
+        <Teams :teamsValue="isOpenTeams" @update:teamsValue="updateTeamsModal" />
+      </div>
+      <div v-if="selectedComponent === 'Contact Us'">
+        <ContactUs
+          @close="closeContactUs"
+          @openFAQs="
+            () => {
+              selectedComponent = 'FAQs';
+              isOpenFAQs = true;
+            }
+          "
         />
       </div>
-      <div v-if="selectedComponent === 'Contact Us'"><ContactUs /></div>
       <div id="contactus">
         <v-lazy
           v-model="isVisible.contactus"
@@ -322,9 +319,7 @@
                     </div>
                   </v-col>
                   <v-col cols="12" md="3">
-                    <h3 class="text-body-large-bold mb-4 text-primary">
-                      Features
-                    </h3>
+                    <h3 class="text-body-large-bold mb-4 text-primary">Features</h3>
                     <v-list class="bg-transparent pa-0">
                       <v-list-item
                         v-for="(item, index) in featuresSummary"
@@ -340,9 +335,7 @@
                     </v-list>
                   </v-col>
                   <v-col cols="12" md="3">
-                    <h3 class="text-body-large-bold mb-4 text-primary">
-                      Contact Us
-                    </h3>
+                    <h3 class="text-body-large-bold mb-4 text-primary">Contact Us</h3>
                     <v-list class="bg-transparent pa-0">
                       <v-list-item
                         v-for="(item, index) in company"
@@ -361,24 +354,14 @@
                   <v-col cols="12" md="3">
                     <div class="flex flex-col gap-4">
                       <div class="flex items-center gap-2">
-                        <v-icon
-                          icon="mdi-map-marker-outline"
-                          color="primary"
-                          medium
-                        />
-                        <span
-                          class="text-body-base-regular text-secondary-darker"
+                        <v-icon icon="mdi-map-marker-outline" color="primary" medium />
+                        <span class="text-body-base-regular text-secondary-darker"
                           >Ho Chi Minh City, Vietnam</span
                         >
                       </div>
                       <div class="flex items-center gap-2">
-                        <v-icon
-                          icon="mdi-email-outline"
-                          color="primary"
-                          medium
-                        />
-                        <span
-                          class="text-body-base-regular text-secondary-darker"
+                        <v-icon icon="mdi-email-outline" color="primary" medium />
+                        <span class="text-body-base-regular text-secondary-darker"
                           >group6.gr2003@gmail.com</span
                         >
                       </div>
@@ -389,9 +372,7 @@
                 <v-divider class="my-6" />
                 <v-row class="justify-end md:justify-end">
                   <v-col cols="12" md="auto">
-                    <div
-                      class="flex flex-wrap gap-6 justify-center md:justify-end"
-                    >
+                    <div class="flex flex-wrap gap-6 justify-center md:justify-end">
                       <a
                         v-for="(link, index) in bottomLinks"
                         :key="index"
@@ -440,12 +421,7 @@
   left: 0;
   right: 0;
   height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(0, 0, 0, 0.1),
-    transparent
-  );
+  background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.1), transparent);
 }
 
 .v-btn {
@@ -475,8 +451,12 @@ import IndividualIcon from "@/assets/IndividualIcon.png";
 import coursesIcon from "@/assets/login/coursesIcon.vue";
 import codemateWithName from "@/assets/codemateWithName.vue";
 const FAQs = defineAsyncComponent(() => import("@/components/Login/FAQs.vue"));
-const Teams = defineAsyncComponent(
-  () => import("@/components/Login/Teams.vue")
+const Teams = defineAsyncComponent(() => import("@/components/Login/Teams.vue"));
+const ContactUs = defineAsyncComponent(
+  () => import("@/components/LandingPage/Layout/ContactUs.vue")
+);
+const AboutUs = defineAsyncComponent(
+  () => import("@/components/LandingPage/Layout/AboutUs.vue")
 );
 
 const selectedComponent = ref<string>("");
@@ -538,8 +518,7 @@ const sections: Section[] = [
   {
     id: "values",
     title: "Our Values",
-    shortDesc:
-      "Innovation, excellence, and student success drive everything we do.",
+    shortDesc: "Innovation, excellence, and student success drive everything we do.",
     longDesc:
       "We believe in continuous innovation, maintaining high standards of excellence, and putting student success at the forefront of all our decisions. Our platform is built on the principles of accessibility, engagement, and community support, ensuring that every student has the opportunity to excel in their programming journey.",
     icon: "mdi-heart-outline",
@@ -577,38 +556,73 @@ const stats: Stat[] = [
 ];
 
 const onIntersectAboutUs = (entries: IntersectionObserverEntry[]) => {
-  if (entries[0].isIntersecting) {
+  // Check if entries exists and has items
+  if (entries && entries.length > 0 && entries[0].isIntersecting) {
     isVisible.value.aboutus = true;
   }
 };
+
 const onIntersectFeatures = (entries: IntersectionObserverEntry[]) => {
-  if (entries[0].isIntersecting) {
+  // Check if entries exists and has items
+  if (entries && entries.length > 0 && entries[0].isIntersecting) {
     isVisible.value.features = true;
   }
 };
 
 const onIntersectCourses = (entries: IntersectionObserverEntry[]) => {
-  if (entries[0].isIntersecting) {
+  // Check if entries exists and has items
+  if (entries && entries.length > 0 && entries[0].isIntersecting) {
     isVisible.value.courses = true;
   }
 };
 
 const onIntersectContactUs = (entries: IntersectionObserverEntry[]) => {
-  if (entries[0].isIntersecting) {
+  // Check if entries exists and has items
+  if (entries && entries.length > 0 && entries[0].isIntersecting) {
     isVisible.value.contactus = true;
   }
 };
 
+// In your setup function, add these new components to your component mapping
 const getComponent = (componentName: string) => {
   switch (componentName) {
     case "FAQs":
       return FAQs;
     case "Teams":
       return Teams;
+    case "About Us":
+      return AboutUs;
+    case "Contact Us":
+      return ContactUs;
     default:
       return null;
   }
 };
+
+// You'll need to update or add these methods to handle the component visibility
+const closeAboutUs = () => {
+  selectedComponent.value = "";
+};
+
+const closeContactUs = () => {
+  selectedComponent.value = "";
+};
+
+// Update the selectComponent function to handle visibility
+function selectComponent(component: string) {
+  selectedComponent.value = component;
+  isComponentVisible.value = true;
+
+  if (component === "FAQs") {
+    isOpenFAQs.value = true;
+  }
+  if (component === "Teams") {
+    isOpenTeams.value = true;
+  }
+  if (component === "About Us") {
+    selectedComponent.value = "About Us";
+  }
+}
 
 const navItems = [
   {
@@ -639,7 +653,8 @@ const features = [
     title: "Interactive Quiz",
     imgSrc: quizImage,
     imgAlt: "Quiz Image",
-    text: "Engage with real-time assessments to enhance understanding and track your progress seamlessly.",
+    text:
+      "Engage with real-time assessments to enhance understanding and track your progress seamlessly.",
   },
   {
     icon: "mdi-map",
@@ -683,7 +698,7 @@ const courseCards = [
   },
 ];
 
-const company = ["FAQs", "Teams", "Contact Us"];
+const company = ["FAQs", "Teams", "Contact Us", "About Us"];
 const bottomLinks = [
   "Privacy Policy",
   "Terms of Use",
@@ -713,13 +728,4 @@ const scrollToSection = (sectionId: string) => {
     });
   }
 };
-function selectComponent(component: string) {
-  selectedComponent.value = component;
-  if (component === "FAQs") {
-    isOpenFAQs.value = true;
-  }
-  if (component === "Teams") {
-    isOpenTeams.value = true;
-  }
-}
 </script>

@@ -7,6 +7,7 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    AboutUs: typeof import('./components/LandingPage/Layout/AboutUs.vue')['default']
     ActivityItem: typeof import('./components/Dashboard/ActivityItem.vue')['default']
     AddLessonModal: typeof import('./components/CourseDetail/AddLessonModal.vue')['default']
     Appbar: typeof import('./components/Appbar.vue')['default']
@@ -17,6 +18,7 @@ declare module 'vue' {
     CardQuizResult: typeof import('./components/Lesson/CardQuizResult.vue')['default']
     Cards: typeof import('./components/CourseList/Cards.vue')['default']
     ChangeLearningOutcomesModal: typeof import('./components/CourseDetail/ChangeLearningOutcomesModal.vue')['default']
+    ContactUs: typeof import('./components/LandingPage/Layout/ContactUs.vue')['default']
     CourseBanner: typeof import('./components/CourseDetail/CourseBanner.vue')['default']
     CourseDescription: typeof import('./components/CourseDetail/CourseDescription.vue')['default']
     CourseDetailActionsProfessor: typeof import('./components/CourseDetail/CourseDetailActionsProfessor.vue')['default']
