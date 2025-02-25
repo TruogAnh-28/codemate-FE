@@ -114,6 +114,16 @@ class ApiServiceClass {
 
         // Handle unauthorized errors for protected routes
         if (!this.isPublicRoute(url) && error.response?.status === 401) {
+          // Skip token refresh if we're already trying to refresh the token
+          // This prevents infinite loops when the refresh token itself is invalid
+          if (url === "/auth/refresh-token") {
+            this.clearAuthData();
+            if (router.currentRoute.value.path !== "/") {
+              router.push("/");
+            }
+            return Promise.reject(error);
+          }
+
           if (!this.isRefreshing) {
             this.isRefreshing = true;
 
@@ -122,21 +132,39 @@ class ApiServiceClass {
               if (refreshed) {
                 this.processQueue(null, this.getToken());
                 return axios(originalRequest);
+              } else {
+                // Clear tokens and redirect if refresh fails
+                this.processQueue(new Error("Refresh failed"));
+                this.clearAuthData();
+                if (router.currentRoute.value.path !== "/") {
+                  router.push("/");
+                }
               }
             } catch (refreshError) {
               this.processQueue(new Error("Refresh failed"));
-              this.handleTokenExpiration();
-              return Promise.reject(refreshError);
+              this.clearAuthData();
+              if (router.currentRoute.value.path !== "/") {
+                router.push("/");
+              }
             } finally {
               this.isRefreshing = false;
             }
+            return Promise.reject(error);
           }
 
           // Queue additional requests during refresh
           return new Promise((resolve, reject) => {
             this.failedQueue.push({ resolve, reject });
-          }).then(() => axios(originalRequest));
+          }).then(() => axios(originalRequest))
+            .catch(() => {
+              // If refresh ultimately fails, ensure redirect happens
+              if (router.currentRoute.value.path !== "/") {
+                router.push("/");
+              }
+              return Promise.reject(error);
+            });
         }
+        
         return Promise.reject(error);
       }
     );
@@ -284,7 +312,6 @@ class ApiServiceClass {
   async refreshToken(): Promise<boolean> {
     const refreshToken = this.getRefreshToken();
     if (!refreshToken) return false;
-
     try {
       const response = await this.request<IResponseData<{
         access_token: string
@@ -292,12 +319,11 @@ class ApiServiceClass {
         email: string
         is_email_verified: boolean
         role: string
-      }>>(
+      }> | null>(
         "POST",
         "/auth/refresh-token",
         { data: { refresh_token: refreshToken } }
       );
-
       if (response && "data" in response) {
         if (response.data?.access_token)
           this.setTokens(response.data?.access_token, refreshToken);

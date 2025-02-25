@@ -38,18 +38,25 @@ const getUserInfo = async (): Promise<GetProfileResponse | undefined> => {
 
 const autoLogin = async () => {
   loading.value = true;
+  console.log("set loading to true");
+
+  // Capture the current route path before any redirects happen
+  const currentPath = router.currentRoute.value.fullPath;
+  console.log("Current path before auth check:", currentPath);
 
   try {
     const accessToken = ApiService.getToken();
     const refreshToken = ApiService.getRefreshToken();
-
+    console.log("get token and refresh token");
     // No tokens available
     if (!accessToken && !refreshToken) {
       loading.value = false;
+      console.log("no token and refresh token");
     }
 
     // Check if access token is valid
     if (accessToken && !ApiService.checkTokenExpiration()) {
+      console.log("access token is valid");
       // Token is valid, get user info
       const userInfo = await getUserInfo();
 
@@ -80,11 +87,13 @@ const autoLogin = async () => {
         return;
       }
     }
-
+    console.log("access token is invalid");
     // If access token is expired or invalid but refresh token exists
-    if (ApiService.checkTokenExpiration() && refreshToken) {
+    if (refreshToken) {
+      console.log("refresh token exists");
       const refreshed = await ApiService.refreshToken();
       if (refreshed) {
+        console.log("refreshed");
         // Successfully refreshed, get user info
         const userInfo = await getUserInfo();
 
@@ -118,6 +127,14 @@ const autoLogin = async () => {
         // Refresh token failed, clear auth data
         ApiService.clearAuthData();
 
+        // Store the original path that triggered the auth failure
+        // This captures the route the user was trying to access
+        if (!ApiService.isPublicRoute(currentPath)) {
+          console.log("Storing redirect URL:", currentPath);
+          sessionStorage.setItem("redirectUrl", currentPath);
+        }
+
+        showError("Your session has expired. Please log in again.");
         // Only redirect to landing page if on a protected route
         if (!ApiService.isPublicRoute(router.currentRoute.value.path)) {
           router.push("/");
@@ -127,6 +144,12 @@ const autoLogin = async () => {
       // No refresh token, clear auth data
       ApiService.clearAuthData();
 
+      // Store the original path
+      if (!ApiService.isPublicRoute(currentPath)) {
+        console.log("Storing redirect URL:", currentPath);
+        sessionStorage.setItem("redirectUrl", currentPath);
+      }
+
       // Only redirect to landing page if on a protected route
       if (!ApiService.isPublicRoute(router.currentRoute.value.path)) {
         router.push("/");
@@ -134,9 +157,15 @@ const autoLogin = async () => {
     }
   } catch (error) {
     if (showError) {
-      showError("Authentication failed. Please log in again.");
+      showError("Your session has expired. Please log in again.");
     }
     ApiService.clearAuthData();
+
+    // Store the original path on error
+    if (!ApiService.isPublicRoute(currentPath)) {
+      console.log("Storing redirect URL on error:", currentPath);
+      sessionStorage.setItem("redirectUrl", currentPath);
+    }
 
     // Only redirect to landing page if on a protected route
     if (!ApiService.isPublicRoute(router.currentRoute.value.path)) {

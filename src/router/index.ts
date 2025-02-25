@@ -9,6 +9,9 @@ import { createRouter, createWebHistory } from "vue-router";
 import { setupLayouts } from "virtual:generated-layouts";
 import { routes as autoRoutes } from "vue-router/auto-routes";
 import ApiService, { manageExpirationTimer, PUBLIC_ROUTES } from "@/common/api.service";
+import { useAuthStore } from "@/stores/auth";
+import { usersService } from "@/services/usersServices";
+
 const LoginRoute = [
   {
     path: "/login",
@@ -188,17 +191,6 @@ const ProfessorRoutes = [
   },
 ];
 
-const isValidToken = (token: string | null): boolean => {
-  if (!token) return false;
-
-  try {
-    const tokenData = JSON.parse(atob(token.split(".")[1]));
-    return tokenData.exp * 1000 > Date.now();
-  } catch {
-    return false;
-  }
-};
-
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -212,59 +204,163 @@ const router = createRouter({
   ],
 });
 
-// Update the router.beforeEach to work with our new auto-login mechanism
-router.beforeEach(async (to, from, next) => {
-  const token =
-    localStorage.getItem("access_token") ||
-    sessionStorage.getItem("access_token");
-  const refreshToken =
-    localStorage.getItem("refresh_token") ||
-    sessionStorage.getItem("refresh_token");
-  const user = localStorage.getItem("user") || sessionStorage.getItem("user");
-  const role = user ? JSON.parse(user).role : null;
+const showError = (msg: string) => alert(msg);
 
-  // Always allow access to public routes
-  if (PUBLIC_ROUTES.includes(to.path)) {
+// Function to get user profile
+const getUserInfo = async () => {
+  try {
+    const response = await usersService.getProfile({ 
+      showError, 
+      showSuccess: (msg: string) => alert(msg)
+    });
+    if (response && "data" in response) {
+      return response.data ?? undefined;
+    }
+  } catch (error) {
+    showError("Failed to get user info.");
+  }
+  return undefined;
+};
+
+router.beforeEach(async (to, from, next) => {
+  
+  // Start token expiration timer
+  manageExpirationTimer();
+  
+  // If going to a public route, proceed normally
+  if (to.meta.requiresAuth === false || PUBLIC_ROUTES.includes(to.path)) {
     return next();
   }
-
-  // If we have a refresh token but no valid access token, try to refresh
-  if ((!token || !isValidToken(token)) && refreshToken) {
-    const refreshed = await ApiService.refreshToken();
-
-    // If refresh was unsuccessful, redirect to login
-    if (!refreshed) {
+  
+  const accessToken = ApiService.getToken();
+  const refreshToken = ApiService.getRefreshToken();
+  const authStore = useAuthStore();
+  
+  // Check if we already have user info in the store
+  if (!authStore.isAuthenticated) {
+    // Try to restore session from storage
+    authStore.checkAuth();
+  }
+  
+  // If no tokens, redirect to login
+  if (!accessToken && !refreshToken) {
+    if (to.fullPath !== "/" && to.fullPath !== "/login") {
+      // Store the intended destination
       sessionStorage.setItem("redirectUrl", to.fullPath);
+    }
+    return next("/login");
+  }
+  
+  // Check if access token is valid
+  if (accessToken && !ApiService.checkTokenExpiration()) {
+    
+    // Get user info if not already authenticated in store
+    if (!authStore.isAuthenticated) {
+      try {
+        const userInfo = await getUserInfo();
+        
+        if (userInfo) {
+          // Set user in store
+          authStore.setUser({
+            role: userInfo.role,
+            email: userInfo.email,
+            name: userInfo.name,
+            rememberMe: localStorage.getItem("rememberMe") === "true" ? "true" : "false",
+          });
+        } else {
+          // User info retrieval failed
+          throw new Error("Failed to get user info");
+        }
+      } catch (error) {
+        console.error("Error getting user info:", error);
+        ApiService.clearAuthData();
+        sessionStorage.setItem("redirectUrl", to.fullPath);
+        return next("/login");
+      }
+    }
+    
+    // Check role-based access
+    if (to.meta.role && to.meta.role !== authStore.userRole) {
+      const rolePaths: { [key: string]: string } = {
+        student: "/dashboard",
+        professor: "/professor-dashboard",
+        admin: "/admin-dashboard",
+      };
+      return next(rolePaths[authStore.userRole as string] || "/");
+    }
+    
+    // Allow access to the requested page
+    return next();
+  }
+  
+  // If access token is expired or invalid but refresh token exists
+  if (refreshToken) {
+    try {
+      const refreshed = await ApiService.refreshToken();
+      if (refreshed) {
+        
+        // Get user info if not already in store
+        if (!authStore.isAuthenticated) {
+          const userInfo = await getUserInfo();
+          
+          if (userInfo) {
+            // Set user in store
+            authStore.setUser({
+              role: userInfo.role,
+              email: userInfo.email,
+              name: userInfo.name,
+              rememberMe: localStorage.getItem("rememberMe") === "true" ? "true" : "false",
+            });
+          } else {
+            throw new Error("Failed to get user info after refresh");
+          }
+        }
+        
+        // Check role-based access
+        if (to.meta.role && to.meta.role !== authStore.userRole) {
+          const rolePaths: { [key: string]: string } = {
+            student: "/dashboard",
+            professor: "/professor-dashboard",
+            admin: "/admin-dashboard",
+          };
+          return next(rolePaths[authStore.userRole as string] || "/");
+        }
+        
+        // Allow access to the requested page
+        return next();
+      } else {
+        // Refresh token failed
+        authStore.logout(); // Use store's logout method instead of just clearing API data
+        
+        if (to.fullPath !== "/" && to.fullPath !== "/login") {
+          sessionStorage.setItem("redirectUrl", to.fullPath);
+        }
+        
+        showError("Your session has expired. Please log in again.");
+        return next("/login");
+      }
+    } catch (error) {
+      // Error during refresh
+      console.error("Error during token refresh:", error);
+      authStore.logout();
+      
+      if (to.fullPath !== "/" && to.fullPath !== "/login") {
+        sessionStorage.setItem("redirectUrl", to.fullPath);
+      }
+      
+      showError("Your session has expired. Please log in again.");
       return next("/login");
     }
   }
-
-  // Re-check token after possible refresh
-  const currentToken = ApiService.getToken();
-
-  // If we still don't have a valid token, redirect to login
-  if (!currentToken || !isValidToken(currentToken)) {
+  
+  // No valid tokens and no refresh token, redirect to login
+  authStore.logout();
+  
+  if (to.fullPath !== "/" && to.fullPath !== "/login") {
     sessionStorage.setItem("redirectUrl", to.fullPath);
-    return next("/login");
   }
-
-  // Check role-based access
-  if (to.meta.role && to.meta.role !== role) {
-    switch (role) {
-      case "admin":
-        return next("/admin-dashboard");
-      case "professor":
-        return next("/professor-dashboard");
-      case "student":
-        return next("/dashboard");
-      default:
-        return next("/login");
-    }
-  }
-
-  // Start token expiration timer
-  manageExpirationTimer();
-  next();
+  
+  return next("/login");
 });
 
 router.onError((err, to) => {
