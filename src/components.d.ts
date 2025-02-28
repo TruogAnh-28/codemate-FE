@@ -7,15 +7,18 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    AboutUs: typeof import('./components/LandingPage/Layout/AboutUs.vue')['default']
     ActivityItem: typeof import('./components/Dashboard/ActivityItem.vue')['default']
     Appbar: typeof import('./components/Appbar.vue')['default']
     AppFooter: typeof import('./components/AppFooter.vue')['default']
+    AutoLogin: typeof import('./components/AutoLogin.vue')['default']
     AvatarStack: typeof import('./components/CourseList/AvatarStack.vue')['default']
     CardQuestionQuiz: typeof import('./components/Lesson/CardQuestionQuiz.vue')['default']
     CardQuizResult: typeof import('./components/Lesson/CardQuizResult.vue')['default']
     Cards: typeof import('./components/CourseList/Cards.vue')['default']
     ChangeLearningOutcomesModal: typeof import('./components/CourseDetail/ChangeLearningOutcomesModal.vue')['default']
     CodeEditor: typeof import('./components/Code/CodeEditor.vue')['default']
+    ContactUs: typeof import('./components/LandingPage/Layout/ContactUs.vue')['default']
     CourseBanner: typeof import('./components/CourseDetail/CourseBanner.vue')['default']
     CourseDescription: typeof import('./components/CourseDetail/CourseDescription.vue')['default']
     CourseDetailActionsProfessor: typeof import('./components/CourseDetail/CourseDetailActionsProfessor.vue')['default']
@@ -46,6 +49,7 @@ declare module 'vue' {
     GetGoalsModal: typeof import('./components/CourseDetail/GetGoalsModal.vue')['default']
     GoogleLoginButton: typeof import('./components/Login/GoogleLoginButton.vue')['default']
     ImportExcel: typeof import('./components/AdminDashboard/ImportExcel.vue')['default']
+    ImportExcelDialog: typeof import('./components/AdminComponents/ImportExcelDialog.vue')['default']
     LanguageSelect: typeof import('./components/LanguageSelect.vue')['default']
     LearningOutcomes: typeof import('./components/CourseList/LearningOutcomes.vue')['default']
     LearningOutcomesModal: typeof import('./components/CourseList/LearningOutcomesModal.vue')['default']

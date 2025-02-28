@@ -17,15 +17,9 @@
           </div>
         </div>
 
-        <v-form
-          @submit.prevent="handleSubmit"
-          v-model="isValid"
-          class="space-y-6"
-        >
+        <v-form @submit.prevent="handleSubmit" v-model="isValid" class="space-y-6">
           <div class="space-y-2">
-            <label class="text-sm font-medium text-gray-700"
-              >Email address</label
-            >
+            <label class="text-sm font-medium text-gray-700">Email address</label>
             <v-text-field
               v-model="email"
               :rules="validationRules.email"
@@ -99,6 +93,7 @@ import { authenService } from "@/services/authenServices";
 import { useAuthStore } from "@/stores/auth";
 import { EMAIL_PATTERN, PASSWORD_PATTERN } from "@/utils/constant";
 import type { LoginSuccessResponse } from "@/types/Auth";
+import ApiService from "@/common/api.service";
 
 const email = ref("");
 const password = ref("");
@@ -160,6 +155,13 @@ const handleSuccessfulLogin = (data: LoginSuccessResponse) => {
 
   authStore.setUser(userInfo);
   authStore.setTokens(data.access_token, data.refresh_token);
+
+  const redirectUrl = sessionStorage.getItem("redirectUrl");
+  if (redirectUrl && !ApiService.isPublicRoute(redirectUrl)) {
+    router.push(sessionStorage.getItem("redirectUrl") as string);
+    sessionStorage.removeItem("redirectUrl");
+    return;
+  }
 
   const redirectPath =
     {

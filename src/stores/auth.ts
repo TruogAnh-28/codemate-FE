@@ -1,10 +1,10 @@
 import { defineStore } from 'pinia';
+import { ref } from 'vue';
 
-export interface UserInfo {
-  name: string;
-  email: string;
+interface UserInfo {
   role: string;
-  is_email_verified?: boolean;
+  email: string;
+  name: string;
   rememberMe: string;
 }
 
@@ -65,13 +65,8 @@ export const useAuthStore = defineStore('auth', () => {
     return !!storage.getItem('access_token');
   };
 
-  const getUser = () => {
-    const getUser = localStorage.getItem('user') || sessionStorage.getItem('user');
-    if (getUser) {
-      user.value = JSON.parse(getUser);
-    }
-    return user.value;
-  };
+  const getUser = () => user.value;
+
   return {
     user,
     setUser,

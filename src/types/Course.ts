@@ -1,4 +1,5 @@
 import { UUID, DateString, DateTimeString, DocumentType, Status } from "@/utils/commonType"
+
 //---------------------------------Student---------------------------------
 export interface CreateCourseResponse {
   course_id: string
@@ -23,23 +24,17 @@ export interface StudentCoursesList {
   time_spent: string
   assignments_done: number
 }
-export interface CreateCourseRequest_Courses {
-  professor_email: string
-  name: string
-  nCredit: number
-  nSemester: number
-  student_list: string[]
-  courseID: string
-}
-
-// export interface ImportData {
-//   headers: ExcelFileHeaderToAddCourses;
-//   courses: ExcelFileCourse[];
-// }
 
 export interface CreateCourseRequest {
-  headers: string[]
-  courses: CreateCourseRequest_Courses[]
+  id: number
+  name: string
+  professorID: string
+  creditNumber: number
+  studentIDs: string[]
+  nSemester: number
+  courseID: string
+  startDate: Date
+  endDate: Date
 }
 
 export interface CoursesListDashBoardRequest {
@@ -50,6 +45,25 @@ export interface CoursesListDashBoardRequest {
 }
 export interface CoursesListPaginatedResponse {
   content: CoursesListResponse[]
+  currentPage: number
+  pageSize: number
+  totalRows: number
+  totalPages: number
+}
+
+export interface CoursesAdminListResponse {
+  id: string;
+  name: string;
+  courseID: string;
+  start_date: string;
+  end_date: string;
+  status: string;
+  nCredit: number;
+  nSemester: number;
+}
+
+export interface CoursesAdminListPaginatedResponse {
+  content: CoursesAdminListResponse[]
   currentPage: number
   pageSize: number
   totalRows: number

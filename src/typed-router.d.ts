@@ -25,6 +25,8 @@ declare module 'vue-router/auto-routes' {
     '/Course/CourseDetail/Professor': RouteRecordInfo<'/Course/CourseDetail/Professor', '/Course/CourseDetail/Professor', Record<never, never>, Record<never, never>>,
     '/Course/CourseList/': RouteRecordInfo<'/Course/CourseList/', '/Course/CourseList', Record<never, never>, Record<never, never>>,
     '/Course/CourseList/Professor': RouteRecordInfo<'/Course/CourseList/Professor', '/Course/CourseList/Professor', Record<never, never>, Record<never, never>>,
+    '/CourseManagement/': RouteRecordInfo<'/CourseManagement/', '/CourseManagement', Record<never, never>, Record<never, never>>,
+    '/CourseManagement/AddCourse': RouteRecordInfo<'/CourseManagement/AddCourse', '/CourseManagement/AddCourse', Record<never, never>, Record<never, never>>,
     '/Dashboard/': RouteRecordInfo<'/Dashboard/', '/Dashboard', Record<never, never>, Record<never, never>>,
     '/Dashboard/Admin': RouteRecordInfo<'/Dashboard/Admin', '/Dashboard/Admin', Record<never, never>, Record<never, never>>,
     '/Dashboard/Professor': RouteRecordInfo<'/Dashboard/Professor', '/Dashboard/Professor', Record<never, never>, Record<never, never>>,
@@ -43,5 +45,6 @@ declare module 'vue-router/auto-routes' {
     '/ProgressTracking/': RouteRecordInfo<'/ProgressTracking/', '/ProgressTracking', Record<never, never>, Record<never, never>>,
     '/ProgressTracking/Professor': RouteRecordInfo<'/ProgressTracking/Professor', '/ProgressTracking/Professor', Record<never, never>, Record<never, never>>,
     '/UserManagement/': RouteRecordInfo<'/UserManagement/', '/UserManagement', Record<never, never>, Record<never, never>>,
+    '/UserManagement/AddUser': RouteRecordInfo<'/UserManagement/AddUser', '/UserManagement/AddUser', Record<never, never>, Record<never, never>>,
   }
 }
