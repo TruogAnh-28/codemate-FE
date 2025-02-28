@@ -1,99 +1,105 @@
 import ApiService from "@/common/api.service";
 import {
-  CoursesListDashBoardRequest,
   CoursesListPaginatedResponse,
   CourseDetailResponse,
   GetRecommendedLessonsResponse,
+  ProfessorInformation,
+  LessonOriginalResponse,
+  StudentOfCourseListModal,
+  CreateCourseRequest,
+  CreateCourseResponse,
+  CoursesAdminListPaginatedResponse,
 } from "@/types/Course";
-export const coursesService = {
-  async fetchCoursesList(
-    showError: (message: string) => void,
-    request: CoursesListDashBoardRequest
-  ) {
-    try {
-      const response = await ApiService.post<CoursesListPaginatedResponse>(
-        "courses/",
-        request,
-        showError
-      );
+import { AuthConfig } from "./authenServices";
+import { IResponseData } from "@/modals/apis/response";
 
-      if (response && response.data && response.isSuccess) {
-        return response.data;
-      } else {
-        console.error("Failed to fetch courses.");
-        return null;
-      }
-    } catch (error) {
-      console.error("Error fetching courses:", error);
-      return null;
-    }
+interface PaginationParams {
+  page?: number;
+  page_size?: number;
+  search_query?: string;
+}
+
+
+export const coursesService = {
+  async fetchCoursesList({ showError, showSuccess, ...params }: AuthConfig & PaginationParams) {
+    return await ApiService.query<CoursesListPaginatedResponse>(
+      "courses/student",
+      params,
+      { showError, showSuccess }
+    );
+  },
+
+  async fetchAdminCoursesList({ showError, showSuccess, ...params }: AuthConfig & PaginationParams) {
+    return await ApiService.query<IResponseData<CoursesAdminListPaginatedResponse>>(
+      "courses/admin",
+      params,
+      { showError, showSuccess }
+    );
   },
   async fetchCourseDetail(
-    showError: (message: string) => void,
-    course_id: string,
-    student_id: string
+    { showError, showSuccess }: AuthConfig,
+    course_id: string
   ) {
-    try {
-      const response = await ApiService.get<CourseDetailResponse>(
-        `courses/${course_id}/students/${student_id}`
-      );
-
-      if (response && response.data && response.isSuccess) {
-        return response.data;
-      } else {
-        console.error("Failed to fetch course detail.");
-        return null;
-      }
-    } catch (error) {
-      console.error("Error fetching course detail:", error);
-      return null;
-    }
+    return await ApiService.get<CourseDetailResponse>(
+      `courses/${course_id}`,
+      "",
+      { showError, showSuccess }
+    );
   },
-  async bookmarkLesson(
-    showError: (message: string) => void,
-    student_id: string,
-    course_id: string,
-    lesson_id: string
+  async getProfessorForCourse(
+    { showError, showSuccess }: AuthConfig,
+    course_id: string
   ) {
-    try {
-      const response = await ApiService.put<Boolean>(
-        `courses/${course_id}/students/${student_id}/lessons/${lesson_id}/bookmark`,
-        {}
-      );
-
-      if (response && response.isSuccess) {
-        return response.data;
-      } else {
-        console.error("Failed to bookmark lesson.");
-        return false;
-      }
-    } catch (error) {
-      console.error("Error bookmarking lesson:", error);
-      return false;
-    }
+    return await ApiService.get<ProfessorInformation>(
+      `courses/${course_id}/professor`,
+      "",
+      { showError, showSuccess }
+    );
+  },
+  async getLessonsForCourse(
+    { showError, showSuccess }: AuthConfig,
+    course_id: string
+  ) {
+    return await ApiService.get<IResponseData<LessonOriginalResponse[]>>(
+      `courses/${course_id}/lessons`,
+      "",
+      { showError, showSuccess }
+    );
+  },
+  async getStudentsForCourse(
+    { showError, showSuccess }: AuthConfig,
+    course_id: string
+  ) {
+    return await ApiService.get<StudentOfCourseListModal[]>(
+      `courses/${course_id}/students`,
+      "",
+      { showError, showSuccess }
+    );
   },
   async getRecommendedLessons(
-    showError: (message: string) => void,
-    student_id: string,
-    course_id: string,
-  ){
-    try
-    {
-      const response = await ApiService.get<GetRecommendedLessonsResponse[]>(
-        `courses/${course_id}/students/${student_id}/lessons_recommendation`
-      );
-
-      if (response && response.data && response.isSuccess) {
-        return response.data;
-      } else {
-        console.error("Failed to fetch recommended lessons.");
-        return null;
-      }
-    }
-    catch (error) {
-      console.error("Error fetching recommended lessons:", error);
-      return null;
-    }
-
-  }
+    { showError, showSuccess }: AuthConfig,
+    course_id: string
+  ) {
+    return await ApiService.get<GetRecommendedLessonsResponse[]>(
+      `courses/${course_id}/lessons_recommendation/`,
+      "",
+      { showError, showSuccess }
+    );
+  },
+  async createCourse(
+    { showError, showSuccess }: AuthConfig,
+    course: CreateCourseRequest[]
+  ) {
+    return await ApiService.post<CreateCourseResponse>("courses/", course, {
+      showError,
+      showSuccess,
+    });
+  },
+  async countCourses({ showError, showSuccess}: AuthConfig) {
+    return await ApiService.query<IResponseData<number>>(
+        "courses/count/",
+        undefined,
+        { showError, showSuccess }
+    );
+},
 };

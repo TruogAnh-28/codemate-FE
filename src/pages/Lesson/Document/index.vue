@@ -141,18 +141,13 @@ const breadcrumbs = computed(() => breadcrumbsStore.breadcrumbs);
 //   return question.score;
 // };
 
-const showError = inject<(message: string) => void>("showError");
+const showError = inject("showError") as (message: string) => void;
+const showSuccess = inject("showSuccess") as (message: string) => void;  
 
 const fetchDocumentDetails = async () => {
-  try {
     if (moduleId) {
-      if (showError) {
-        document.value = await moduleService.fetchDocumentDetails(showError, moduleId);
-      }
+        document.value = await moduleService.fetchDocumentDetails({showError,showSuccess}, moduleId);
     }
-  } catch (error) {
-    console.error("Error fetching document details:", error);
-  }
 };
 
 onMounted(fetchDocumentDetails);

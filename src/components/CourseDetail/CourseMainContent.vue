@@ -1,6 +1,7 @@
 <template>
   <v-card class="p-6">
     <CourseBanner
+      v-if="course"
       :course="course"
     />
 
@@ -40,15 +41,16 @@
       </v-window-item>
 
       <v-window-item value="exercises">
-        <CourseExercises v-if="course" :course="course" />
+        <CourseExercises v-if="isStudent && isCourseDetailResponse(course)" :course="course" />
+        <CourseExercisesProfessor v-else-if="isProfessor && !isCourseDetailResponse(course) && course" :course="course" />
       </v-window-item>
     </v-window>
   </v-card>
 </template>
 
 <script lang="ts" setup>
-import { CourseDetailResponse } from "@/types/Course";
-
+import { CourseDetailResponse, GetCourseDetailProfessorResponse } from "@/types/Course";
+import { useAuthStore } from "@/stores/auth";
 export interface Tab {
   label: string;
   value: string;
@@ -56,11 +58,24 @@ export interface Tab {
 }
 
 defineProps<{
-  course: CourseDetailResponse | null;
+  course: CourseDetailResponse | GetCourseDetailProfessorResponse | null;
   activeTab: string;
   tabs: Tab[];
 }>();
-
+const role = computed(() => useAuthStore().getUser().role);
+const isStudent = computed(() => role.value === 'student');
+const isProfessor = computed(() => role.value === 'professor');
+function isCourseDetailResponse(course: any): course is CourseDetailResponse {
+  return (
+    course &&
+    typeof course === "object" &&
+    "course_percentage_complete" in course &&
+    "course_last_accessed" in course &&
+    "completed_lessons" in course &&
+    "time_spent" in course &&
+    "assignments_done" in course
+  );
+}
 const emit = defineEmits<{
   'update:active-tab': [value: string];
 }>();

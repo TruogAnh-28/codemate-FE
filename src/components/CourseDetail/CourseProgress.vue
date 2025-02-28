@@ -1,8 +1,12 @@
 <template>
   <v-col cols="12" md="6" class="text-center">
-    <div class="text-heading-3 font-weight-bold mb-1 text-error">
+    <div
+      class="text-heading-3 font-weight-bold mb-1 text-error"
+      v-if="course.course_percentage_complete !== ''"
+    >
       {{ course.course_percentage_complete }}%
     </div>
+    <div class="text-heading-3 font-weight-bold mb-1 text-error" v-else>0%</div>
     <v-chip
       :color="renderStatusLabel(course.course_status ?? 'N/A')"
       outlined

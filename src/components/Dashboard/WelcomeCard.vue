@@ -41,10 +41,27 @@
 </template>
 
 <script setup lang="ts">
-import { WelcomeMessageResponse } from '@/types/Dashboard';
-
-defineProps<{
-  studentName: string;
-  recentCourse: WelcomeMessageResponse;
-}>();
+import { dashboardService } from "@/services/dashboardService";
+import { useAuthStore } from "@/stores/auth";
+import { GetRecentCourseResponse } from "@/types/Dashboard";
+const showError = inject("showError") as (message: string) => void;
+const showSuccess = inject("showSuccess") as (message: string) => void;
+const recentCourse = ref<GetRecentCourseResponse>({
+  course: "",
+  course_id: "",
+  last_accessed: "",
+});
+const studentName = useAuthStore().user?.name;
+const fetchRecentCourse = async () => {
+  const response = await dashboardService.fetchRecentCourse({
+    showError,
+    showSuccess,
+  });
+  if (response && "data" in response && response.data) {
+    recentCourse.value = response.data as GetRecentCourseResponse;
+  }
+};
+onMounted(() => {
+  fetchRecentCourse();
+});
 </script>

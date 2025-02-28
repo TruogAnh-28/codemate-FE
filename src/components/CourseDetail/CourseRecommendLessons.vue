@@ -91,8 +91,11 @@
 
 <script lang="ts" setup>
 import { coursesService } from "@/services/courseslistServices";
-import { User } from "@/constants/user";
-import { CourseDetailResponse, GetRecommendedLessonsResponse } from "@/types/Course";
+
+import {
+  CourseDetailResponse,
+  GetRecommendedLessonsResponse,
+} from "@/types/Course";
 const props = defineProps<{
   showModal: boolean;
   course: CourseDetailResponse | null;
@@ -116,20 +119,20 @@ const fetchRecommendedLessons = async () => {
   try {
     loading.value = true;
     error.value = null;
-    const response = await coursesService.getRecommendedLessons(
-      showError,
-      User.id,
-      props.course?.course_id ?? ""
-    );
-    if (response) {
-      recommendedLessons.value = response;
-      courseName.value = response[0].course_name;
-    } else {
-      showError("Failed to fetch recommended lessons");
+    if (props.course?.course_id) {
+      const response = await coursesService.getRecommendedLessons(
+        { showError, showSuccess },
+        props.course.course_id
+      );
+      if (response) {
+        recommendedLessons.value = response;
+        courseName.value = response[0].course_name;
+      } else {
+        showError("Failed to fetch recommended lessons");
+      }
     }
   } catch (err) {
     error.value = "An error occurred while loading recommendations";
-    console.error("Error fetching recommended lessons:", err);
   } finally {
     loading.value = false;
   }
@@ -187,9 +190,6 @@ const handleButtonClick = (
   recommendedLesson: GetRecommendedLessonsResponse
 ) => {
   switch (button.index) {
-    case 0:
-      bookmarkLesson(recommendedLesson);
-      break;
     case 1:
       openFeedbackModal(recommendedLesson.lesson_id);
       break;
@@ -198,31 +198,31 @@ const handleButtonClick = (
         path: `/lessonRecommend/${recommendedLesson.lesson_id}`,
         query: { courseName: courseName.value },
       });
-    
+
       break;
     default:
       console.error("Invalid button index:", button.index);
   }
 };
 
-const bookmarkLesson = async (lesson: GetRecommendedLessonsResponse) => {
-  const response = await coursesService.bookmarkLesson(
-    showError,
-    User.id,
-    lesson.course_id,
-    lesson.lesson_id
-  );
+// const bookmarkLesson = async (lesson: GetRecommendedLessonsResponse) => {
+//   const response = await coursesService.bookmarkLesson(
+//     showError,
+//     User.id,
+//     lesson.course_id,
+//     lesson.lesson_id
+//   );
 
-  if (response?.valueOf) {
-    lesson.bookmark = !lesson.bookmark;
-    const message = lesson.bookmark
-      ? "Lesson Bookmarked Successfully!"
-      : "Lesson Unbookmarked Successfully!";
-    showSuccess(message);
-  } else {
-    showError("Failed to bookmark lesson.");
-  }
-};
+//   if (response?.valueOf) {
+//     lesson.bookmark = !lesson.bookmark;
+//     const message = lesson.bookmark
+//       ? "Lesson Bookmarked Successfully!"
+//       : "Lesson Unbookmarked Successfully!";
+//     showSuccess(message);
+//   } else {
+//     showError("Failed to bookmark lesson.");
+//   }
+// };
 
 watch(
   () => props.showModal,

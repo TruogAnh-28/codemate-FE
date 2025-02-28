@@ -16,8 +16,8 @@
 
 <script lang="ts" setup>
 import { getAvatarCourseUrl } from "@/utils/functions/functions";
-import { CourseDetailResponse } from "@/types/Course";
+import { CourseDetailResponse, GetCourseDetailProfessorResponse } from "@/types/Course";
 defineProps<{
-  course: CourseDetailResponse | null;
+  course: CourseDetailResponse | GetCourseDetailProfessorResponse | null;
 }>();
 </script>

@@ -59,7 +59,7 @@
 
 <script lang="ts" setup>
 import { renderFileTypeIcon } from "@/utils/functions/render";
-import { DocumentOriginalResponse } from "@/types/Course";
+import { DocumentOriginalResponse, GetDocumentsProfessor } from "@/types/Course";
 
 const props = defineProps({
   showModal: {
@@ -67,7 +67,7 @@ const props = defineProps({
     required: true,
   },
   documents: {
-    type: Array as () => DocumentOriginalResponse[],
+    type: Array as () => DocumentOriginalResponse[] | GetDocumentsProfessor[] ,
     required: true,
   },
 });

@@ -37,18 +37,17 @@ export default defineConfig({
     Vue({
       template: { transformAssetUrls },
     }),
-    // https://github.com/vuetifyjs/vuetify-loader/tree/master/packages/vite-plugin#readme
     Vuetify({
       autoImport: true,
     }),
     Fonts({
       google: {
-        families: [ {
+        families: [{
           name: 'Public Sans',
           styles: 'wght@100;300;400;500;700;900',
         }],
       },
-    }),
+    })
   ],
   define: { 'process.env': {} },
   resolve: {
@@ -65,7 +64,26 @@ export default defineConfig({
       '.vue',
     ],
   },
-  server: {
-    port: 3000,
+  worker: {
+    format: 'es'
   },
+  optimizeDeps: {
+    include: [
+      'monaco-editor-vue3',
+      'monaco-editor'
+    ]
+  },
+  server: {
+    host: '0.0.0.0',
+    port: 5173,
+    strictPort: true,
+    watch: {
+      usePolling: true,
+      interval: 100,
+    },
+    hmr: {
+      overlay: true,
+    },
+  },
+  cacheDir: './.vite'
 })

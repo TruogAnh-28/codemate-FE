@@ -5,11 +5,11 @@
       @open-course-recommendations="openRecommendationsModal"
     />
 
-    <ProgressStats
+    <!-- <ProgressStats
       v-if="course"
       :course="course"
       class="mt-4"
-    />
+    /> -->
 
     <v-dialog
       :model-value="dialog"

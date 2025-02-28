@@ -49,21 +49,19 @@
 
           <!-- Members Section -->
           <div class="w-1/4">
-            <AvatarStack :students="course.student_list" :maxVisible="3" />
+            <AvatarStack :courses="course" :maxVisible="3" />
           </div>
 
           <!-- Progress Section -->
           <div class="w-1/4">
             <v-progress-linear
-              v-model="course.percentage_complete"
+              value="0"
               height="15"
               class="mb-4 rounded-lg"
               color="secondary"
             >
               <template #default>
-                <strong class="text-text-primary">
-                  {{ String(Math.ceil(Number(course.percentage_complete))) }}%
-                </strong>
+                <strong class="text-text-primary"> 0% </strong>
               </template>
             </v-progress-linear>
           </div>
@@ -74,12 +72,32 @@
 </template>
 
 <script setup lang="ts">
-import {  CoursesListPaginatedResponse } from "@/types/Course";
-defineProps<{
-  courses: CoursesListPaginatedResponse;
-}>();
+import { coursesService } from "@/services/courseslistServices";
+import { CoursesListPaginatedResponse } from "@/types/Course";
+const showError = inject("showError") as (message: string) => void;
+const showSuccess = inject("showSuccess") as (message: string) => void;
+const courses = ref<CoursesListPaginatedResponse>({
+  content: [],
+  currentPage: 0,
+  pageSize: 0,
+  totalRows: 0,
+  totalPages: 0,
+});
+const fetchCoursesList = async () => {
+  const response = await coursesService.fetchCoursesList({
+    showError,
+    showSuccess,
+  });
+  if (response && "data" in response && response.data) {
+    courses.value = response.data as CoursesListPaginatedResponse;
+  }
+};
 
 defineEmits<{
   (e: "view-details"): void;
 }>();
+
+onMounted(() => {
+  fetchCoursesList();
+});
 </script>

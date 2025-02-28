@@ -25,3 +25,11 @@ export enum ActivityType {
   enroll_course = "Enroll Course",
   badge_earned = "Badge Earned",
 }
+export type DifficultyLevel = "easy" | "medium" | "hard";
+export type ExerciseType = "quiz" | "code";
+export enum GradingMethodType {
+  highest = "highest",
+  average = "average",
+  latest = "latest",
+  first = "first"
+}
