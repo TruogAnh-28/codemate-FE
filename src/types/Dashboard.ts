@@ -23,10 +23,15 @@ export interface AddActivityRequest {
 }
 
 //-------------------Professor-------------------------
-export interface Event {
+export interface UpcomingEvent {
   exercise_id: UUID;
   exercise_name: string;
-  exercise_deadline: DateTimeString;
+  exercise_time_open: DateTimeString;
+  exercise_time_close: DateTimeString;
+  course_name: string;
+  course_id: UUID;
+  course_courseID: string
+  course_nSemester: number
 }
 
 export interface GetDashboardProfessorResponse {
@@ -36,5 +41,5 @@ export interface GetDashboardProfessorResponse {
   nLessons: number;
   nStudents: number;
   nExercises: number;
-  upcoming_events?: Event[];
+  upcoming_events?: UpcomingEvent[];
 }

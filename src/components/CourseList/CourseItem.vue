@@ -2,7 +2,7 @@
   <v-container>
     <v-row v-if="props.courses.length > 0">
       <v-col
-        v-for="course in coursesWithProfessors"
+        v-for="(course) in coursesWithProfessors"
         :key="course.id"
         cols="12"
         class="mb-6"
@@ -22,13 +22,7 @@
                 cover
               >
                 <template v-slot:error>
-                  <v-img
-                    width="300px"
-                    height="200px"
-                    src="../../assets/default-course-avt.svg"
-                    alt="Course Avatar"
-                    cover
-                  />
+                  <CourseInitialAvatar :course-name="course.name"  />
                 </template>
               </v-img>
             </div>
@@ -206,7 +200,6 @@ onMounted(() => {
 .image-container:hover .course-image {
   transform: scale(1.05);
 }
-
 .middle-content {
   width: 300px; /* Fixed width */
   padding: 0 16px;
@@ -216,7 +209,6 @@ onMounted(() => {
   position: relative;
   overflow: hidden;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
 }
 

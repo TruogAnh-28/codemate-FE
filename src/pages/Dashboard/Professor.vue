@@ -16,7 +16,14 @@
           v-if="dashboardData"
           :dashboardData="dashboardData"
         />
-    <!-- </div> -->
+        <!-- <MonacoEditor
+        v-model:value="code"
+        :options="options"
+        theme="vs-dark"
+        language="javascript"
+        class="editor"
+        @mounted="onMounted"
+      /> -->
   </v-main>
   </v-layout>
 </template>

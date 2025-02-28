@@ -167,10 +167,12 @@ function getDifficultyColor(difficulty: string) {
 }
 
 const showError = inject("showError") as (message: string) => void;
+const showSuccess = inject("showSuccess") as (message: string) => void;  
+
 
 
 const fetchModuleQuizzes = async () => {
-  moduleQuizzes.value = await moduleService.fetchModuleQuizzes(showError, moduleId) ||{
+  moduleQuizzes.value = await moduleService.fetchModuleQuizzes({showError,showSuccess}, moduleId) ||{
     module_id: "",
     title: "",
     objectives: [],
@@ -178,7 +180,7 @@ const fetchModuleQuizzes = async () => {
   };
 };
 const clearQuizAnswers = async (quizId:string) => {
-  clearSuccess.value = await moduleService.clearQuizAnswers(showError, moduleId, quizId) || "";
+  clearSuccess.value = await moduleService.clearQuizAnswers({showError,showSuccess}, moduleId, quizId) || "";
 };
 onMounted(() => {
   fetchModuleQuizzes();

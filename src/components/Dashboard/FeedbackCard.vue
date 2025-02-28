@@ -125,7 +125,9 @@ import { dashboardService } from "@/services/dashboardService";
 import { feedbackServices } from "@/services/feedbackServices";
 import { CreateFeedbackRequest } from "@/types/Feedback";
 import { FeedbackCategory } from "@/utils/constant";
+import { useAuthStore } from "@/stores/auth";
 
+const role = computed(() => useAuthStore().getUser().role);
 interface Props {
   type: "system" | "course";
 }
@@ -187,7 +189,7 @@ const submitFeedback = async () => {
     { showError, showSuccess },
     feedbackData
   );
-  if (response) {
+  if (response && role.value == "student") {
     const add_feedback = await dashboardService.addActivity(
       { showError, showSuccess },
       {

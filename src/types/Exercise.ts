@@ -1,4 +1,4 @@
-import { UUID, DateTimeString, ExerciseType, DifficultyLevel } from "@/utils/commonType"
+import { UUID, DateTimeString, ExerciseType, DifficultyLevel, GradingMethodType } from "@/utils/commonType"
 export interface QuizQuestion {
   id: UUID,
   image?: string,
@@ -139,4 +139,15 @@ export interface ExerciseCodeResponse {
   max_score?: number;
   type: ExerciseType;
   course_id: UUID;
+}
+export interface GetExercisesList{
+  id: UUID; 
+  name: string;
+  description: string;
+  type: ExerciseType;
+  time_open: string;
+  time_close: string;
+  time_limit: number;
+  attempts_allowed: number;
+  grading_method: GradingMethodType
 }

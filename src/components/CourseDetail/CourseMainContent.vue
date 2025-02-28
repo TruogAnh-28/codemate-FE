@@ -1,6 +1,7 @@
 <template>
   <v-card class="p-6">
     <CourseBanner
+      v-if="course"
       :course="course"
     />
 
@@ -41,7 +42,7 @@
 
       <v-window-item value="exercises">
         <CourseExercises v-if="isStudent && isCourseDetailResponse(course)" :course="course" />
-        <CourseExercisesProfessor v-else-if="isProfessor && !isCourseDetailResponse(course)" :course="course" />
+        <CourseExercisesProfessor v-else-if="isProfessor && !isCourseDetailResponse(course) && course" :course="course" />
       </v-window-item>
     </v-window>
   </v-card>

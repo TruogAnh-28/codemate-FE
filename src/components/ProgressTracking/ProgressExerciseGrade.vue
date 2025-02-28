@@ -5,9 +5,9 @@
           <v-select
             :model-value="selectedExerciseId"
             @update:model-value="$emit('update:selectedExerciseId', $event)"
-            :items="exercises?.exercises_name_list || []"
-            item-title="exercise_name"
-            item-value="exercise_id"
+            :items="exercises || []"
+            item-title="name"
+            item-value="id"
             label="Select Exercise"
             variant="outlined"
             density="comfortable"
@@ -83,14 +83,13 @@
 <script setup lang="ts">
   import { ref } from 'vue';
   import type {
-    GetExercisesListResponse,
     GetExerciseGradesResponse,
     AnswerQuizExercise
   } from "@/types/ProgressTracking";
   import { formatDateTime } from "@/utils/functions/time";
-  
+  import { GetExercisesList } from "@/types/Exercise";
   defineProps<{
-    exercises: GetExercisesListResponse | undefined;
+    exercises: GetExercisesList[] | undefined;
     exerciseGrades: GetExerciseGradesResponse | null;
     selectedExerciseId: string;
     loading: boolean;
@@ -100,6 +99,7 @@
   const selectedStudentAnswers = ref<AnswerQuizExercise[]>([]);
   
   const exerciseHeaders = [
+    { title: "Student ID", key: "student_mssv", align: "center" as const },
     { title: "Student Name", key: "student_name", align: "start" as const },
     { title: "Score", key: "score", align: "start" as const },
     { title: "Submission Date", key: "date", align: "center" as const },

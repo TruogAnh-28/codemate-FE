@@ -1,5 +1,4 @@
 import { UUID, DateString, DateTimeString, DocumentType, Status } from "@/utils/commonType"
-import { ExcelFileHeaderToAddCourses } from "@/utils/constant";
 //---------------------------------Student---------------------------------
 export interface CreateCourseResponse {
   course_id: string
@@ -69,6 +68,7 @@ export interface CoursesListResponse {
   nSemester: number
   courseID: string
   image: string
+  percentage_complete?:number
 }
 
 export interface StudentOfCourseListModal {
@@ -105,6 +105,7 @@ export interface LessonOriginalResponse {
   description: string
   learning_outcomes: string[]
   order: number
+  nDocuments: number
 }
 
 export interface ExerciseOriginalResponse {
@@ -183,6 +184,19 @@ export interface GetProfessorCoursesPaginatedResponse {
   totalPages: number;
 }
 
+// export interface GetCourseDetailProfessorResponse {
+//   course_id: UUID;
+//   course_name: string;
+//   course_start_date: DateString;
+//   course_end_date: DateString;
+//   course_learning_outcomes: string[];
+//   course_professor: ProfessorInformation;
+//   course_status: Status;
+//   course_image: string;
+//   exercises: GetExercisesProfessor[];
+//   students: StudentCoursesList[];
+//   lessons: GetLessonProfessor[];
+// }
 export interface GetCourseDetailProfessorResponse {
   course_id: UUID;
   course_name: string;
@@ -192,9 +206,13 @@ export interface GetCourseDetailProfessorResponse {
   course_professor: ProfessorInformation;
   course_status: Status;
   course_image: string;
-  exercises: GetExercisesProfessor[];
-  students: StudentCoursesList[];
-  lessons: GetLessonProfessor[];
+  course_nCredit: number;
+  course_nSemester: number;
+  course_courseID: string;
+  nStudents: number;
+  nLessons: number;
+  nExercises: number;
+  nDocuments: number;
 }
 export interface DocumentResponse {
   name: string;
@@ -227,4 +245,12 @@ export interface PutLessonResponse {
   description?: string;
   order: number;
   learningOutcomes?: string[];
+}
+export interface GetCoursesTitle{
+  course_id: UUID; 
+  course_name: string;
+  course_courseID: string;
+  course_nSemester: number;
+  course_start_date: DateString;
+  course_end_date: DateString;
 }

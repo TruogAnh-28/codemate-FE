@@ -1,18 +1,39 @@
 import ApiService from "@/common/api.service";
 import { AuthConfig } from "@/services/authenServices";
-// import { IResponseData } from "@/modals/apis/response";
+import { IResponseData } from "@/modals/apis/response";
 import {
   GetProfessorCoursesPaginatedResponse,
   GetCourseDetailProfessorResponse,
   ProfessorInformation,
   PutLearningOutcomesCoursesResponse,
+  GetCoursesTitle
 } from "@/types/Course";
+import {GetExercisesList} from "@/types/Exercise";
 import { ExerciseCodeResponse, ExerciseQuizResponse, ExerciseQuizRequest } from "@/types/Exercise";
 export const coursesService = {
   async fetchCoursesList({ showError, showSuccess, search_query }: AuthConfig & { search_query?: string }) {
-    return await ApiService.query<GetProfessorCoursesPaginatedResponse>(
+    return await ApiService.query<IResponseData<GetProfessorCoursesPaginatedResponse>>(
       "professors/courses",
       search_query ? { search_query } : undefined,
+      { showError, showSuccess }
+    );
+  },
+  async fetchCoursesTitleList(
+    { showError, showSuccess }: AuthConfig,
+  ) {
+    return await ApiService.get<IResponseData<GetCoursesTitle[]>>(
+      `courses`,
+      "",
+      { showError, showSuccess }
+    );
+  },
+  async fetchExercisesTitleList(
+    { showError, showSuccess }: AuthConfig,
+    course_id: string
+  ) {
+    return await ApiService.get<IResponseData<GetExercisesList[]>>(
+      `courses/${course_id}/exercises`,
+      "",
       { showError, showSuccess }
     );
   },

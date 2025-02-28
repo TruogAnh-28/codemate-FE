@@ -1,5 +1,4 @@
 import { defineStore } from 'pinia';
-import { ref } from 'vue';
 
 export interface UserInfo {
   name: string;
@@ -66,8 +65,13 @@ export const useAuthStore = defineStore('auth', () => {
     return !!storage.getItem('access_token');
   };
 
-  const getUser = () => user.value;
-
+  const getUser = () => {
+    const getUser = localStorage.getItem('user') || sessionStorage.getItem('user');
+    if (getUser) {
+      user.value = JSON.parse(getUser);
+    }
+    return user.value;
+  };
   return {
     user,
     setUser,

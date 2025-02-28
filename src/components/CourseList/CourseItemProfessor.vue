@@ -2,7 +2,7 @@
   <v-container>
     <v-row v-if="props.courses.length > 0">
       <v-col
-        v-for="course in courses"
+        v-for="(course) in courses"
         :key="course.id"
         cols="12"
         class="mb-6"
@@ -22,13 +22,7 @@
                 cover
               >
                 <template v-slot:error>
-                  <v-img
-                    width="300px"
-                    height="200px"
-                    src="../../assets/default-course-avt.svg"
-                    alt="Course Avatar"
-                    cover
-                  />
+                  <CourseInitialAvatar :course-name="course.name"  />
                 </template>
               </v-img>
             </div>

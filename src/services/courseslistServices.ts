@@ -43,7 +43,7 @@ export const coursesService = {
     { showError, showSuccess }: AuthConfig,
     course_id: string
   ) {
-    return await ApiService.get<LessonOriginalResponse[]>(
+    return await ApiService.get<IResponseData<LessonOriginalResponse[]>>(
       `courses/${course_id}/lessons`,
       "",
       { showError, showSuccess }
