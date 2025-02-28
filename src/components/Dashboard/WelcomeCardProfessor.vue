@@ -43,6 +43,6 @@
 <script setup lang="ts">
 import { useAuthStore } from "@/stores/auth";
 
-const professor_name = useAuthStore().getUser()?.name;
+const professor_name = useAuthStore().user?.name;
 
 </script>

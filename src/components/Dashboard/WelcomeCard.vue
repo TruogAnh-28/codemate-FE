@@ -51,7 +51,7 @@ const recentCourse = ref<GetRecentCourseResponse>({
   course_id: "",
   last_accessed: "",
 });
-const studentName = useAuthStore().getUser()?.name;
+const studentName = useAuthStore().user?.name;
 const fetchRecentCourse = async () => {
   const response = await dashboardService.fetchRecentCourse({
     showError,
