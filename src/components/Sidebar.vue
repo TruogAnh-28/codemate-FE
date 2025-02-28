@@ -184,6 +184,19 @@ const adminItems: NavigationItem[] = [
       },
     ],
   },
+  {
+    icon: "mdi-chart-pie",
+    title: "Statistics",
+    value: "statistics",
+    children: [
+      {
+        icon: "mdi-chart-bar",
+        title: "Feedback Statistics",
+        value: "feedback-statistics",
+        to: "/feedback-statistics",
+      },
+    ],
+  },
 ];
 
 // Add a computed property to filter navigation items based on role

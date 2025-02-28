@@ -177,7 +177,6 @@ const handleSuccessfulLogin = (data: LoginSuccessResponse) => {
   } else {
     showSuccess("Student login successfully");
   }
-
   router.push(redirectPath);
 };
 

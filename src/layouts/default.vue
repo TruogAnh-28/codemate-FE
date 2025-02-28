@@ -2,6 +2,7 @@
   <v-app>
     <Sidebar v-model="drawer" @expand="handleExpand" />
     <Appbar />
+    <AutoLogin />
     <v-main>
       <router-view />
     </v-main>

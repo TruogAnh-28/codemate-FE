@@ -11,6 +11,7 @@ import { routes as autoRoutes } from "vue-router/auto-routes";
 import ApiService, { manageExpirationTimer, PUBLIC_ROUTES } from "@/common/api.service";
 import { useAuthStore } from "@/stores/auth";
 import { usersService } from "@/services/usersServices";
+import { c } from "node_modules/vite/dist/node/types.d-aGj9QkWt";
 
 const LoginRoute = [
   {
@@ -146,16 +147,20 @@ const AdminRoutes = [
     path: "/add-course",
     name: "AddCourse",
     component: () => import("@/pages/CourseManagement/AddCourse.vue"),
-    props: true,
     meta: { requiresAuth: true, role: "admin" },
   },
   {
     path: "/add-user",
     name: "AddUser",
     component: () => import("@/pages/UserManagement/AddUser.vue"),
-    props: true,
     meta: { requiresAuth: true, role: "admin" },
   },
+  {
+    path: "/feedback-statistics",
+    name: "FeedbackStatistics",
+    component: () => import("@/pages/FeedbackManagement/FeedbackStatistics.vue"),
+    meta: { requiresAuth: true, role: "admin" },
+  }
 ];
 const ProfessorRoutes = [
   {
@@ -225,10 +230,12 @@ const getUserInfo = async () => {
 router.beforeEach(async (to, from, next) => {
   
   // Start token expiration timer
-  manageExpirationTimer();
+  if (to.path === "/login" && !ApiService.getToken()) {
+    return next(); 
+  }
   
-  // If going to a public route, proceed normally
-  if (to.meta.requiresAuth === false || PUBLIC_ROUTES.includes(to.path)) {
+  if ((to.meta.requiresAuth === false || PUBLIC_ROUTES.includes(to.path)) && !PUBLIC_ROUTES.includes(from.path)) {
+    console.log("Public route:", to.path);
     return next();
   }
   
@@ -253,12 +260,11 @@ router.beforeEach(async (to, from, next) => {
   
   // Check if access token is valid
   if (accessToken && !ApiService.checkTokenExpiration()) {
-    
     // Get user info if not already authenticated in store
     if (!authStore.isAuthenticated) {
       try {
         const userInfo = await getUserInfo();
-        
+        console.log(userInfo)
         if (userInfo) {
           // Set user in store
           authStore.setUser({
@@ -278,9 +284,7 @@ router.beforeEach(async (to, from, next) => {
         return next("/login");
       }
     }
-    
-    // Check role-based access
-    if (to.meta.role && to.meta.role !== authStore.userRole) {
+    if ((to.meta.role && to.meta.role !== authStore.userRole) || to.meta.role == undefined) {
       const rolePaths: { [key: string]: string } = {
         student: "/dashboard",
         professor: "/professor-dashboard",
@@ -288,17 +292,18 @@ router.beforeEach(async (to, from, next) => {
       };
       return next(rolePaths[authStore.userRole as string] || "/");
     }
-    
+    manageExpirationTimer();
     // Allow access to the requested page
     return next();
   }
   
   // If access token is expired or invalid but refresh token exists
   if (refreshToken) {
+    console.log("Access token is expired, trying to refresh");
     try {
       const refreshed = await ApiService.refreshToken();
       if (refreshed) {
-        
+        console.log("Access token refreshed");
         // Get user info if not already in store
         if (!authStore.isAuthenticated) {
           const userInfo = await getUserInfo();
