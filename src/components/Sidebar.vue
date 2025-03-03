@@ -110,7 +110,7 @@ const studentItems: NavigationItem[] = [
     value: "progress-tracking",
     to: "/progress-tracking",
   },
-  { icon: "mdi-calendar", title: "Schedule", value: "schedule", to: "/schedule" },
+  // { icon: "mdi-calendar", title: "Schedule", value: "schedule", to: "/schedule" },
 ];
 
 const professorItems: NavigationItem[] = [
@@ -194,6 +194,12 @@ const adminItems: NavigationItem[] = [
         title: "Feedback Statistics",
         value: "feedback-statistics",
         to: "/feedback-statistics",
+      },
+      {
+        icon: "mdi-chart-line",
+        title: "System Usage Statistics",
+        value: "system-usage-statistics",
+        to: "/system-usage-statistics",
       },
     ],
   },

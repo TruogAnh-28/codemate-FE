@@ -13,129 +13,106 @@ import { useRouter } from "vue-router";
 import ApiService from "@/common/api.service";
 import { useAuthStore } from "@/stores/auth";
 import { usersService } from "@/services/usersServices";
+import { PUBLIC_ROUTES } from "@/common/api.service";
 
 const loading = ref(false);
 const router = useRouter();
 const authStore = useAuthStore();
 const showError = inject("showError") as (message: string) => void;
 const showSuccess = inject("showSuccess") as (message: string) => void;
+
 const getUserInfo = async () => {
   try {
-    // Get current user profile from API
-    const response = await usersService.getProfile({showError, showSuccess});
+    const response = await usersService.getProfile({ showError, showSuccess });
+    if (!response?.data) {
+      console.error("No user data returned from getProfile");
+      return null;
+    }
     return response.data;
   } catch (error) {
+    console.error("Failed to fetch user info:", error);
+    showError("Unable to retrieve user information.");
     return null;
+  }
+};
+
+const redirectUser = (userRole: string) => {
+  const redirectUrl = sessionStorage.getItem("redirectUrl");
+  if (redirectUrl && !PUBLIC_ROUTES.includes(redirectUrl)) {
+    sessionStorage.removeItem("redirectUrl");
+    router.push(redirectUrl);
+  } else {
+    const redirectPath =
+      {
+        student: "/dashboard",
+        professor: "/professor-dashboard",
+        admin: "/admin-dashboard",
+      }[userRole] || "/";
+    router.push(redirectPath);
   }
 };
 
 const autoLogin = async () => {
   loading.value = true;
-
   try {
     const accessToken = ApiService.getToken();
     const refreshToken = ApiService.getRefreshToken();
 
-    // No tokens available
     if (!accessToken && !refreshToken) {
       loading.value = false;
       return;
     }
 
-    // Check if access token is valid
     if (accessToken && !ApiService.checkTokenExpiration()) {
-      // Token is valid, get user info
       const userInfo = await getUserInfo();
-
       if (userInfo) {
-        // Set user in store
         authStore.setUser({
           role: userInfo.role,
           email: userInfo.email,
           name: userInfo.name,
-          rememberMe: localStorage.getItem("rememberMe") === "true" ? "true" : "false",
+          rememberMe: localStorage.getItem("rememberMe") || "false",
         });
-
-        // Redirect to appropriate dashboard
-        const redirectPath =
-          {
-            student: "/dashboard",
-            professor: "/professor-dashboard",
-            admin: "/admin-dashboard",
-          }[userInfo.role] || "/";
-
-        if (
-          router.currentRoute.value.path === "/login" ||
-          router.currentRoute.value.path === "/"
-        ) {
-          router.push(redirectPath);
-        }
+        authStore.isAuthenticated = true;
+        redirectUser(userInfo.role);
         loading.value = false;
         return;
       }
     }
 
-    // If access token is expired or invalid but refresh token exists
     if (refreshToken) {
       const refreshed = await ApiService.refreshToken();
-
       if (refreshed) {
-        // Successfully refreshed, get user info
         const userInfo = await getUserInfo();
-
         if (userInfo) {
-          // Set user in store
           authStore.setUser({
             role: userInfo.role,
             email: userInfo.email,
             name: userInfo.name,
-            rememberMe: localStorage.getItem("rememberMe") === "true" ? "true" : "false",
+            rememberMe: localStorage.getItem("rememberMe") || "false",
           });
-
-          // Redirect to appropriate dashboard
-          const redirectPath =
-            {
-              student: "/dashboard",
-              professor: "/professor-dashboard",
-              admin: "/admin-dashboard",
-            }[userInfo.role] || "/";
-
-          if (
-            router.currentRoute.value.path === "/login" ||
-            router.currentRoute.value.path === "/"
-          ) {
-            router.push(redirectPath);
-          }
+          authStore.isAuthenticated = true;
+          redirectUser(userInfo.role);
           loading.value = false;
           return;
         }
       } else {
-        // Refresh token failed, clear auth data
         ApiService.clearAuthData();
-
-        // Only redirect to landing page if on a protected route
-        if (!ApiService.isPublicRoute(router.currentRoute.value.path)) {
-          router.push("/");
+        if (!PUBLIC_ROUTES.includes(router.currentRoute.value.path)) {
+          router.push("/login"); // Redirect to login instead of "/"
         }
       }
     } else {
-      // No refresh token, clear auth data
       ApiService.clearAuthData();
-
-      // Only redirect to landing page if on a protected route
-      if (!ApiService.isPublicRoute(router.currentRoute.value.path)) {
-        router.push("/");
+      if (!PUBLIC_ROUTES.includes(router.currentRoute.value.path)) {
+        router.push("/login");
       }
     }
   } catch (error) {
-    if (showError) {
-      showError("Authentication failed. Please log in again.");
-    }
+    console.error("Auto-login failed:", error);
+    showError("Authentication failed. Please log in again.");
     ApiService.clearAuthData();
-
-    // Only redirect to landing page if on a protected route
-    if (!ApiService.isPublicRoute(router.currentRoute.value.path)) {
-      router.push("/");
+    if (!PUBLIC_ROUTES.includes(router.currentRoute.value.path)) {
+      router.push("/login");
     }
   } finally {
     loading.value = false;

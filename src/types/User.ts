@@ -2,10 +2,10 @@ export interface GetAllUsersResponse {
   id: string
   name: string
   email: string
-  ms: any
-  date_of_birth: any
+  ms: string
+  date_of_birth: string
   status: boolean
-  fullname: any
+  fullname: string
   role: string
 }
 
@@ -43,4 +43,17 @@ export interface GetProfileResponse {
   ms: any
   date_of_birth: any
   role: string
+}
+
+export interface CreateUserLogin {
+
+  user_role: string
+  login_timestamp: string
+
+}
+export interface UserLoginResponse {
+  id: string
+  user_id: string
+  user_role: string
+  login_timestamp: string
 }

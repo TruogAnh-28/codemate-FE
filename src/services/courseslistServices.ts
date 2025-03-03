@@ -9,14 +9,19 @@ import {
   CreateCourseRequest,
   CreateCourseResponse,
   CoursesAdminListPaginatedResponse,
+  GetAvailableCourses
 } from "@/types/Course";
 import { AuthConfig } from "./authenServices";
 import { IResponseData } from "@/modals/apis/response";
 
-interface PaginationParams {
+export interface PaginationParams {
   page?: number;
   page_size?: number;
   search_query?: string;
+  nCredit?: number;
+  nSemester?: number;
+  start_date?: string;
+  end_date?: string;
 }
 
 
@@ -95,11 +100,18 @@ export const coursesService = {
       showSuccess,
     });
   },
-  async countCourses({ showError, showSuccess}: AuthConfig) {
+  async countCourses({ showError, showSuccess }: AuthConfig) {
     return await ApiService.query<IResponseData<number>>(
-        "courses/count/",
-        undefined,
-        { showError, showSuccess }
+      "courses/count/",
+      undefined,
+      { showError, showSuccess }
     );
-},
+  },
+  async getAvailableCourses({ showError, showSuccess }: AuthConfig) {
+    return await ApiService.get<IResponseData<GetAvailableCourses[]>>(
+      "courses/available/",
+      undefined,
+      { showError, showSuccess }
+    );
+  },
 };

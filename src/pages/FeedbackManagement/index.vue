@@ -1,27 +1,26 @@
 <template>
-  <v-layout class="bg-gray-50 min-h-screen">
-    <v-main class="px-6 py-8">
+  <div class="bg-gray-50 min-h-screen">
+    <main class="px-6 py-8">
       <!-- Header Section -->
       <div class="max-w-7xl mx-auto mb-6">
         <div class="flex items-center justify-between">
-          <h1 class="text-3xl font-bold text-gray-900">System Feedback Management</h1>
-          <div class="flex items-center gap-4">
-            <v-btn
-              @click="showFilters = !showFilters"
-              variant="tonal"
-              class="rounded-lg"
-              :class="{ 'bg-primary': activeFiltersCount > 0 }"
-            >
-              <v-icon start>mdi-filter</v-icon>
-              Filters
-              <v-badge
-                v-if="activeFiltersCount > 0"
-                :content="activeFiltersCount"
-                color="primary"
-                class="ml-2"
-              ></v-badge>
-            </v-btn>
-          </div>
+          <h1 class="text-3xl font-bold gradient-text">System Feedback Management</h1>
+          <v-btn
+            @click="showFilters = !showFilters"
+            variant="tonal"
+            color="primary"
+            class="rounded-lg transition-all duration-200 hover:scale-105"
+            :class="{ 'bg-primary-lighten-1 text-white': activeFiltersCount > 0 }"
+          >
+            <v-icon start>mdi-filter</v-icon>
+            Filters
+            <v-badge
+              v-if="activeFiltersCount > 0"
+              :content="activeFiltersCount"
+              color="primary"
+              class="ml-4 mb-1"
+            ></v-badge>
+          </v-btn>
         </div>
       </div>
 
@@ -29,54 +28,108 @@
       <v-expand-transition>
         <v-card
           v-if="showFilters"
-          class="mb-6 max-w-7xl mx-auto rounded-xl border border-gray-100"
+          class="mb-6 max-w-7xl mx-auto rounded-xl border border-gray-100 transition-shadow hover:shadow-lg"
           elevation="3"
         >
           <v-card-text class="py-6">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <!-- Time Period Filters -->
-              <div class="space-y-2">
-                <div class="text-sm font-semibold text-gray-700 mb-3">Time Period</div>
-                <div class="grid grid-cols-2 gap-4">
-                  <v-select
-                    v-model="filters.month"
-                    :items="months"
-                    label="Month"
+            <div class="flex flex-wrap gap-6">
+              <!-- Date Range Filter -->
+              <div class="flex-1 min-w-[300px] space-y-2">
+                <div class="text-sm font-semibold text-gray-700 mb-3">Date Range</div>
+                <div class="flex flex-col gap-4">
+                  <v-text-field
+                    v-model="filters.start_date"
+                    label="Start Date"
+                    type="date"
                     variant="outlined"
                     density="comfortable"
-                    class="rounded-lg"
+                    class="rounded-lg transition-all hover:border-primary-lighten-1"
                     hide-details
-                    clearable
-                  ></v-select>
-                  <v-select
-                    v-model="filters.year"
-                    :items="availableYears"
-                    label="Year"
+                    prepend-icon="mdi-calendar-start"
+                    :rules="[dateRules.required, dateRules.startBeforeEnd]"
+                    :max="MaxStartDate"
+                  ></v-text-field>
+
+                  <v-text-field
+                    v-model="filters.end_date"
+                    label="End Date"
+                    type="date"
                     variant="outlined"
                     density="comfortable"
-                    class="rounded-lg"
+                    class="rounded-lg transition-all hover:border-primary-lighten-1"
                     hide-details
-                    clearable
-                  ></v-select>
+                    prepend-icon="mdi-calendar-end"
+                    :rules="[dateRules.required, dateRules.endAfterStart]"
+                    :min="MinEndDate"
+                  ></v-text-field>
+                </div>
+                <div v-if="dateError" class="text-error text-xs mt-1">
+                  {{ dateError }}
                 </div>
               </div>
 
-              <!-- Status Filter -->
-              <div class="space-y-2">
-                <div class="text-sm font-semibold text-gray-700 mb-3">Status</div>
-                <div class="grid grid-cols-1 gap-4">
+              <!-- Category and Status Filters -->
+              <div class="flex-1 min-w-[300px] space-y-2">
+                <div class="text-sm font-semibold text-gray-700 mb-3">Classification</div>
+                <div class="flex flex-col gap-4">
+                  <v-select
+                    v-model="filters.category"
+                    :items="categories"
+                    label="Category"
+                    variant="outlined"
+                    density="comfortable"
+                    class="rounded-lg transition-all hover:border-primary-lighten-1"
+                    hide-details
+                    clearable
+                    prepend-icon="mdi-shape"
+                  >
+                    <template v-slot:selection="{ item }">
+                      <div class="flex items-center">
+                        <v-icon
+                          :color="getCategoryColor(item.value)"
+                          size="small"
+                          class="mr-2"
+                        >
+                          mdi-circle-medium
+                        </v-icon>
+                        <span class="font-medium">{{ item.title }}</span>
+                      </div>
+                    </template>
+                    <template v-slot:item="{ props, item }">
+                      <v-list-item v-bind="props" class="hover:bg-gray-100">
+                        <template v-slot:prepend>
+                          <v-icon :color="getCategoryColor(item.value)" size="small">
+                            mdi-circle-medium
+                          </v-icon>
+                        </template>
+                      </v-list-item>
+                    </template>
+                  </v-select>
                   <v-select
                     v-model="filters.status"
                     :items="statusOptions"
                     label="Status"
                     variant="outlined"
                     density="comfortable"
-                    class="rounded-lg"
+                    class="rounded-lg transition-all hover:border-primary-lighten-1"
                     hide-details
                     clearable
+                    prepend-icon="mdi-flag"
                   >
+                    <template v-slot:selection="{ item }">
+                      <div class="flex items-center">
+                        <v-icon
+                          :color="getStatusColor(item.value)"
+                          size="small"
+                          class="mr-2"
+                        >
+                          mdi-circle-medium
+                        </v-icon>
+                        <span class="font-medium">{{ item.title }}</span>
+                      </div>
+                    </template>
                     <template v-slot:item="{ props, item }">
-                      <v-list-item v-bind="props">
+                      <v-list-item v-bind="props" class="hover:bg-gray-100">
                         <template v-slot:prepend>
                           <v-icon :color="getStatusColor(item.value)" size="small">
                             mdi-circle-medium
@@ -87,58 +140,28 @@
                   </v-select>
                 </div>
               </div>
-
-              <!-- Category and Actions -->
-              <div class="space-y-2">
-                <div class="text-sm font-semibold text-gray-700 mb-3">Category</div>
-                <div class="flex items-end gap-4">
-                  <v-select
-                    v-model="filters.category"
-                    :items="categories"
-                    label="Category"
-                    variant="outlined"
-                    density="comfortable"
-                    class="rounded-lg flex-grow"
-                    hide-details
-                    clearable
-                  >
-                    <template v-slot:item="{ props, item }">
-                      <v-list-item v-bind="props">
-                        <template v-slot:prepend>
-                          <v-icon :color="getCategoryColor(item.value)" size="small">
-                            mdi-circle-medium
-                          </v-icon>
-                        </template>
-                      </v-list-item>
-                    </template>
-                  </v-select>
-                  <div class="flex gap-2">
-                    <v-btn
-                      color="primary"
-                      @click="applyFilters"
-                      :loading="loading"
-                      class="px-6"
-                    >
-                      Apply
-                    </v-btn>
-                    <v-btn
-                      variant="outlined"
-                      @click="resetFilters"
-                      :disabled="loading"
-                      class="px-6"
-                    >
-                      Reset
-                    </v-btn>
-                  </div>
-                </div>
-              </div>
             </div>
           </v-card-text>
+          <!-- Action Buttons -->
+          <div class="flex justify-end p-4">
+            <v-btn
+              variant="outlined"
+              @click="resetFilters"
+              :disabled="loading"
+              class="px-6 rounded-lg transition-all duration-200 hover:bg-gray-100"
+              prepend-icon="mdi-refresh"
+            >
+              Reset
+            </v-btn>
+          </div>
         </v-card>
       </v-expand-transition>
 
       <!-- Data Table -->
-      <v-card class="max-w-7xl mx-auto rounded-xl border border-gray-100" elevation="3">
+      <v-card
+        class="max-w-7xl mx-auto rounded-xl border border-gray-100 transition-shadow hover:shadow-lg"
+        elevation="3"
+      >
         <v-data-table
           :headers="headers"
           :items="feedbacks"
@@ -146,13 +169,20 @@
           :loading="loading"
           class="elevation-0"
         >
+          <template v-slot:loading>
+            <div class="flex items-center justify-center pa-6">
+              <v-progress-circular indeterminate color="primary"></v-progress-circular>
+              <span class="ml-4">Loading data...</span>
+            </div>
+          </template>
+
           <template v-slot:item.status="{ item }">
             <v-chip
               :color="getStatusColor(item.status)"
-              :text-color="getStatusColor(item.status)"
               variant="outlined"
               size="small"
-              class="font-medium"
+              class="font-medium transition-all hover:opacity-80"
+              pill
             >
               {{ item.status.replace("_", " ").toUpperCase() }}
             </v-chip>
@@ -161,10 +191,10 @@
           <template v-slot:item.category="{ item }">
             <v-chip
               :color="getCategoryColor(item.category)"
-              :text-color="getCategoryColor(item.category)"
               variant="outlined"
               size="small"
-              class="font-medium"
+              class="font-medium transition-all hover:opacity-80"
+              pill
             >
               {{ item.category.replace("_", " ").toUpperCase() }}
             </v-chip>
@@ -180,42 +210,69 @@
 
           <template v-slot:item.rate="{ item }">
             <v-rating
-              v-model="item.rate"
+              :value="Number(item.rate)"
               readonly
               density="compact"
               size="small"
               color="warning"
+              class="transition-opacity hover:opacity-80"
             ></v-rating>
           </template>
         </v-data-table>
       </v-card>
-    </v-main>
-  </v-layout>
+    </main>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { ref, inject, onMounted, computed } from "vue";
+import { ref, inject, onMounted, computed, watch } from "vue";
 import { feedbackServices } from "@/services/feedbackServices";
 import { GetListFeedbackResponse } from "@/types/Feedback";
 import { formatDateTime } from "@/utils/functions/time";
+import debounce from "@/composables/useDebounce";
 
 const feedbacks = ref<GetListFeedbackResponse[]>([]);
 const loading = ref(false);
 const showFilters = ref(false);
+const dateError = ref<string | null>(null);
 const showError = inject("showError") as (message: string) => void;
 const showSuccess = inject("showSuccess") as (message: string) => void;
+const currentDate = new Date().toISOString().split("T")[0];
+
+const MaxStartDate = computed(() => {
+  if (filters.value.end_date) {
+    return filters.value.end_date;
+  }
+  return currentDate;
+});
+
+const MinEndDate = computed(() => {
+  if (filters.value.start_date) {
+    return filters.value.start_date;
+  }
+});
 
 const months = Array.from({ length: 12 }, (_, i) => ({
   title: new Date(0, i).toLocaleString("default", { month: "long" }),
   value: i + 1,
 }));
 
-const getListYear = (rawData: GetListFeedbackResponse[]): number[] => {
+const getListYear = (
+  rawData: GetListFeedbackResponse[]
+): { title: number; value: number }[] => {
   const years = rawData.map((feedback) => new Date(feedback.created_at).getFullYear());
-  return Array.from(new Set(years)).sort((a, b) => b - a);
+  const uniqueYears = Array.from(new Set(years)).sort((a, b) => b - a);
+  return uniqueYears.map((year) => ({ title: year, value: year }));
 };
 
-const availableYears = computed(() => getListYear(feedbacks.value));
+const availableYears = computed(() => {
+  const dataYears = getListYear(feedbacks.value);
+  if (dataYears.length === 0) {
+    const currentYear = new Date().getFullYear();
+    return [{ title: currentYear, value: currentYear }];
+  }
+  return dataYears;
+});
 
 const statusOptions = [
   { title: "Pending", value: "pending" },
@@ -237,7 +294,75 @@ const filters = ref({
   feedback_type: "system" as string,
   status: null as string | null,
   category: null as string | null,
+  start_date: null as string | null,
+  end_date: null as string | null,
 });
+
+const dateRules = {
+  required: (value: string) => !!value || "Date is required",
+  startBeforeEnd: (value: string) => {
+    if (!value || !filters.value.end_date) return true;
+    return (
+      new Date(value) <= new Date(filters.value.end_date) ||
+      "Start date must be before end date"
+    );
+  },
+  endAfterStart: (value: string) => {
+    if (!value || !filters.value.start_date) return true;
+    return (
+      new Date(value) >= new Date(filters.value.start_date) ||
+      "End date must be after start date"
+    );
+  },
+};
+
+// Computed properties for disabling month/year selects based on date range
+const monthSelectDisabled = computed(() => {
+  if (!filters.value.start_date || !filters.value.end_date) return false;
+
+  const startDate = new Date(filters.value.start_date);
+  const endDate = new Date(filters.value.end_date);
+
+  if (startDate.getFullYear() === endDate.getFullYear()) {
+    return startDate.getMonth() !== endDate.getMonth();
+  }
+
+  return true;
+});
+
+const yearSelectDisabled = computed(() => {
+  if (!filters.value.start_date || !filters.value.end_date) return false;
+
+  const startDate = new Date(filters.value.start_date);
+  const endDate = new Date(filters.value.end_date);
+
+  return startDate.getFullYear() !== endDate.getFullYear();
+});
+
+// Validate date range and update disabled states
+const validateDateRange = () => {
+  dateError.value = null;
+
+  if (filters.value.start_date && filters.value.end_date) {
+    const startDate = new Date(filters.value.start_date);
+    const endDate = new Date(filters.value.end_date);
+
+    if (startDate > endDate) {
+      dateError.value = "Start date must be before or equal to end date";
+      return false;
+    }
+
+    if (monthSelectDisabled.value) {
+      filters.value.month = null;
+    }
+
+    if (yearSelectDisabled.value) {
+      filters.value.year = null;
+    }
+  }
+
+  return true;
+};
 
 const activeFiltersCount = computed(() => {
   return Object.entries(filters.value).filter(
@@ -252,12 +377,11 @@ const resetFilters = () => {
     feedback_type: "system",
     status: null,
     category: null,
+    start_date: null,
+    end_date: null,
   };
-  fetchFeedbacks();
-};
-
-const applyFilters = () => {
-  fetchFeedbacks();
+  dateError.value = null;
+  // No need to call fetchFeedbacks here; watch will handle it
 };
 
 const getStatusColor = (status: string) => {
@@ -266,7 +390,7 @@ const getStatusColor = (status: string) => {
     in_progress: "info",
     resolved: "success",
   };
-  return colors[status as keyof typeof colors];
+  return colors[status as keyof typeof colors] || "gray";
 };
 
 const getCategoryColor = (category: string) => {
@@ -277,10 +401,12 @@ const getCategoryColor = (category: string) => {
     user_interface: "info",
     others: "secondary",
   };
-  return colors[category as keyof typeof colors];
+  return colors[category as keyof typeof colors] || "gray";
 };
 
 const fetchFeedbacks = async () => {
+  if (!validateDateRange()) return; // Skip fetch if date range is invalid
+
   loading.value = true;
   try {
     const filterParams = {
@@ -306,6 +432,18 @@ const fetchFeedbacks = async () => {
   }
 };
 
+// Debounced fetchFeedbacks function
+const debouncedFetchFeedbacks = debounce.useDebounceFn(fetchFeedbacks, 500);
+
+// Watch filters object deeply and apply debounced fetch
+watch(
+  () => filters.value,
+  () => {
+    debouncedFetchFeedbacks();
+  },
+  { deep: true }
+);
+
 const headers = [
   { title: "User", key: "student_name", align: "start" as const },
   { title: "Feedback Title", key: "title" },
@@ -318,7 +456,7 @@ const headers = [
 ];
 
 onMounted(() => {
-  fetchFeedbacks();
+  fetchFeedbacks(); // Initial fetch without debounce
 });
 </script>
 
@@ -326,6 +464,14 @@ onMounted(() => {
 :deep(.v-field__input) {
   padding-top: 8px !important;
   padding-bottom: 8px !important;
+}
+
+:deep(.v-field--focused) {
+  border-color: rgb(var(--v-theme-primary)) !important;
+}
+
+:deep(.v-field:hover) {
+  border-color: rgb(var(--v-theme-primary-lighten-1)) !important;
 }
 
 :deep(.v-data-table) {
@@ -341,9 +487,38 @@ onMounted(() => {
   font-weight: 600 !important;
   text-transform: none !important;
   white-space: nowrap;
+  letter-spacing: 0 !important;
 }
 
 :deep(.v-data-table-footer) {
   background-color: rgb(249, 250, 251);
+}
+
+:deep(.v-btn) {
+  letter-spacing: 0 !important;
+}
+
+:deep(.v-list-item:hover) {
+  background-color: rgba(var(--v-theme-primary), 0.04) !important;
+}
+
+:deep(.v-data-table__tr:hover) {
+  background-color: rgba(var(--v-theme-primary), 0.04) !important;
+}
+
+:deep(.v-card) {
+  transition: all 0.2s ease;
+}
+
+:deep(.v-chip) {
+  font-weight: 500;
+}
+
+:deep(.v-chip:hover) {
+  transform: translateY(-1px);
+}
+
+:deep(.v-pagination) {
+  margin-top: 16px;
 }
 </style>

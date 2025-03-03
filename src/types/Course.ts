@@ -35,6 +35,7 @@ export interface CreateCourseRequest {
   courseID: string
   startDate: Date
   endDate: Date
+  class_name: string
 }
 
 export interface CoursesListDashBoardRequest {
@@ -60,6 +61,7 @@ export interface CoursesAdminListResponse {
   status: string;
   nCredit: number;
   nSemester: number;
+  class_name: string;
 }
 
 export interface CoursesAdminListPaginatedResponse {
@@ -240,4 +242,11 @@ export interface PutLessonResponse {
   description?: string;
   order: number;
   learningOutcomes?: string[];
+}
+
+//---------------------------------Admin---------------------------------
+export interface GetAvailableCourses{
+  courseID: string;
+  name: string;
+  nCredit: number;
 }
