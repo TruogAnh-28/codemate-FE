@@ -3,6 +3,8 @@
     <CourseBanner
       v-if="course"
       :course="course"
+      :canEditImage="true" 
+      @update-image="handleImageUpload"
     />
 
     <v-tabs
@@ -62,7 +64,7 @@ defineProps<{
   activeTab: string;
   tabs: Tab[];
 }>();
-const role = computed(() => useAuthStore().getUser().role);
+const role = computed(() => useAuthStore().user?.role);
 const isStudent = computed(() => role.value === 'student');
 const isProfessor = computed(() => role.value === 'professor');
 function isCourseDetailResponse(course: any): course is CourseDetailResponse {
@@ -85,4 +87,7 @@ const handleTabUpdate = (value: unknown) => {
     emit('update:active-tab', value);
   }
 };
+const handleImageUpload = async () => {
+
+}
 </script>

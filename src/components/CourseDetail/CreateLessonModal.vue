@@ -1,7 +1,6 @@
 <template>
   <v-card class="pa-4">
     <div class="d-flex align-center mb-4">
-      
       <v-icon size="32" class="mr-2">mdi-book-education-outline</v-icon>
       <div>
         <h2 class="text-h6 mb-1">Course: {{courseName}}</h2>
@@ -44,7 +43,7 @@
       </div>
 
       <!-- Learning Outcomes Section -->
-      <div v-for="(outcome, index) in learningOutcomes" :key="index" class="mb-4">
+      <div v-for="(outcome, index) in learningOutcomes" :key="`outcome-${index}`" class="mb-4">
         <div class="d-flex align-center mb-1">
           <span>LsO:</span>
           <v-spacer></v-spacer>
@@ -78,7 +77,27 @@
 
       <div class="upload-area pa-8 text-center rounded-lg bg-grey-lighten-4 mb-4">
         <Uploader v-model="files" />
-         
+        
+        <!-- Document Description Inputs -->
+        <div v-if="files.length > 0" class="mt-4">
+          <div class="text-subtitle-1 mb-2">Document Descriptions</div>
+          <v-card variant="outlined" class="pa-3">
+            <div v-for="(file, index) in files" :key="`file-${index}`" class="mb-3">
+              <div class="d-flex align-center mb-1">
+                <v-icon size="small" class="mr-2">mdi-file-document-outline</v-icon>
+                <span class="text-caption text-truncate">{{ file.name }}</span>
+              </div>
+              <v-text-field
+                v-model="documentDescriptions[index]"
+                placeholder="Enter description for this document"
+                variant="outlined"
+                density="compact"
+                hide-details
+                class="mt-1"
+              ></v-text-field>
+            </div>
+          </v-card>
+        </div>
       </div>
 
       <v-btn
@@ -96,7 +115,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed } from 'vue';
+import { ref, computed, watch, inject } from 'vue';
 import { lessonService } from '@/services/Professor/LessonServices';
 import type { CreateNewLessonRequest } from '@/types/Course';
 
@@ -115,6 +134,7 @@ const loading = ref(false);
 const files = ref<File[]>([]);
 const form = ref<any>(null);
 const learningOutcomes = ref<LearningOutcome[]>([{ value: '' }]);
+const documentDescriptions = ref<string[]>([]);
 
 const showError = inject('showError') as (message: string) => void;
 const showSuccess = inject('showSuccess') as (message: string) => void;
@@ -125,8 +145,24 @@ const lessonData = ref<CreateNewLessonRequest>({
   courseId: props.courseId,
   order: 0,
   learningOutcomes: [],
-  documents: []
+  documents: [],
+  documentDescriptions: []
 });
+
+// Watch for changes in the files array to adjust the documentDescriptions array
+watch(files, (newFiles) => {
+  // Ensure documentDescriptions has an entry for each file
+  if (newFiles.length > documentDescriptions.value.length) {
+    // Add empty descriptions for new files
+    const diff = newFiles.length - documentDescriptions.value.length;
+    for (let i = 0; i < diff; i++) {
+      documentDescriptions.value.push('');
+    }
+  } else if (newFiles.length < documentDescriptions.value.length) {
+    // Remove descriptions for removed files
+    documentDescriptions.value = documentDescriptions.value.slice(0, newFiles.length);
+  }
+}, { deep: true });
 
 const isValid = computed(() => {
   return lessonData.value.title.trim() !== '' && 
@@ -158,7 +194,8 @@ const handleSubmit = async () => {
       learningOutcomes: learningOutcomes.value
         .filter(outcome => outcome.value.trim() !== '')
         .map(outcome => outcome.value),
-      documents: documents
+      documents: documents,
+      documentDescriptions: documentDescriptions.value
     };
 
     await lessonService.fetchLessonProfessor(

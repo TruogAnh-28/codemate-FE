@@ -39,27 +39,23 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, computed } from "vue";
 import LearningOutcomesModal from "./LearningOutcomesModal.vue";
 
-const props = defineProps({
-  outcomes: {
-    type: Array,
-    required: true,
-  },
-  nameCourse: {
-    type: String,
-    required: true,
-  },
-});
+interface LearningOutcomesProps {
+  outcomes: string[];
+  nameCourse: string;
+}
+
+const props = defineProps<LearningOutcomesProps>();
 
 const maxDisplay = 2;
-const isModalOpen = ref(false);
+const isModalOpen = ref<boolean>(false);
 
-const displayedOutcomes = computed(() => props.outcomes.slice(0, maxDisplay));
+const displayedOutcomes = computed<string[]>(() => props.outcomes.slice(0, maxDisplay));
 
-const openModal = () => {
+const openModal = (): void => {
   isModalOpen.value = true;
 };
 </script>

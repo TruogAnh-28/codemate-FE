@@ -84,11 +84,13 @@ export enum QuestionType {
   CaseStudy = "case_study",
   Other = "other"
 }
-export interface QuestionModel {
+export interface QuizModal {
   question: string;
   answer: string[];
   options: string[];
+  feedback: string;
   type: QuestionType;
+  difficulty: DifficultyLevel;
   score: number;
 }
 
@@ -104,28 +106,46 @@ export interface CodeModel {
 export interface ExerciseQuizRequest {
   name: string;
   description?: string;
-  deadline?: DateTimeString;
-  time?: number;
   topic?: string;
-  difficulty: DifficultyLevel;
-  questions: QuestionModel[];
+  questions: QuizModal[];
   max_score?: number;
   type: ExerciseType;
+  time_open?: DateTimeString;
+  time_close?: DateTimeString;
+  time_limit?: number;
+  attempts_allowed?: number;
+  grading_method: GradingMethodType;
+  shuffle_questions?: boolean;
+  shuffle_answers?: boolean;
+  review_after_completion?: boolean;
+  show_correct_answers?: boolean;
+  penalty_per_attempt?: number;
+  pass_mark?: number;
   course_id: UUID;
 }
+
 export interface ExerciseQuizResponse {
   exercise_id: UUID;
+  course_id: UUID;
   name: string;
   description?: string;
-  deadline?: DateTimeString;
-  time?: number;
   topic?: string;
-  difficulty: DifficultyLevel;
-  questions: QuestionModel[];
+  questions: QuizModal[];
   max_score?: number;
   type: ExerciseType;
-  course_id: UUID;
+  time_open?: DateTimeString;
+  time_close?: DateTimeString;
+  time_limit?: number;
+  attempts_allowed?: number;
+  grading_method: GradingMethodType;
+  shuffle_questions?: boolean;
+  shuffle_answers?: boolean;
+  review_after_completion?: boolean;
+  show_correct_answers?: boolean;
+  penalty_per_attempt?: number;
+  pass_mark?: number;
 }
+
 
 export interface ExerciseCodeResponse {
   exercise_id: UUID;

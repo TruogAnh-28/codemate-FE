@@ -157,7 +157,7 @@ const closeQuizModal = () => {
   selectedExercise.value = null;
 };
 
-const handleQuizSubmit = async (data: ExerciseQuizResponse) => {
+const handleQuizSubmit = async (data: ExerciseQuizRequest) => {
   if (selectedExercise.value) {
     try {
       const response = await exercisesService.editExerciseQuiz(

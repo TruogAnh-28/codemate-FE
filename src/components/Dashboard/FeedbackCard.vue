@@ -127,7 +127,7 @@ import { CreateFeedbackRequest } from "@/types/Feedback";
 import { FeedbackCategory } from "@/utils/constant";
 import { useAuthStore } from "@/stores/auth";
 
-const role = computed(() => useAuthStore().getUser().role);
+const role = computed(() => useAuthStore().user?.role);
 interface Props {
   type: "system" | "course";
 }

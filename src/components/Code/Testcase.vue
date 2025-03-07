@@ -62,36 +62,45 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { DEFAULT_TEST_INPUT } from '@/constants/templateProblem';
 
-const props = defineProps({
-  initialTab: {
-    type: String,
-    default: 'testcase'
-  },
-  result: {
-    type: String,
-    default: ''
-  }
+interface TestInput {
+  nums: string;
+  target: string;
+  [key: string]: string;
+}
+
+interface TestCasePanelProps {
+  initialTab?: string;
+  result?: string;
+}
+
+const props = withDefaults(defineProps<TestCasePanelProps>(), {
+  initialTab: 'testcase',
+  result: ''
 });
 
-const emit = defineEmits(['update:tab', 'update:input']);
+const emit = defineEmits<{
+  (e: 'update:tab', tab: string): void;
+  (e: 'update:input', input: TestInput): void;
+  (e: 'toggle', isExpanded: boolean): void;
+}>();
 
-const testTab = ref(props.initialTab);
-const testResult = ref(props.result);
-const localInput = ref({...DEFAULT_TEST_INPUT});
-const isExpanded = ref(true);
-const testCasesHeight = ref('300px');
+const testTab = ref<string>(props.initialTab);
+const testResult = ref<string>(props.result);
+const localInput = ref<TestInput>({...DEFAULT_TEST_INPUT});
+const isExpanded = ref<boolean>(true);
+const testCasesHeight = ref<string>('300px');
 
 // Toggle test cases visibility
-const toggleTestCases = () => {
+const toggleTestCases = (): void => {
   isExpanded.value = !isExpanded.value;
   emit('toggle', isExpanded.value);
 };
 
 // Update parent component with input changes
-const updateInput = () => {
+const updateInput = (): void => {
   emit('update:input', localInput.value);
 };
 

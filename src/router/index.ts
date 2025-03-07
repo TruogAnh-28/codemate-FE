@@ -171,7 +171,7 @@ const ProfessorRoutes = [
     meta: { requiresAuth: true, role: "professor" },
   },
   {
-    path: "/professor-courselist/course/:id",
+    path: "/professor-courselist/courses/:id",
     name: "ProfessorCourseDetail",
     component: () => import("@/pages/Course/CourseDetail/Professor.vue"),
     props: true,
@@ -196,7 +196,7 @@ const ProfessorRoutes = [
     meta: { requiresAuth: true, role: "professor" },
   },
   {
-    path: "/courses/:id/exercise-quiz",
+    path: "/courses/:courseId/exercise-quiz",
     name: "ExerciseQuiz",
     component: () => import("@/pages/ExerciseQuiz/index.vue"),
     meta: { requiresAuth: true, role: "professor" },

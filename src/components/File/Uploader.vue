@@ -113,30 +113,24 @@
   </div>
 </template>
 
-<script setup>
-import { ref, watch, onBeforeUnmount, onMounted } from 'vue';
+<script setup lang="ts">
 
-const props = defineProps({
-  modelValue: {
-    type: Array,
-    default: () => []
-  }
-});
+const emit = defineEmits<{
+  (e: 'update:modelValue', files: File[]): void
+}>();
 
-const emit = defineEmits(['update:modelValue']);
-
-const fileInput = ref(null);
-const previewFrame = ref(null);
-const isDragging = ref(false);
-const files = ref([]);
-const showPreview = ref(false);
-const previewUrl = ref('');
-const canPreviewInBrowser = ref(true);
-const isFullscreen = ref(false);
-const currentFile = ref(null);
+const fileInput = ref<HTMLInputElement | null>(null);
+const previewFrame = ref<HTMLIFrameElement | null>(null);
+const isDragging = ref<boolean>(false);
+const files = ref<File[]>([]);
+const showPreview = ref<boolean>(false);
+const previewUrl = ref<string>('');
+const canPreviewInBrowser = ref<boolean>(true);
+const isFullscreen = ref<boolean>(false);
+const currentFile = ref<File | null>(null);
 
 // Allowed file types and their extensions
-const allowedTypes = {
+const allowedTypes: Record<string, string> = {
   'application/pdf': 'pdf',
   'application/msword': 'doc',
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
@@ -151,18 +145,23 @@ watch(files, (newFiles) => {
   emit('update:modelValue', newFiles);
 }, { deep: true });
 
-const handleFileSelect = (event) => {
-  const newFiles = Array.from(event.target.files);
-  addFiles(newFiles);
+const handleFileSelect = (event: Event): void => {
+  const input = event.target as HTMLInputElement;
+  if (input.files) {
+    const newFiles = Array.from(input.files);
+    addFiles(newFiles);
+  }
 };
 
-const handleDrop = (event) => {
+const handleDrop = (event: DragEvent): void => {
   isDragging.value = false;
-  const newFiles = Array.from(event.dataTransfer.files);
-  addFiles(newFiles);
+  if (event.dataTransfer?.files) {
+    const newFiles = Array.from(event.dataTransfer.files);
+    addFiles(newFiles);
+  }
 };
 
-const addFiles = (newFiles) => {
+const addFiles = (newFiles: File[]): void => {
   const validFiles = newFiles.filter(file => {
     const isValidType = Object.keys(allowedTypes).includes(file.type);
     if (!isValidType) {
@@ -178,13 +177,13 @@ const addFiles = (newFiles) => {
   files.value = [...files.value, ...validFiles];
 };
 
-const removeFile = (index) => {
+const removeFile = (index: number): void => {
   files.value = files.value.filter((_, i) => i !== index);
 };
 
-const getFileIconColor = (file) => {
-  const extension = file.name.split('.').pop().toLowerCase();
-  const colors = {
+const getFileIconColor = (file: File): string => {
+  const extension = file.name.split('.').pop()?.toLowerCase() || '';
+  const colors: Record<string, string> = {
     pdf: 'text-red-500',
     doc: 'text-blue-500',
     docx: 'text-blue-500',
@@ -197,7 +196,7 @@ const getFileIconColor = (file) => {
   return colors[extension] || 'text-gray-500';
 };
 
-const formatFileSize = (bytes) => {
+const formatFileSize = (bytes: number): string => {
   if (bytes === 0) return '0 Bytes';
   const k = 1024;
   const sizes = ['Bytes', 'KB', 'MB', 'GB'];
@@ -205,14 +204,14 @@ const formatFileSize = (bytes) => {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 };
 
-const previewFile = (file) => {
+const previewFile = (file: File): void => {
   currentFile.value = file;
   previewUrl.value = URL.createObjectURL(file);
   canPreviewInBrowser.value = file.type === 'application/pdf' || file.type === 'text/plain';
   showPreview.value = true;
 };
 
-const closePreview = () => {
+const closePreview = (): void => {
   showPreview.value = false;
   isFullscreen.value = false;
   URL.revokeObjectURL(previewUrl.value);
@@ -220,17 +219,17 @@ const closePreview = () => {
   currentFile.value = null;
 };
 
-const toggleFullscreen = async () => {
-  if (!document.fullscreenElement) {
+const toggleFullscreen = async (): Promise<void> => {
+  if (!document.fullscreenElement && previewFrame.value) {
     await previewFrame.value.requestFullscreen();
     isFullscreen.value = true;
-  } else {
+  } else if (document.fullscreenElement) {
     await document.exitFullscreen();
     isFullscreen.value = false;
   }
 };
 
-const handleFullscreenChange = () => {
+const handleFullscreenChange = (): void => {
   isFullscreen.value = !!document.fullscreenElement;
 };
 
@@ -245,8 +244,8 @@ onBeforeUnmount(() => {
   document.removeEventListener('fullscreenchange', handleFullscreenChange);
 });
 
-const openFileDialog = () => {
-  fileInput.value.click();
+const openFileDialog = (): void => {
+  fileInput.value?.click();
 };
 </script>
 

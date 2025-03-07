@@ -72,7 +72,7 @@ type CourseProps = {
 
 const props = defineProps<CourseProps>();
 
-const role = computed(() => useAuthStore().getUser().role);
+const role = computed(() => useAuthStore().user?.role);
 const isStudent = computed(() => role.value === 'student');
 
 const showDocumentsModal = ref(false);

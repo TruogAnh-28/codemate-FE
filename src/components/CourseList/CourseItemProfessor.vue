@@ -14,27 +14,37 @@
         >
           <div class="d-flex p-4 gap-4 course-content">
             <div class="image-container">
-              <v-img
-                class="flex-shrink-0 course-image"
-                width="300px"
-                height="200px"
-                :src="course.image"
-                cover
-              >
-                <template v-slot:error>
-                  <CourseInitialAvatar :course-name="course.name"  />
-                </template>
-              </v-img>
+              <template v-if="course.image_url">
+                <v-img
+                  class="flex-shrink-0 course-image"
+                  width="300px"
+                  height="200px"
+                  :src="course.image_url"
+                  cover
+                >
+                  <template v-slot:error>
+                    <CourseInitialAvatar :course-name="course.name" />
+                  </template>
+                </v-img>
+              </template>
+              <template v-else>
+                <CourseInitialAvatar :course-name="course.name" />
+              </template>
             </div>
-
             <div class="flex-grow-1 middle-content">
               <div class="mb-4 course-header">
                 <h3
                   class="text-body-large-1 font-bold text-wrap mb-1 course-title"
                 >
+                  [{{course.nSemester}}]
                   {{ course.name }}
+                  ({{course.courseID}})
                 </h3>
-
+                <h3
+                  class="text-body-large-1 text-wrap mb-1"
+                >
+                  [{{course.class_name}}]
+                </h3>
                 <p
                   v-if="
                     course.start_date !== 'None' && course.end_date !== 'None'
@@ -89,7 +99,7 @@
             <!-- View Course Button with hover effect -->
             <v-btn
               color="secondary"
-              :to="`/professor-courselist/course/${course.id}`"
+              :to="`/professor-courselist/courses/${course.id}`"
               rounded
               class="view-button"
             >

@@ -6,7 +6,7 @@ import {
   GetCourseDetailProfessorResponse,
   ProfessorInformation,
   PutLearningOutcomesCoursesResponse,
-  GetCoursesTitle
+  GetCoursesTitle,
 } from "@/types/Course";
 import {GetExercisesList} from "@/types/Exercise";
 import { ExerciseCodeResponse, ExerciseQuizResponse, ExerciseQuizRequest } from "@/types/Exercise";
@@ -71,7 +71,7 @@ export const coursesService = {
 
   async postExerciseQuiz(
     { showError, showSuccess }: AuthConfig,
-    payload: ExerciseQuizResponse
+    payload: ExerciseQuizRequest
   ) {
     return await ApiService.post<ExerciseQuizResponse>(
       `exercises/quizzes`,
@@ -98,6 +98,21 @@ export const coursesService = {
       `exercises/code`,
       payload,
       { showError, showSuccess }
+    );
+  },
+  async changImageCourse(
+    { showError, showSuccess }: AuthConfig,
+    course_id: string,
+    image_file: File
+  ){
+    const formData = new FormData();
+    formData.append('file', image_file);
+    return await ApiService.update<IResponseData<{image_url: string}>>(
+      `courses/${course_id}/image`,
+      "",
+      formData,
+      { showError, showSuccess }
+     
     );
   }
 };

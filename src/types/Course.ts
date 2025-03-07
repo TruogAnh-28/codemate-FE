@@ -105,7 +105,11 @@ export interface CourseDetailResponse {
   course_end_date: DateString
   course_learning_outcomes: string[]
   course_status: Status
-  course_image: string
+  course_image_url: string
+  course_nCredit: number;
+  course_nSemester: number;
+  course_courseID: string;
+  course_class_name: string;
   course_percentage_complete: string
   course_last_accessed: DateTimeString
   completed_lessons: number
@@ -135,7 +139,7 @@ export interface DocumentOriginalResponse {
   name: string
   description: string
   type: DocumentType
-  url: string
+  document_url: string
 }
 
 
@@ -160,7 +164,7 @@ export interface GetDocumentsProfessor {
   id: UUID;
   name: string;
   type: DocumentType;
-  url: string;
+  document_url: string;
 }
 
 export interface GetExercisesProfessor {
@@ -187,7 +191,11 @@ export interface GetProfessorCoursesResponse {
   learning_outcomes: string[];
   professor: ProfessorInformation;
   status: Status;
-  image: string;
+  image_url: string;
+  nSemester: number;
+  nCredit: number;
+  courseID: string;
+  class_name: string;
 }
 
 export interface GetProfessorCoursesPaginatedResponse {
@@ -219,10 +227,11 @@ export interface GetCourseDetailProfessorResponse {
   course_learning_outcomes: string[];
   course_professor: ProfessorInformation;
   course_status: Status;
-  course_image: string;
+  course_image_url: string;
   course_nCredit: number;
   course_nSemester: number;
   course_courseID: string;
+  course_class_name: string;
   nStudents: number;
   nLessons: number;
   nExercises: number;
@@ -251,6 +260,7 @@ export interface CreateNewLessonRequest {
   order: number;
   learningOutcomes?: string[];
   documents?: File[];
+  documentDescriptions?: string[];
 }
 
 export interface PutLessonResponse {
