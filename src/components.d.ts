@@ -47,6 +47,7 @@ declare module 'vue' {
     FeatureCard: typeof import('./components/Login/FeatureCard.vue')['default']
     FeedbackCard: typeof import('./components/Dashboard/FeedbackCard.vue')['default']
     FeedbackLesson: typeof import('./components/CourseDetail/FeedbackLesson.vue')['default']
+    FeedbackRateDialog: typeof import('./components/Feedback/FeedbackRateDialog.vue')['default']
     GeneralSection: typeof import('./components/Exercise/GeneralSection.vue')['default']
     GetGoalsModal: typeof import('./components/CourseDetail/GetGoalsModal.vue')['default']
     GoogleLoginButton: typeof import('./components/Login/GoogleLoginButton.vue')['default']

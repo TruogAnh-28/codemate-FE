@@ -3,7 +3,7 @@
     <v-container fluid class="px-6">
       <!-- Title Section with Animation -->
       <div class="mb-6">
-        <h1 class="text-2xl font-semibold mb-2 animate-fade-in">Dashboard Overview</h1>
+        <h1 class="text-2xl font-semibold mb-2 animate-fade-in gradient-text">Dashboard Overview</h1>
         <p class="text-gray-500 dark:text-gray-400">Welcome to your admin dashboard</p>
       </div>
 
@@ -36,7 +36,7 @@
             icon-bg="bg-secondary"
           />
         </v-col>
-        <v-col cols="12" md="6" lg="4" class="d-flex">
+        <!-- <v-col cols="12" md="6" lg="4" class="d-flex">
           <SumCard
             title="Active Sessions"
             :content="2456"
@@ -45,7 +45,7 @@
             color="success"
             icon-bg="bg-success"
           />
-        </v-col>
+        </v-col> -->
       </v-row>
 
       <!-- Charts Section -->
@@ -53,7 +53,7 @@
         <v-col cols="12" lg="8">
           <SparklineChart />
         </v-col>
-        <v-col cols="12" lg="4">
+        <!-- <v-col cols="12" lg="4">
           <v-card class="h-100">
             <v-card-title class="d-flex align-center justify-space-between pa-4">
               <span class="text-h6">Quick Stats</span>
@@ -74,7 +74,7 @@
               </v-list>
             </v-card-text>
           </v-card>
-        </v-col>
+        </v-col> -->
       </v-row>
     </v-container>
   </v-layout>

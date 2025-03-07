@@ -43,8 +43,12 @@ const router = useRouter();
 
 const userInfo = authStore.user;
 const showSuccess = inject("showSuccess") as (message: string) => void;
-const handleLogout = () => {
+import { nextTick } from "vue";
+
+const handleLogout = async () => {
+  const authStore = useAuthStore();
   authStore.logout();
+  await nextTick();
   router.push("/login");
   showSuccess("Logged out successfully");
 };

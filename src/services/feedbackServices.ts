@@ -16,6 +16,8 @@ interface GetFeedbackParams {
   feedback_type?: 'system' | 'course';
   status?: 'pending' | 'in_progress' | 'resolved';
   category?: 'user_interface' | 'feature_request' | 'bug_report' | 'performance' | 'others';
+  start_date?: string;
+  end_date?: string;
 }
 
 export const feedbackServices = {

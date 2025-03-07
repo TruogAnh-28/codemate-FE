@@ -13,9 +13,7 @@
     <v-card-text class="relative z-10 p-6">
       <div class="space-y-4">
         <div class="space-y-1">
-          <h2 class="text-heading-1 font-semibold text-gray-800">
-            Welcome back,
-          </h2>
+          <h2 class="text-heading-1 font-semibold text-gray-800">Welcome back,</h2>
           <p class="text-heading-4 text-blue-600 font-medium">
             {{ studentName }}
           </p>
@@ -51,7 +49,7 @@ const recentCourse = ref<GetRecentCourseResponse>({
   course_id: "",
   last_accessed: "",
 });
-const studentName = useAuthStore().user?.name;
+const studentName = useAuthStore().userName;
 const fetchRecentCourse = async () => {
   const response = await dashboardService.fetchRecentCourse({
     showError,
