@@ -4,29 +4,76 @@
       <!-- Header Section -->
       <div class="mx-auto mb-6 max-w-7xl">
         <div class="d-flex align-center justify-space-between">
-          <h1 class="text-h4 font-weight-bold">Course Management</h1>
-          <div class="d-flex align-center gap-4">
-            <v-text-field
-              v-model="searchQuery"
-              placeholder="Search by course name"
-              variant="outlined"
-              density="comfortable"
-              hide-details
-              class="rounded-lg w-80"
-              prepend-inner-icon="mdi-magnify"
-              clearable
-            ></v-text-field>
-            <v-btn
-              color="primary"
-              prepend-icon="mdi-plus"
-              :to="'/add-course'"
-              class="px-6"
-            >
-              Add Course
-            </v-btn>
-          </div>
+          <h1 class="text-h4 font-weight-bold gradient-text">Course Management</h1>
+          <v-btn color="primary" prepend-icon="mdi-plus" :to="'/add-course'" class="px-6">
+            Add Course
+          </v-btn>
         </div>
       </div>
+
+      <!-- Filter Section -->
+      <v-card class="max-w-7xl mx-auto mb-6 rounded-xl" elevation="1">
+        <v-card-text>
+          <v-row class="align-center">
+            <v-col cols="12" sm="6" md="3">
+              <v-text-field
+                v-model="searchQuery"
+                placeholder="Search by course name or ID"
+                variant="outlined"
+                density="comfortable"
+                hide-details
+                prepend-inner-icon="mdi-magnify"
+                clearable
+                label="Search"
+              ></v-text-field>
+            </v-col>
+            <v-col cols="12" sm="6" md="2">
+              <v-select
+                v-model="filterCredit"
+                :items="[1, 2, 3, 4, 5]"
+                label="Credits"
+                variant="outlined"
+                density="comfortable"
+                hide-details
+                clearable
+              ></v-select>
+            </v-col>
+            <v-col cols="12" sm="6" md="2">
+              <v-text-field
+                v-model="filterSemester"
+                label="Semester"
+                variant="outlined"
+                density="comfortable"
+                hide-details
+                clearable
+                type="number"
+              ></v-text-field>
+            </v-col>
+            <v-col cols="12" sm="6" md="2">
+              <v-text-field
+                v-model="filterStartDate"
+                label="Start Date"
+                variant="outlined"
+                density="comfortable"
+                hide-details
+                clearable
+                type="date"
+              ></v-text-field>
+            </v-col>
+            <v-col cols="12" sm="6" md="2">
+              <v-text-field
+                v-model="filterEndDate"
+                label="End Date"
+                variant="outlined"
+                density="comfortable"
+                hide-details
+                clearable
+                type="date"
+              ></v-text-field>
+            </v-col>
+          </v-row>
+        </v-card-text>
+      </v-card>
 
       <!-- Data Table -->
       <v-card class="max-w-7xl mx-auto rounded-xl" elevation="1">
@@ -60,8 +107,7 @@
                   hide-details
                   class="w-20"
                   @update:model-value="handlePageSizeChange"
-                >
-                </v-select>
+                ></v-select>
               </div>
               <v-pagination
                 v-model="currentPage"
@@ -77,107 +123,23 @@
           </template>
         </v-data-table>
       </v-card>
-
-      <!-- Add Course Dialog -->
-      <v-dialog v-model="showAddDialog" max-width="600px">
-        <v-card>
-          <v-card-title class="text-h5 pa-6">Add New Course</v-card-title>
-          <v-card-text>
-            <v-form ref="form" @submit.prevent="handleSubmit">
-              <v-container>
-                <v-row>
-                  <v-col cols="12">
-                    <v-text-field
-                      v-model="newCourse.name"
-                      label="Course Name"
-                      required
-                      variant="outlined"
-                    ></v-text-field>
-                  </v-col>
-                  <v-col cols="12">
-                    <v-text-field
-                      v-model="newCourse.description"
-                      label="Description"
-                      variant="outlined"
-                    ></v-text-field>
-                  </v-col>
-                  <v-col cols="12">
-                    <v-select
-                      v-model="newCourse.status"
-                      :items="['active', 'inactive', 'draft']"
-                      label="Status"
-                      required
-                      variant="outlined"
-                    ></v-select>
-                  </v-col>
-                </v-row>
-              </v-container>
-            </v-form>
-          </v-card-text>
-          <v-card-actions class="pa-6">
-            <v-spacer></v-spacer>
-            <v-btn color="grey-darken-1" variant="text" @click="showAddDialog = false">
-              Cancel
-            </v-btn>
-            <v-btn color="primary" @click="handleSubmit" :loading="submitting">
-              Save Course
-            </v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
     </v-main>
   </v-layout>
 </template>
 
 <script setup lang="ts">
-import { coursesService } from "@/services/courseslistServices";
+import { ref, onMounted, watch } from "vue";
+import { coursesService, PaginationParams } from "@/services/courseslistServices";
 import debounce from "@/composables/useDebounce";
 import { CoursesAdminListResponse } from "@/types/Course";
-import type { VForm } from "vuetify/components";
+import { AuthConfig } from "@/services/authenServices";
 
-interface NewCourse {
-  name: string;
-  description: string;
-  status: "active" | "inactive" | "draft";
-}
-
-const form = ref<VForm | null>(null);
-const submitting = ref(false);
-const showAddDialog = ref(false);
-
-const newCourse = ref<NewCourse>({
-  name: "",
-  description: "",
-  status: "draft",
-});
-
-const openAddCourseDialog = () => {
-  showAddDialog.value = true;
-};
-
-const handleSubmit = async () => {
-  const isValid = await form.value?.validate();
-
-  if (!isValid) return;
-
-  try {
-    submitting.value = true;
-    // Implement your submit logic here
-    // await addCourse(newCourse.value)
-
-    showAddDialog.value = false;
-    // Reset form
-    newCourse.value = {
-      name: "",
-      description: "",
-      status: "draft",
-    };
-  } catch (error) {
-    console.error("Error adding course:", error);
-  } finally {
-    submitting.value = false;
-  }
-};
+// Filter variables
+const searchQuery = ref("");
+const filterCredit = ref<number | undefined>(undefined);
+const filterSemester = ref<string>("");
+const filterStartDate = ref<string>("");
+const filterEndDate = ref<string>("");
 
 const courses = ref<CoursesAdminListResponse[]>([]);
 const loading = ref(false);
@@ -186,26 +148,10 @@ const pageSize = ref(10);
 const totalRows = ref(0);
 const totalPages = ref(0);
 
-// Create a debounced search query
-const searchQuery = ref("");
-const debouncedSearchQuery = computed(() => debounce.useDebounce(searchQuery.value, 500));
-
-// Watch for changes in the debounced search query.
-watch(debouncedSearchQuery, () => {
-  currentPage.value = 1; // Reset to first page when searching
-  fetchCourses();
-});
-
-watch(searchQuery, () => {
-  if (searchQuery.value === "") {
-    currentPage.value = 1; // Reset to first page when query is cleared
-    fetchCourses();
-  }
-});
-
 const headers = [
   { title: "Course ID", key: "courseID", align: "start" as "start" },
   { title: "Name", key: "name" },
+  { title: "Class Name", key: "class_name", align: "center" as "center" },
   { title: "Credits", key: "nCredit", align: "center" as "center" },
   { title: "Semester", key: "nSemester", align: "center" as "center" },
   { title: "Start Date", key: "start_date" },
@@ -218,6 +164,9 @@ const getStatusColor = (status: string) => {
     new: "primary",
     in_progress: "warning",
     completed: "success",
+    active: "success",
+    inactive: "error",
+    draft: "grey",
   };
   return colors[status as keyof typeof colors] || "gray";
 };
@@ -239,15 +188,34 @@ const showSuccess = inject("showSuccess") as (message: string) => void;
 const fetchCourses = async () => {
   loading.value = true;
   try {
-    const params = {
+    const params: AuthConfig & PaginationParams = {
       page: currentPage.value,
       page_size: pageSize.value,
-      search_query: searchQuery.value,
       showError,
       showSuccess,
     };
 
-    const response = await coursesService.fetchAdminCoursesList(params);
+    if (searchQuery.value) {
+      params.search_query = searchQuery.value;
+    }
+
+    if (filterCredit.value !== undefined && filterCredit.value !== null) {
+      params.nCredit = filterCredit.value;
+    }
+
+    if (filterSemester.value !== "" && filterSemester.value !== null) {
+      params.nSemester = Number(filterSemester.value);
+    }
+
+    if (filterStartDate.value !== "" && filterStartDate.value !== null) {
+      params.start_date = filterStartDate.value;
+    }
+
+    if (filterEndDate.value !== "" && filterEndDate.value !== null) {
+      params.end_date = filterEndDate.value;
+    }
+
+    const response = await coursesService.fetchAdminCoursesList({ ...params });
     if (response.data) {
       courses.value = response.data.content;
       totalRows.value = response.data.totalRows;
@@ -260,8 +228,21 @@ const fetchCourses = async () => {
   }
 };
 
+// Debounced fetchCourses function
+const debouncedFetchCourses = debounce.useDebounceFn(fetchCourses, 500);
+
+// Watch all filter variables and reset to page 1 on change
+watch(
+  [searchQuery, filterCredit, filterSemester, filterStartDate, filterEndDate],
+  () => {
+    currentPage.value = 1; // Reset to page 1 on filter change
+    debouncedFetchCourses();
+  },
+  { deep: true }
+);
+
 onMounted(() => {
-  fetchCourses();
+  fetchCourses(); // Initial fetch without debounce
 });
 </script>
 

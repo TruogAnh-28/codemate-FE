@@ -76,3 +76,14 @@
     --ring: 210 100% 70%; /* Bright blue */
   }
 }
+
+.gradient-text {
+  background: linear-gradient(
+    45deg,
+    rgb(var(--v-theme-primary)),
+    rgb(var(--v-theme-secondary))
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+}

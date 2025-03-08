@@ -93,7 +93,8 @@ import { authenService } from "@/services/authenServices";
 import { useAuthStore } from "@/stores/auth";
 import { EMAIL_PATTERN, PASSWORD_PATTERN } from "@/utils/constant";
 import type { LoginSuccessResponse } from "@/types/Auth";
-import ApiService from "@/common/api.service";
+import ApiService, { PUBLIC_ROUTES } from "@/common/api.service";
+import { usersService } from "@/services/usersServices";
 
 const email = ref("");
 const password = ref("");
@@ -154,11 +155,13 @@ const handleSuccessfulLogin = (data: LoginSuccessResponse) => {
   };
 
   authStore.setUser(userInfo);
+  authStore.isAuthenticated = true;
   authStore.setTokens(data.access_token, data.refresh_token);
 
   const redirectUrl = sessionStorage.getItem("redirectUrl");
-  if (redirectUrl && !ApiService.isPublicRoute(redirectUrl)) {
-    router.push(sessionStorage.getItem("redirectUrl") as string);
+  if (redirectUrl && !PUBLIC_ROUTES.includes(redirectUrl)) {
+    console.log("Redirecting to:", redirectUrl);
+    router.push(redirectUrl);
     sessionStorage.removeItem("redirectUrl");
     return;
   }
@@ -168,7 +171,9 @@ const handleSuccessfulLogin = (data: LoginSuccessResponse) => {
       student: "/dashboard",
       professor: "/professor-dashboard",
       admin: "/admin-dashboard",
-    }[data.role] || "/login";
+    }[data.role] || "/dashboard"; // Mặc định là /dashboard thay vì /
+
+  console.log("Role:", data.role, "Redirecting to:", redirectPath);
 
   if (data.role === "admin") {
     showSuccess("Admin login successfully");
@@ -177,7 +182,6 @@ const handleSuccessfulLogin = (data: LoginSuccessResponse) => {
   } else {
     showSuccess("Student login successfully");
   }
-
   router.push(redirectPath);
 };
 
@@ -210,6 +214,10 @@ const handleSubmit = async () => {
       "is_active" in responseData &&
       responseData.is_active
     ) {
+      // await usersService.createUserLogin({
+      //   user_role: responseData.role,
+      //   login_timestamp: new Date().toISOString(),
+      // });
       handleSuccessfulLogin(responseData);
     }
   } finally {

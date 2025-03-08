@@ -34,23 +34,37 @@
   </v-sheet>
 </template>
 
-<script setup>
-import { ref } from 'vue';
+<script setup lang="ts">
+import { ref, watch } from 'vue';
 import { PROBLEM_DESCRIPTION, PROBLEM_EXAMPLES, PROBLEM_CONSTRAINTS } from '@/constants/templateProblem';
 
-const props = defineProps({
-  initialTab: {
-    type: String,
-    default: 'description'
-  }
+interface ProblemExample {
+  title: string;
+  input: {
+    nums: string;
+    target: string;
+   
+  };
+  output: string;
+  explanation?: string;
+}
+
+interface ProblemDescriptionProps {
+  initialTab?: string;
+}
+
+const props = withDefaults(defineProps<ProblemDescriptionProps>(), {
+  initialTab: 'description'
 });
 
-const emit = defineEmits(['update:tab']);
+const emit = defineEmits<{
+  (e: 'update:tab', tab: string): void;
+}>();
 
-const descriptionTab = ref(props.initialTab);
-const problemDescription = ref(PROBLEM_DESCRIPTION);
-const examples = ref(PROBLEM_EXAMPLES);
-const constraints = ref(PROBLEM_CONSTRAINTS);
+const descriptionTab = ref<string>(props.initialTab);
+const problemDescription = ref<string>(PROBLEM_DESCRIPTION);
+const examples = ref<ProblemExample[]>(PROBLEM_EXAMPLES);
+const constraints = ref<string[]>(PROBLEM_CONSTRAINTS);
 
 // Watch for tab changes and emit event
 watch(descriptionTab, (newValue) => {

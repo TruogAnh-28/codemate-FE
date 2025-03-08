@@ -58,6 +58,7 @@ const handleEditorDidMount = (editorInstance) => {
 };
 
 // Run code with test case
+// Cập nhật hàm runCode
 const runCode = async () => {
   try {
     isLoading.value = true;
@@ -70,35 +71,66 @@ const runCode = async () => {
       props.testInput.target
     );
     
-    // Create submission
-    const token = await createSubmission(
-      code.value, 
-      LANGUAGE_MAP[selectedLanguage.value], 
-      stdin,
-      '[0,1]'
-    );
-    
-    // Poll for results
-    const result = await pollSubmission(token);
-    
-    // Format and emit results
-    let resultText = '';
-    if (result.status.id === 3) { // Accepted
-      resultText = `Status: ${result.status.description}\n`;
-      resultText += `Output: ${result.stdout || 'No output'}\n`;
-      resultText += `Time: ${result.time} seconds\n`;
-      resultText += `Memory: ${result.memory} KB`;
-    } else {
-      resultText = `Status: ${result.status.description}\n`;
-      if (result.stderr) {
-        resultText += `Error: ${result.stderr}\n`;
+    try {
+      // Create submission
+      const token = await createSubmission(
+        code.value, 
+        LANGUAGE_MAP[selectedLanguage.value], 
+        stdin,
+        '[0,1]'
+      );
+      
+      // Poll for results
+      const result = await pollSubmission(token);
+      
+      // Format and emit results
+      let resultText = '';
+      if (result.status.id === 3) { // Accepted
+        resultText = `Status: ${result.status.description}\n`;
+        resultText += `Output: ${result.stdout || 'No output'}\n`;
+        resultText += `Time: ${result.time} seconds\n`;
+        resultText += `Memory: ${result.memory} KB`;
+      } else {
+        resultText = `Status: ${result.status.description}\n`;
+        if (result.stderr) {
+          resultText += `Error: ${result.stderr}\n`;
+        }
+        if (result.compile_output) {
+          resultText += `Compiler output: ${result.compile_output}\n`;
+        }
       }
-      if (result.compile_output) {
-        resultText += `Compiler output: ${result.compile_output}\n`;
+      
+      emit('run-result', resultText);
+    } catch (apiError) {
+      // Xử lý lỗi API một cách chi tiết
+      if (apiError.response) {
+        // Máy chủ trả về lỗi với status code
+        const errorData = apiError.response.data;
+        let detailedError = `Error (${apiError.response.status}): `;
+        
+        if (errorData && typeof errorData === 'object') {
+          if (errorData.error) {
+            detailedError += errorData.error;
+          } else if (errorData.message) {
+            detailedError += errorData.message;
+          } else {
+            detailedError += JSON.stringify(errorData);
+          }
+        } else if (typeof errorData === 'string') {
+          detailedError += errorData;
+        } else {
+          detailedError += 'Unknown error format';
+        }
+        
+        emit('run-result', detailedError);
+      } else if (apiError.request) {
+        // Yêu cầu được gửi nhưng không nhận được phản hồi
+        emit('run-result', 'Error: No response received from server');
+      } else {
+        // Lỗi khác khi thiết lập yêu cầu
+        emit('run-result', `Error setting up request: ${apiError.message}`);
       }
     }
-    
-    emit('run-result', resultText);
   } catch (error) {
     emit('run-result', `Error running code: ${error.message}`);
   } finally {
@@ -107,7 +139,7 @@ const runCode = async () => {
   }
 };
 
-// Submit code for validation
+// Cập nhật tương tự cho hàm submitCode
 const submitCode = async () => {
   try {
     isLoading.value = true;
@@ -120,21 +152,22 @@ const submitCode = async () => {
       props.testInput.target
     );
     
-    // Create submission
-    const token = await createSubmission(
-      code.value, 
-      LANGUAGE_MAP[selectedLanguage.value], 
-      stdin,
-      '[0,1]'
-    );
-    
-    // Poll for results
-    const result = await pollSubmission(token);
-    
-    // Format and emit results
-    let resultText = '';
-    if (result.status.id === 3 && result.stdout.trim() === '[0,1]') {
-      resultText = `
+    try {
+      // Create submission
+      const token = await createSubmission(
+        code.value, 
+        LANGUAGE_MAP[selectedLanguage.value], 
+        stdin,
+        '[0,1]'
+      );
+      
+      // Poll for results
+      const result = await pollSubmission(token);
+      
+      // Format and emit results
+      let resultText = '';
+      if (result.status.id === 3 && result.stdout.trim() === '[0,1]') {
+        resultText = `
 ✅ Solution Accepted!
 Your solution passed all test cases.
 
@@ -144,9 +177,9 @@ Expected Output: [0,1]
 Your Output: ${result.stdout.trim()}
 Time: ${result.time} seconds
 Memory: ${result.memory} KB
-      `;
-    } else {
-      resultText = `
+        `;
+      } else {
+        resultText = `
 ❌ Solution Failed!
 Your solution did not pass all test cases.
 
@@ -156,10 +189,41 @@ Expected Output: [0,1]
 Your Output: ${result.stdout || 'No output'}
 Status: ${result.status.description}
 ${result.stderr ? 'Error: ' + result.stderr + '\n' : ''}
-      `;
+${result.compile_output ? 'Compiler output: ' + result.compile_output + '\n' : ''}
+        `;
+      }
+      
+      emit('submit-result', resultText);
+    } catch (apiError) {
+      // Xử lý lỗi API một cách chi tiết
+      if (apiError.response) {
+        // Máy chủ trả về lỗi với status code
+        const errorData = apiError.response.data;
+        let detailedError = `Error (${apiError.response.status}): `;
+        
+        if (errorData && typeof errorData === 'object') {
+          if (errorData.error) {
+            detailedError += errorData.error;
+          } else if (errorData.message) {
+            detailedError += errorData.message;
+          } else {
+            detailedError += JSON.stringify(errorData);
+          }
+        } else if (typeof errorData === 'string') {
+          detailedError += errorData;
+        } else {
+          detailedError += 'Unknown error format';
+        }
+        
+        emit('submit-result', detailedError);
+      } else if (apiError.request) {
+        // Yêu cầu được gửi nhưng không nhận được phản hồi
+        emit('submit-result', 'Error: No response received from server');
+      } else {
+        // Lỗi khác khi thiết lập yêu cầu
+        emit('submit-result', `Error setting up request: ${apiError.message}`);
+      }
     }
-    
-    emit('submit-result', resultText);
   } catch (error) {
     emit('submit-result', `Error submitting code: ${error.message}`);
   } finally {

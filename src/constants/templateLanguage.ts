@@ -84,16 +84,79 @@ if __name__ == "__main__":
 
 // Editor configuration options
 export const EDITOR_OPTIONS: EditorOptions = {
-  automaticLayout: true,
-  fontSize: 14,
-  minimap: { enabled: false },
-  scrollBeyondLastLine: false,
-  lineNumbers: 'on',
-  glyphMargin: true,
-  folding: true,
-  renderLineHighlight: 'all',
-  scrollbar: {
-    vertical: 'visible',
-    horizontal: 'visible'
+    // Basic layout
+    automaticLayout: true,
+    fontSize: 14,
+    fontFamily: 'Consolas, "Courier New", monospace',
+    fontLigatures: true,
+    lineHeight: 20,
+    
+    // Display features
+    minimap: { 
+      enabled: false,
+      showSlider: 'mouseover',
+      renderCharacters: true
+    },
+    scrollBeyondLastLine: false,
+    lineNumbers: 'on',
+    lineDecorationsWidth: 10,
+    glyphMargin: true,
+    folding: true,
+    foldingStrategy: 'auto',
+    
+    // Visual indicators
+    renderLineHighlight: 'all',
+    renderWhitespace: 'selection',
+    renderControlCharacters: true,
+    renderIndentGuides: true,
+    
+    // Scrolling behavior
+    scrollbar: {
+      vertical: 'visible',
+      horizontal: 'visible',
+      useShadows: true,
+      verticalScrollbarSize: 14,
+      horizontalScrollbarSize: 14
+    },
+    
+    // Editor behavior
+    cursorBlinking: 'blink',
+    cursorStyle: 'line',
+    cursorSmoothCaretAnimation: 'on',
+    mouseWheelZoom: true,
+    multiCursorModifier: 'alt',
+    
+    // Code intelligence
+    quickSuggestions: true,
+    snippetSuggestions: 'inline',
+    formatOnPaste: true,
+    formatOnType: true,
+    autoIndent: 'full',
+    
+    // Error highlighting
+    renderValidationDecorations: 'on',
+    lightbulb: { enabled: 'on' },
+    
+    // Code aesthetics
+    bracketPairColorization: { enabled: true },
+    guides: {
+      bracketPairs: true,
+      indentation: true
+    },
+    
+    // Search features
+    find: {
+      addExtraSpaceOnTop: true,
+      autoFindInSelection: 'multiline',
+      seedSearchStringFromSelection: 'selection'
+    },
+    
+    // Miscellaneous
+    links: true,
+    wordWrap: 'off',
+    tabCompletion: 'on',
+    wordBasedSuggestions: 'on',
+    accessibilitySupport: 'auto',
+    occurrencesHighlight: true,
+    selectionHighlight: true
   }
-};

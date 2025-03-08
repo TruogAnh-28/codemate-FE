@@ -82,7 +82,6 @@
  
    if (response && "data" in response && response.data) {
      courses.value = response.data as GetProfessorCoursesPaginatedResponse;
-     console.log(courses.value);
      if (
        response.data &&
        typeof response.data === "object" &&
