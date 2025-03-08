@@ -121,7 +121,7 @@ import {GetExercisesList} from "@/types/Exercise";
 const props = defineProps<{
   course: GetCourseDetailProfessorResponse;
 }>();
-
+const router = useRouter();
 const exercises = ref<GetExercisesList[]>([]);
 const deleteDialog = ref(false);
 const selectedExercise = ref<ExerciseQuizResponse | null>(null);
@@ -142,11 +142,7 @@ const viewExercise = (exercise: GetExercisesProfessor) => {
 
 const handleEditExercise = async (exercise: GetExercisesProfessor) => {
   if (exercise.type === 'quiz') {
-    const response = await exercisesService.getExerciseQuiz(
-      { showError, showSuccess },
-      exercise.id);
-    selectedExercise.value = response.data;
-    showQuizModal.value = true;
+    router.push(`/courses/${props.course.course_id}/exercise-quiz/${exercise.id}`);
   } else {
     emit('edit', exercise);
   }

@@ -206,7 +206,7 @@ const ProfessorRoutes = [
     meta: { requiresAuth: true, role: "professor" },
   },
   {
-    path: "/courses/:courseId/exercise-quiz",
+    path: "/courses/:courseId/exercise-quiz/:exerciseId?",
     name: "ExerciseQuiz",
     component: () => import("@/pages/ExerciseQuiz/index.vue"),
     meta: { requiresAuth: true, role: "professor" },

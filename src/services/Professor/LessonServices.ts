@@ -20,7 +20,9 @@ export const lessonService = {
             });
         }
         if (payload.documents) {
-            payload.documents.forEach(file => {
+            payload.documents.forEach((file, index) => {
+                const description = payload.documentDescriptions?.[index] || "";
+                formData.append("description_file", description);
                 formData.append("files", file);
             });
         }
