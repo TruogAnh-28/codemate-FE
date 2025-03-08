@@ -3,7 +3,7 @@
     <v-container>
       <div v-if="exercises.length === 0">
         <v-card-title class="text-heading-4 font-semibold">Exercises:</v-card-title>
-        <v-card-text>No lessons available</v-card-text>
+        <v-card-text>No exercises available</v-card-text>
       </div>
 
       <v-row v-for="(exercise, index) in exercises" :key="index" align="center">
@@ -112,16 +112,17 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, watchEffect } from 'vue';
+import { ref } from 'vue';
 import { GetCourseDetailProfessorResponse, GetExercisesProfessor } from "@/types/Course";
 import { ExerciseQuizResponse, ExerciseQuizRequest } from '@/types/Exercise';
 import { exercisesService } from '@/services/Professor/ExerciseServices';
-
+import { coursesService } from '@/services/Professor/CourseServices';
+import {GetExercisesList} from "@/types/Exercise";
 const props = defineProps<{
-  course: GetCourseDetailProfessorResponse|null;
+  course: GetCourseDetailProfessorResponse;
 }>();
-
-const exercises = ref<GetExercisesProfessor[]>([]);
+const router = useRouter();
+const exercises = ref<GetExercisesList[]>([]);
 const deleteDialog = ref(false);
 const selectedExercise = ref<ExerciseQuizResponse | null>(null);
 const showQuizModal = ref(false);
@@ -129,11 +130,11 @@ const showError = inject("showError") as (message: string) => void;
 const showSuccess = inject("showSuccess") as (message: string) => void;
 const emit = defineEmits(['view', 'edit', 'delete', 'update']);
 
-watchEffect(() => {
-  if (props.course?.exercises) {
-    exercises.value = props.course.exercises;
-  }
-});
+// watchEffect(() => {
+//   if (props.course?.exercises) {
+//     exercises.value = props.course.exercises;
+//   }
+// });
 
 const viewExercise = (exercise: GetExercisesProfessor) => {
   emit('view', exercise);
@@ -141,11 +142,7 @@ const viewExercise = (exercise: GetExercisesProfessor) => {
 
 const handleEditExercise = async (exercise: GetExercisesProfessor) => {
   if (exercise.type === 'quiz') {
-    const response = await exercisesService.getExerciseQuiz(
-      { showError, showSuccess },
-      exercise.id);
-    selectedExercise.value = response.data;
-    showQuizModal.value = true;
+    router.push(`/courses/${props.course.course_id}/exercise-quiz/${exercise.id}`);
   } else {
     emit('edit', exercise);
   }
@@ -156,7 +153,7 @@ const closeQuizModal = () => {
   selectedExercise.value = null;
 };
 
-const handleQuizSubmit = async (data: ExerciseQuizResponse) => {
+const handleQuizSubmit = async (data: ExerciseQuizRequest) => {
   if (selectedExercise.value) {
     try {
       const response = await exercisesService.editExerciseQuiz(
@@ -190,6 +187,19 @@ const deleteExercise = () => {
     selectedExercise.value = null;
   }
 };
+const fetchExercises = async () => {
+    const response = await coursesService.fetchExercisesTitleList(
+      { showError, showSuccess },
+      props.course.course_id
+    );
+    if (response && "data" in response && response.data  ) {
+      exercises.value = response.data as GetExercisesList[];
+      console.log("exercises:",exercises.value);
+    }
+};
+onMounted(async () => {
+  await fetchExercises();
+});
 </script>
 
 <style scoped>

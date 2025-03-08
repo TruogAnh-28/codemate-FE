@@ -43,6 +43,7 @@ export interface ExerciseStudentProgressInCourse {
 export interface StudentProgressInCourse {
     student_id: UUID
     student_name: string;
+    student_mssv: string;
     exercises: ExerciseStudentProgressInCourse[];
     learning_path?: LearningPathProgressInCourse;
     average_score: number;
@@ -60,6 +61,7 @@ export interface AnswerQuizExercise {
 export interface StudentProgressInExercise {
     student_id: UUID
     student_name: string;
+    student_mssv: string;
     score: number;
     date?: DateString;
     question_answers?: AnswerQuizExercise[];

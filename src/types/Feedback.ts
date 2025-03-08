@@ -49,4 +49,5 @@ export interface GetListFeedbackProfessorResponse {
   student_id: string;
   student_name: string;
   student_email: string;
+  student_mssv: string
 }

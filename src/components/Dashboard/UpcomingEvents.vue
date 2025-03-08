@@ -5,12 +5,11 @@
         Upcoming Events
       </h3>
     </v-card-title>
-    <v-list v-if="events.length > 0" class="max-h-96 overflow-y-auto px-2">
+    <v-list v-if="items.length > 0" class="max-h-96 overflow-y-auto px-2">
       <EventItem
-        v-for="event in events"
-        :key="event.exercise_id"
-        :title="event.exercise_name"
-        :deadline="formatDateTime(event.exercise_deadline)"
+        v-for="item in items"
+        :key="item.exercise_id"
+        :data="item"
       />
     </v-list>
     <v-card-text v-else class="p-6 text-center text-gray-500">
@@ -20,8 +19,7 @@
 </template>
 
 <script setup lang="ts">
-import { formatDateTime } from "@/utils/functions/time";
-import { Event } from "@/types/Dashboard";
-const props = defineProps<{ events: Event[] }>();
-const events = props.events;
+import { UpcomingEvent } from "@/types/Dashboard";
+const props = defineProps<{ events: UpcomingEvent[] }>();
+const items = props.events;
 </script>

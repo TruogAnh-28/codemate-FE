@@ -181,7 +181,7 @@ const ProfessorRoutes = [
     meta: { requiresAuth: true, role: "professor" },
   },
   {
-    path: "/professor-courselist/course/:id",
+    path: "/professor-courselist/courses/:id",
     name: "ProfessorCourseDetail",
     component: () => import("@/pages/Course/CourseDetail/Professor.vue"),
     props: true,
@@ -197,6 +197,18 @@ const ProfessorRoutes = [
     path: "/professor-progress",
     name: "ProfessorProgress",
     component: () => import("@/pages/ProgressTracking/Professor.vue"),
+    meta: { requiresAuth: true, role: "professor" },
+  },
+  {
+    path: "/professor-code",
+    name: "ProfessorCode",
+    component: () => import("@/pages/Code/index.vue"),
+    meta: { requiresAuth: true, role: "professor" },
+  },
+  {
+    path: "/courses/:courseId/exercise-quiz/:exerciseId?",
+    name: "ExerciseQuiz",
+    component: () => import("@/pages/ExerciseQuiz/index.vue"),
     meta: { requiresAuth: true, role: "professor" },
   },
 ];

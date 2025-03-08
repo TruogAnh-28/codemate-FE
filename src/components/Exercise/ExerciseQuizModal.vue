@@ -1,5 +1,6 @@
 <template>
   <v-card class="pa-4">
+    <!-- Header -->
     <div class="d-flex justify-space-between align-center mb-6">
       <div class="d-flex align-center">
         <v-icon icon="mdi-book-open-variant" class="me-2"></v-icon>
@@ -17,10 +18,12 @@
       Course: {{ props.courseName }}
     </div>
     <div class="text-caption text-grey mb-6">
-      Please {{ data ? 'edit' : 'add' }} a exercise for this course to guide learners effectively.
+      Please {{ data ? 'edit' : 'add' }} an exercise for this course to guide learners effectively.
     </div>
 
     <v-form @submit.prevent="handleSubmit">
+      <!-- General Section -->
+      <div class="text-h6 mb-2">General</div>
       <v-row>
         <v-col cols="12" md="6">
           <v-text-field
@@ -30,7 +33,6 @@
             variant="outlined"
             required
           ></v-text-field>
-
           <v-textarea
             v-model="formData.description"
             label="Description"
@@ -39,79 +41,124 @@
             rows="4"
           ></v-textarea>
         </v-col>
-
         <v-col cols="12" md="6">
-          <v-row>
-            <v-col cols="12" md="6">
-              <v-text-field
-                v-model="formData.deadline"
-                type="date"
-                label="Deadline"
-                placeholder="Select date"
-                variant="outlined"
-              ></v-text-field>
-            </v-col>
-            <v-col cols="12" md="6">
-              <v-text-field
-                v-model="timeInput"
-                type="time"
-                label="Time Limit (HH:mm)"
-                placeholder="Select time limit"
-                variant="outlined"
-                :error-messages="timeError"
-                @input="handleTimeInput"
-              ></v-text-field>
-            </v-col>
-          </v-row>
-
-          <v-row>
-            <v-col cols="12" md="6">
-              <v-select
-                v-model="formData.difficulty"
-                :items="difficultyLevels"
-                label="Difficulty"
-                placeholder="Select Difficulty"
-                variant="outlined"
-                required
-              ></v-select>
-            </v-col>
-            <v-col cols="12" md="6">
-              <v-text-field
-                v-model="formData.topic"
-                label="Topic"
-                placeholder="Select Topic"
-                variant="outlined"
-              ></v-text-field>
-            </v-col>
-          </v-row>
-
-          <v-row>
-            <v-col cols="12" md="6">
-              <v-text-field
-                :model-value="calculateMaxScore"
-                label="Max score"
-                variant="outlined"
-                type="number"
-                readonly
-                disabled
-              ></v-text-field>
-            </v-col>
-            <v-col cols="12" md="6">
-              <v-text-field
-                v-model="formData.time"
-                label="Duration"
-                placeholder="Input the exam duration for this exercise"
-                variant="outlined"
-                type="number"
-              ></v-text-field>
-            </v-col>
-          </v-row>
+          <v-text-field
+            v-model="formData.topic"
+            label="Topic"
+            placeholder="Input the topic for this exercise"
+            variant="outlined"
+          ></v-text-field>
         </v-col>
       </v-row>
 
-      <v-card 
-        v-for="(question, index) in formData.questions" 
-        :key="index" 
+      <!-- Timing Section -->
+      <div class="text-h6 mt-4 mb-2">Timing</div>
+      <v-row>
+        <v-col cols="12" md="6">
+          <v-text-field
+            v-model="formData.time_open"
+            type="datetime-local"
+            label="Open the Quiz"
+            variant="outlined"
+          ></v-text-field>
+        </v-col>
+        <v-col cols="12" md="6">
+          <v-text-field
+            v-model="formData.time_close"
+            type="datetime-local"
+            label="Close the Quiz"
+            variant="outlined"
+          ></v-text-field>
+        </v-col>
+      </v-row>
+      <v-row>
+        <v-col cols="12" md="6">
+          <v-text-field
+            v-model="formData.time_limit"
+            type="number"
+            label="Time Limit (minutes)"
+            variant="outlined"
+            min="0"
+          ></v-text-field>
+        </v-col>
+      </v-row>
+
+      <!-- Grade Section -->
+      <div class="text-h6 mt-4 mb-2">Grade</div>
+      <v-row>
+        <v-col cols="12" md="6">
+          <v-text-field
+            v-model="formData.attempts_allowed"
+            label="Attempts Allowed"
+            type="number"
+            variant="outlined"
+            min="0"
+          ></v-text-field>
+        </v-col>
+        <v-col cols="12" md="6">
+          <v-select
+            v-model="formData.grading_method"
+            :items="gradingMethods"
+            label="Grading Method"
+            variant="outlined"
+          ></v-select>
+        </v-col>
+      </v-row>
+      <v-row>
+        <v-col cols="12" md="6">
+          <v-text-field
+            v-model="formData.penalty_per_attempt"
+            label="Penalty Per Attempt"
+            type="number"
+            variant="outlined"
+            min="0"
+          ></v-text-field>
+        </v-col>
+        <v-col cols="12" md="6">
+          <v-text-field
+            v-model="formData.pass_mark"
+            label="Pass Mark"
+            type="number"
+            variant="outlined"
+            min="0"
+          ></v-text-field>
+        </v-col>
+      </v-row>
+
+      <!-- Options Section -->
+      <div class="text-h6 mt-4 mb-2">Options</div>
+      <v-row>
+        <v-col cols="12" md="3">
+          <v-checkbox
+            v-model="formData.shuffle_questions"
+            label="Shuffle Questions"
+          ></v-checkbox>
+        </v-col>
+        <v-col cols="12" md="3">
+          <v-checkbox
+            v-model="formData.shuffle_answers"
+            label="Shuffle Answers"
+          ></v-checkbox>
+        </v-col>
+        <v-col cols="12" md="3">
+          <v-checkbox
+            v-model="formData.review_after_completion"
+            label="Review After Completion"
+          ></v-checkbox>
+        </v-col>
+        <v-col cols="12" md="3">
+          <v-checkbox
+            v-model="formData.show_correct_answers"
+            label="Show Correct Answers"
+          ></v-checkbox>
+        </v-col>
+      </v-row>
+
+      <!-- Questions Section -->
+      <div class="text-h6 mt-4 mb-2">Questions</div>
+      <v-card
+        v-for="(question, index) in formData.questions"
+        :key="index"
         class="mt-4 pa-4"
         variant="outlined"
       >
@@ -153,26 +200,57 @@
               variant="outlined"
               type="number"
               required
+              min="0"
             ></v-text-field>
           </v-col>
         </v-row>
 
+        <v-row>
+          <v-col cols="12" md="6">
+            <v-select
+              v-model="question.difficulty"
+              :items="difficultyLevels"
+              label="Difficulty"
+              variant="outlined"
+              required
+            ></v-select>
+          </v-col>
+        </v-row>
+
+        <v-textarea
+          v-model="question.feedback"
+          label="Feedback"
+          placeholder="Input feedback for this question"
+          variant="outlined"
+        ></v-textarea>
+
+        <!-- True/False Question Options -->
         <template v-if="question.type === QuestionType.TrueFalse">
-          <v-text-field
-            v-model="question.answer[0]"
-            label="Correct Answer"
-            placeholder="Input the correct answer for this question"
-            variant="outlined"
-            class="mb-3"
-          ></v-text-field>
-          <v-text-field
-            v-model="question.options[0]"
-            label="False Answer"
-            placeholder="Input the false answer for this question"
-            variant="outlined"
-          ></v-text-field>
+          <v-row>
+            <v-col cols="12" md="6">
+              <v-text-field
+                v-model="question.options[0]"
+                label="Option 1 (e.g., True)"
+                placeholder="Input first option"
+                variant="outlined"
+              ></v-text-field>
+            </v-col>
+            <v-col cols="12" md="6">
+              <v-text-field
+                v-model="question.options[1]"
+                label="Option 2 (e.g., False)"
+                placeholder="Input second option"
+                variant="outlined"
+              ></v-text-field>
+            </v-col>
+          </v-row>
+          <v-radio-group v-model="question.answer[0]">
+            <v-radio :label="question.options[0] || 'Option 1'" :value="question.options[0]"></v-radio>
+            <v-radio :label="question.options[1] || 'Option 2'" :value="question.options[1]"></v-radio>
+          </v-radio-group>
         </template>
 
+        <!-- Single/Multiple Choice Question Options -->
         <template v-else>
           <div v-for="(option, optIndex) in question.options" :key="optIndex" class="mb-3">
             <v-text-field
@@ -184,10 +262,10 @@
             >
               <template v-slot:append>
                 <v-checkbox
-                  :model-value="data?isOptionSelected(question, option):false"
+                  :model-value="isOptionSelected(question, option)"
                   density="compact"
                   hide-details
-                  @change="handleAnswerChange(index, optIndex,question.type)"
+                  @change="handleAnswerChange(index, optIndex, question.type)"
                 ></v-checkbox>
                 <v-btn
                   icon="mdi-delete"
@@ -210,6 +288,7 @@
         </template>
       </v-card>
 
+      <!-- Form Actions -->
       <div class="d-flex justify-space-between mt-4">
         <v-btn
           variant="tonal"
@@ -219,15 +298,15 @@
           Add Question
         </v-btn>
         <div>
-          <v-btn 
-            color="grey" 
-            variant="tonal" 
+          <v-btn
+            color="grey"
+            variant="tonal"
             class="me-2"
             @click="$emit('close')"
           >
             Cancel
           </v-btn>
-          <v-btn 
+          <v-btn
             color="primary"
             @click="handleSubmit"
           >
@@ -238,9 +317,11 @@
     </v-form>
   </v-card>
 </template>
+
 <script lang="ts" setup>
-import { ref, onMounted } from 'vue';
-import { ExerciseQuizResponse, QuestionType } from '@/types/Exercise';
+import { ref, onMounted, computed } from 'vue';
+import { ExerciseQuizRequest, ExerciseQuizResponse, QuestionType } from '@/types/Exercise';
+import { DifficultyLevel, GradingMethodType } from "@/utils/commonType"
 import { exercisesService } from '@/services/Professor/ExerciseServices';
 
 const props = defineProps<{
@@ -249,117 +330,85 @@ const props = defineProps<{
   data?: ExerciseQuizResponse | null;
 }>();
 
-const difficultyLevels = ['easy', 'medium', 'hard'];
-const timeInput = ref('');
-const timeError = ref('');
-const showError = inject("showError") as (message: string) => void;
-const showSuccess = inject("showSuccess") as (message: string) => void;
 const emit = defineEmits<{
   (e: 'close'): void;
-  (e: 'submit', data: ExerciseQuizResponse): void;
+  (e: 'submit', data: ExerciseQuizRequest): void;
 }>();
 
+const difficultyLevels = ['easy', 'medium', 'hard'] as DifficultyLevel[];
+const gradingMethods = ['highest', 'average', 'first', 'last'] as GradingMethodType[]; // Adjust based on actual GradingMethodType enum
 
-// Initialize with default form data
-const formData = ref<ExerciseQuizResponse>({
-  exercise_id: crypto.randomUUID(),
-  course_id: props.courseId,
+const showError = inject<(message: string) => void>('showError')!;
+const showSuccess = inject<(message: string) => void>('showSuccess')!;
+
+// Initialize formData with default values matching ExerciseQuizRequest
+const formData = ref<ExerciseQuizRequest>({
   name: '',
   description: '',
   topic: '',
-  difficulty: 'medium',
-  type: 'quiz',
   questions: [{
     question: '',
     answer: [],
     options: ['', '', '', ''],
+    feedback: '',
     type: QuestionType.SingleChoice,
-    score: 1
+    difficulty: 'medium',
+    score: 1,
   }],
-  max_score: 0,
-  time: 0,
-  deadline: ''
+  type: 'quiz',
+  course_id: props.courseId,
+  time_open: '',
+  time_close: '',
+  time_limit: 0,
+  attempts_allowed: 1,
+  grading_method: GradingMethodType.highest,
+  shuffle_questions: false,
+  shuffle_answers: false,
+  review_after_completion: false,
+  show_correct_answers: false,
+  penalty_per_attempt: 0,
+  pass_mark: 0,
 });
+
+// Computed property for max_score
 const calculateMaxScore = computed(() => {
-  return formData.value.questions.reduce(
-    (sum, question) => sum + (Number(question.score) || 0),
-    0
-  );
+  return formData.value.questions.reduce((sum, question) => sum + (Number(question.score) || 0), 0);
 });
+
+// Initialize form data when editing
 onMounted(() => {
-  if (props.data ) {
-    try {
-      const exerciseData = props.data;
-      if (exerciseData.questions){
-        const formattedQuestions = exerciseData.questions.map(question => ({
-        ...question,
-        options: question.options,
-        answer: Array.isArray(question.answer) ? question.answer : [question.answer]
-      }));
-
-      // Format the deadline to match the input date format (YYYY-MM-DD)
-      const deadline = exerciseData.deadline 
-        ? new Date(exerciseData.deadline).toISOString().split('T')[0]
-        : '';
-
-      // Update form data
-      formData.value = {
-        ...exerciseData,
-        deadline,
-        questions: formattedQuestions
-      };
-      console.log(formData.value)
-      // Set time input
-      if (exerciseData.time) {
-        const hours = Math.floor(exerciseData.time / 60);
-        const minutes = exerciseData.time % 60;
-        timeInput.value = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
-      }
-      ;
-      }
-      
-      
-    } catch (error) {
-      console.error('Error initializing form data:', error);
-      showError('Error initializing form data. Using default values.');
-    }
+  if (props.data) {
+    formData.value = {
+      ...props.data,
+      time_open: props.data.time_open ? new Date(props.data.time_open).toISOString().slice(0, 16) : '',
+      time_close: props.data.time_close ? new Date(props.data.time_close).toISOString().slice(0, 16) : '',
+      questions: props.data.questions.map(q => ({ ...q })),
+    };
   }
 });
 
-const handleTimeInput = () => {
-  timeError.value = '';
-  if (timeInput.value) {
-    const [hours, minutes] = timeInput.value.split(':').map(Number);
-    if (isNaN(hours) || isNaN(minutes)) {
-      timeError.value = 'Invalid time format';
-      return;
-    }
-    // Convert time to minutes
-    formData.value.time = hours * 60 + minutes;
-  } else {
-    formData.value.time = 0;
-  }
-};
-
+// Add a new question
 const addQuestion = () => {
   formData.value.questions.push({
     question: '',
     answer: [],
     options: ['', '', '', ''],
+    feedback: '',
     type: QuestionType.SingleChoice,
-    score: 1
+    difficulty: 'medium',
+    score: 1,
   });
 };
 
-const handleAnswerChange = (questionIndex: number, optionIndex: number, type: string) => {
+// Handle answer selection for questions
+const handleAnswerChange = (questionIndex: number, optionIndex: number, type: QuestionType) => {
   const question = formData.value.questions[questionIndex];
-  
-  if (type === QuestionType.SingleChoice) {
-    question.answer = [question.options[optionIndex]];
+  const option = question.options[optionIndex];
+
+  if (type === QuestionType.SingleChoice || type === QuestionType.TrueFalse) {
+    question.answer = [option];
   } else if (type === QuestionType.MultipleChoice) {
     const answer = question.answer as string[];
-    const option = question.options[optionIndex];
-    
     if (answer.includes(option)) {
       question.answer = answer.filter(ans => ans !== option);
     } else {
@@ -368,49 +417,50 @@ const handleAnswerChange = (questionIndex: number, optionIndex: number, type: st
   }
 };
 
+// Check if an option is selected
 const isOptionSelected = (question: any, option: string) => {
   return question.answer.includes(option);
 };
 
+// Remove a question
 const removeQuestion = (index: number) => {
-  formData.value.questions.splice(index, 1);
+  if (formData.value.questions.length > 1) {
+    formData.value.questions.splice(index, 1);
+  }
 };
 
+// Add an option to a question
 const addOption = (questionIndex: number) => {
   formData.value.questions[questionIndex].options.push('');
 };
 
+// Remove an option from a question
 const removeOption = (questionIndex: number, optionIndex: number) => {
   const question = formData.value.questions[questionIndex];
   if (question.options.length > 2) {
+    const removedOption = question.options[optionIndex];
     question.options.splice(optionIndex, 1);
-    // Remove the option from answers if it was selected
-    if (question.answer.includes(question.options[optionIndex])) {
-      question.answer = question.answer.filter(ans => ans !== question.options[optionIndex]);
-    }
+    question.answer = question.answer.filter(ans => ans !== removedOption);
   }
 };
 
+// Handle form submission
 const handleSubmit = async () => {
-  // formData.value.max_score = formData.value.questions.reduce(
-  //   (sum, question) => sum + question.score,
-  //   0
-  // );
-  
-  if (!timeInput.value) {
-    timeError.value = 'Time limit is required';
-    return;
-  }
-  if(props.data){
+  // Optionally set max_score if required by the backend
+  formData.value.max_score = calculateMaxScore.value;
+
+  if (props.data) {
+    // Editing an existing exercise
     const response = await exercisesService.editExerciseQuiz(
-        { showError, showSuccess },
-        props.data.exercise_id,
-        formData.value
-      );
-    if (response.isSuccess){
+      { showError, showSuccess },
+      props.data.exercise_id,
+      formData.value
+    );
+    if (response.isSuccess) {
       emit('close');
     }
-  }else{
+  } else {
+    // Adding a new exercise
     emit('submit', formData.value);
     emit('close');
   }

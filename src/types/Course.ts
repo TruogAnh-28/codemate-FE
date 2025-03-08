@@ -84,6 +84,7 @@ export interface CoursesListResponse {
   nSemester: number
   courseID: string
   image: string
+  percentage_complete?:number
 }
 
 export interface StudentOfCourseListModal {
@@ -106,7 +107,11 @@ export interface CourseDetailResponse {
   course_end_date: DateString
   course_learning_outcomes: string[]
   course_status: Status
-  course_image: string
+  course_image_url: string
+  course_nCredit: number;
+  course_nSemester: number;
+  course_courseID: string;
+  course_class_name: string;
   course_percentage_complete: string
   course_last_accessed: DateTimeString
   completed_lessons: number
@@ -120,6 +125,7 @@ export interface LessonOriginalResponse {
   description: string
   learning_outcomes: string[]
   order: number
+  nDocuments: number
 }
 
 export interface ExerciseOriginalResponse {
@@ -135,7 +141,7 @@ export interface DocumentOriginalResponse {
   name: string
   description: string
   type: DocumentType
-  url: string
+  document_url: string
 }
 
 
@@ -160,7 +166,7 @@ export interface GetDocumentsProfessor {
   id: UUID;
   name: string;
   type: DocumentType;
-  url: string;
+  document_url: string;
 }
 
 export interface GetExercisesProfessor {
@@ -187,7 +193,11 @@ export interface GetProfessorCoursesResponse {
   learning_outcomes: string[];
   professor: ProfessorInformation;
   status: Status;
-  image: string;
+  image_url: string;
+  nSemester: number;
+  nCredit: number;
+  courseID: string;
+  class_name: string;
 }
 
 export interface GetProfessorCoursesPaginatedResponse {
@@ -198,6 +208,19 @@ export interface GetProfessorCoursesPaginatedResponse {
   totalPages: number;
 }
 
+// export interface GetCourseDetailProfessorResponse {
+//   course_id: UUID;
+//   course_name: string;
+//   course_start_date: DateString;
+//   course_end_date: DateString;
+//   course_learning_outcomes: string[];
+//   course_professor: ProfessorInformation;
+//   course_status: Status;
+//   course_image: string;
+//   exercises: GetExercisesProfessor[];
+//   students: StudentCoursesList[];
+//   lessons: GetLessonProfessor[];
+// }
 export interface GetCourseDetailProfessorResponse {
   course_id: UUID;
   course_name: string;
@@ -206,10 +229,15 @@ export interface GetCourseDetailProfessorResponse {
   course_learning_outcomes: string[];
   course_professor: ProfessorInformation;
   course_status: Status;
-  course_image: string;
-  exercises: GetExercisesProfessor[];
-  students: StudentCoursesList[];
-  lessons: GetLessonProfessor[];
+  course_image_url: string;
+  course_nCredit: number;
+  course_nSemester: number;
+  course_courseID: string;
+  course_class_name: string;
+  nStudents: number;
+  nLessons: number;
+  nExercises: number;
+  nDocuments: number;
 }
 export interface DocumentResponse {
   name: string;
@@ -234,6 +262,7 @@ export interface CreateNewLessonRequest {
   order: number;
   learningOutcomes?: string[];
   documents?: File[];
+  documentDescriptions?: string[];
 }
 
 export interface PutLessonResponse {
@@ -242,6 +271,14 @@ export interface PutLessonResponse {
   description?: string;
   order: number;
   learningOutcomes?: string[];
+}
+export interface GetCoursesTitle{
+  course_id: UUID; 
+  course_name: string;
+  course_courseID: string;
+  course_nSemester: number;
+  course_start_date: DateString;
+  course_end_date: DateString;
 }
 
 //---------------------------------Admin---------------------------------

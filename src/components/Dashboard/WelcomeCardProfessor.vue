@@ -30,7 +30,7 @@
           variant="text"
           color="primary"
           class="px-4 py-2 mt-2 font-medium hover:bg-blue-50 transition-colors"
-         
+          :to="'/professor-code'"
         >
           Tap to learn
           <v-icon end icon="mdi-arrow-right" class="ml-1" />
@@ -43,6 +43,6 @@
 <script setup lang="ts">
 import { useAuthStore } from "@/stores/auth";
 
-const professor_name = useAuthStore().getUser()?.name;
+const professor_name = useAuthStore().user?.name;
 
 </script>

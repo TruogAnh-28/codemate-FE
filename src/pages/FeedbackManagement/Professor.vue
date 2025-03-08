@@ -9,8 +9,8 @@
             <!-- Course Selector -->
             <v-select
               v-model="selectedCourseId"
-              :items="courses?.course_name_list || []"
-              item-title="course_name"
+              :items="formattedCourses"
+              item-title="formatted_title"
               item-value="course_id"
               label="Select Course"
               variant="outlined"
@@ -63,6 +63,11 @@
               <span class="text-sm text-gray-500">{{ item.student_email }}</span>
             </div>
           </template>
+          <template v-slot:item.student_mssv="{ item }">
+            <div class="flex flex-col">
+              <span class="font-medium">{{ item.student_mssv }}</span>
+            </div>
+          </template>
         </v-data-table>
       </v-card>
     </v-main>
@@ -71,13 +76,13 @@
 
 <script setup lang="ts">
 import { feedbackServices } from "@/services/Professor/FeedbackServices";
-import { progressServices } from "@/services/Professor/ProgressServices";
+import { coursesService } from "@/services/Professor/CourseServices";
 import { GetListFeedbackProfessorResponse } from "@/types/Feedback";
-import { GetCoursesListResponse } from "@/types/ProgressTracking";
+import { GetCoursesTitle } from "@/types/Course";
 import { formatDateTime } from "@/utils/functions/time";
 
 const feedbacks = ref<GetListFeedbackProfessorResponse[]>([]);
-const courses = ref<GetCoursesListResponse>();
+const courses = ref<GetCoursesTitle[]>();
 const selectedCourseId = ref<string>("");
 const loading = ref(false);
 const showError = inject("showError") as (message: string) => void;
@@ -96,23 +101,30 @@ const getCategoryColor = (category: string) => {
 
 const fetchCourses = async () => {
   try {
-    const response = await progressServices.fetchCoursesList({
+    const response = await coursesService.fetchCoursesTitleList({
       showError,
       showSuccess,
     });
 
     if ("data" in response && response.data) {
-      courses.value = response.data as GetCoursesListResponse;
+      courses.value = response.data as GetCoursesTitle[];
       // Set default course to first course in list
-      if (courses.value.course_name_list.length > 0 && !selectedCourseId.value) {
-        selectedCourseId.value = courses.value.course_name_list[0].course_id;
+      if (courses.value.length > 0 && !selectedCourseId.value) {
+        selectedCourseId.value = courses.value[0].course_id;
       }
     }
   } catch (error) {
     console.error("Error fetching courses:", error);
   }
 };
-
+const formattedCourses = computed(() => {
+  if (!courses.value) return [];
+  
+  return courses.value.map(course => ({
+    ...course,
+    formatted_title: `[${course.course_nSemester}] ${course.course_name} (${course.course_courseID})`
+  }));
+});
 const fetchFeedbacks = async () => {
   if (!selectedCourseId.value) return;
   
@@ -134,6 +146,7 @@ const fetchFeedbacks = async () => {
 };
 
 const headers = [
+  { title: "Student ID", key: "student_mssv", align: "start" as const },
   { title: "Student", key: "student_info", align: "start" as const },
   { title: "Feedback Title", key: "title" },
   { title: "Feedback Description", key: "description" },

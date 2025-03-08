@@ -1,5 +1,13 @@
 import { QuizExercise } from './Exercise';
 import { Document } from './Document';
+import { UUID, DocumentType} from "@/utils/commonType"
+export interface GetDocumentsfromLesson{
+    id: UUID;
+    name: string;
+    type: DocumentType;
+    document_url: string;
+    description: string;  
+}
 export interface Lesson {
     id: string;
     name: string;
