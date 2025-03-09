@@ -82,7 +82,7 @@
           :items="courses"
           :loading="loading"
           :items-per-page="pageSize"
-          class="elevation-0"
+          class="elevation-0 enhanced-table"
         >
           <template v-slot:item.status="{ item }">
             <v-chip
@@ -133,6 +133,7 @@ import { coursesService, PaginationParams } from "@/services/courseslistServices
 import debounce from "@/composables/useDebounce";
 import { CoursesAdminListResponse } from "@/types/Course";
 import { AuthConfig } from "@/services/authenServices";
+import "../table.css";
 
 // Filter variables
 const searchQuery = ref("");

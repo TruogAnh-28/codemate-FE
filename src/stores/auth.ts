@@ -5,6 +5,8 @@ interface UserInfo {
   role: string;
   email: string;
   name: string;
+  avatar?: string;
+  ms?: string;
   rememberMe: string;
 }
 
@@ -18,6 +20,8 @@ export const useAuthStore = defineStore('auth', {
     userRole: (state) => state.user?.role || null,
     userName: (state) => state.user?.name || '',
     userEmail: (state) => state.user?.email || '',
+    userAvatar: (state) => state.user?.avatar || '',
+    userMs: (state) => state.user?.ms || '',
   },
 
   actions: {
@@ -64,6 +68,17 @@ export const useAuthStore = defineStore('auth', {
           this.isAuthenticated = false;
         }
       }
+    },
+    setAvatar(avatar: string) {
+      if (this.user) {
+        this.user.avatar = avatar;
+      }
+    },
+    setMs(ms: string) {
+      if (this.user) {
+        this.user.ms = ms;
+      }
     }
+
   }
 });

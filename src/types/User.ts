@@ -37,11 +37,11 @@ export interface CreateUserResponse {
 export interface GetProfileResponse {
   id: string
   name: string
-  fullname: any
-  avatar: any
+  fullname: string
+  avatar: string
   email: string
-  ms: any
-  date_of_birth: any
+  ms: string
+  date_of_birth: string
   role: string
 }
 

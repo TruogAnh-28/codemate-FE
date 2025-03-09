@@ -13,24 +13,20 @@
     <v-card-text class="relative z-10 p-6">
       <div class="space-y-4">
         <div class="space-y-1">
-          <h2 class="text-heading-1 font-semibold text-gray-800">
-            Welcome back,
-          </h2>
+          <h2 class="text-heading-1 font-semibold text-gray-800">Welcome back,</h2>
           <p class="text-heading-4 text-blue-600 font-medium">
             {{ professor_name }}
           </p>
         </div>
 
         <p class="text-gray-600 leading-relaxed">
-          Glad to see you again! Keep up the momentum in your
-          course.
+          Glad to see you again! Keep up the momentum in your course.
         </p>
 
         <v-btn
           variant="text"
           color="primary"
           class="px-4 py-2 mt-2 font-medium hover:bg-blue-50 transition-colors"
-         
         >
           Tap to learn
           <v-icon end icon="mdi-arrow-right" class="ml-1" />
@@ -43,6 +39,5 @@
 <script setup lang="ts">
 import { useAuthStore } from "@/stores/auth";
 
-const professor_name = useAuthStore().getUser()?.name;
-
+const professor_name = useAuthStore().userName;
 </script>

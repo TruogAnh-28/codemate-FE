@@ -167,7 +167,7 @@
           :items="feedbacks"
           :items-per-page="10"
           :loading="loading"
-          class="elevation-0"
+          class="elevation-0 enhanced-table"
         >
           <template v-slot:loading>
             <div class="flex items-center justify-center pa-6">
@@ -230,6 +230,7 @@ import { feedbackServices } from "@/services/feedbackServices";
 import { GetListFeedbackResponse } from "@/types/Feedback";
 import { formatDateTime } from "@/utils/functions/time";
 import debounce from "@/composables/useDebounce";
+import "../table.css";
 
 const feedbacks = ref<GetListFeedbackResponse[]>([]);
 const loading = ref(false);
@@ -459,66 +460,3 @@ onMounted(() => {
   fetchFeedbacks(); // Initial fetch without debounce
 });
 </script>
-
-<style scoped>
-:deep(.v-field__input) {
-  padding-top: 8px !important;
-  padding-bottom: 8px !important;
-}
-
-:deep(.v-field--focused) {
-  border-color: rgb(var(--v-theme-primary)) !important;
-}
-
-:deep(.v-field:hover) {
-  border-color: rgb(var(--v-theme-primary-lighten-1)) !important;
-}
-
-:deep(.v-data-table) {
-  border-radius: 12px;
-  overflow: hidden;
-}
-
-:deep(.v-data-table__thead) {
-  background-color: rgb(249, 250, 251);
-}
-
-:deep(.v-data-table__thead th) {
-  font-weight: 600 !important;
-  text-transform: none !important;
-  white-space: nowrap;
-  letter-spacing: 0 !important;
-}
-
-:deep(.v-data-table-footer) {
-  background-color: rgb(249, 250, 251);
-}
-
-:deep(.v-btn) {
-  letter-spacing: 0 !important;
-}
-
-:deep(.v-list-item:hover) {
-  background-color: rgba(var(--v-theme-primary), 0.04) !important;
-}
-
-:deep(.v-data-table__tr:hover) {
-  background-color: rgba(var(--v-theme-primary), 0.04) !important;
-}
-
-:deep(.v-card) {
-  transition: all 0.2s ease;
-}
-
-:deep(.v-chip) {
-  font-weight: 500;
-}
-
-:deep(.v-chip:hover) {
-  transform: translateY(-1px);
-}
-
-:deep(.v-pagination) {
-  margin-top: 16px;
-}
-</style>

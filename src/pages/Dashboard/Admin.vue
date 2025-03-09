@@ -1,10 +1,21 @@
 <template>
   <v-layout>
-    <v-container fluid class="px-6">
+    <v-container
+      fluid
+      class="px-6 py-8"
+      :style="{ background: 'hsl(var(--background))' }"
+    >
       <!-- Title Section with Animation -->
-      <div class="mb-6">
-        <h1 class="text-2xl font-semibold mb-2 animate-fade-in gradient-text">Dashboard Overview</h1>
-        <p class="text-gray-500 dark:text-gray-400">Welcome to your admin dashboard</p>
+      <div class="mb-8">
+        <h1
+          class="text-3xl font-bold mb-2 animate-fade-in gradient-text"
+          :style="{ color: 'hsl(var(--text-primary))' }"
+        >
+          Dashboard Overview
+        </h1>
+        <p :style="{ color: 'hsl(var(--text-tetiary))' }">
+          Welcome to your admin dashboard
+        </p>
       </div>
 
       <!-- Web Vitals Section -->
@@ -15,15 +26,15 @@
       </v-row>
 
       <!-- Stats Cards -->
-      <v-row justify="center" align="stretch" class="mb-8">
+      <v-row justify="center" align="stretch" class="mb-10">
         <v-col cols="12" md="6" lg="4" class="d-flex">
           <SumCard
             title="Total Users"
             :content="totalUsers_"
             :iconComponent="totalUsers"
             growth="8.5"
-            color="primary"
-            icon-bg="bg-primary"
+            :color="`hsl(var(--primary))`"
+            icon-bg="bg-gradient-primary"
           />
         </v-col>
         <v-col cols="12" md="6" lg="4" class="d-flex">
@@ -32,53 +43,60 @@
             :content="totalCourses_"
             :iconComponent="totalCourses"
             growth="8.5"
-            color="secondary"
-            icon-bg="bg-secondary"
+            :color="`hsl(var(--secondary))`"
+            icon-bg="bg-gradient-secondary"
           />
         </v-col>
-        <!-- <v-col cols="12" md="6" lg="4" class="d-flex">
-          <SumCard
-            title="Active Sessions"
-            :content="2456"
-            :iconComponent="{ name: 'mdi-account-clock' }"
-            growth="12.3"
-            color="success"
-            icon-bg="bg-success"
-          />
-        </v-col> -->
       </v-row>
 
       <!-- Charts Section -->
-      <v-row class="mb-8">
-        <v-col cols="12" lg="8">
+      <v-row class="mb-10">
+        <v-col cols="12" lg="12">
           <SparklineChart />
         </v-col>
-        <!-- <v-col cols="12" lg="4">
-          <v-card class="h-100">
-            <v-card-title class="d-flex align-center justify-space-between pa-4">
-              <span class="text-h6">Quick Stats</span>
-              <v-btn icon variant="text">
-                <v-icon>mdi-dots-vertical</v-icon>
-              </v-btn>
-            </v-card-title>
-            <v-card-text>
-              <v-list>
-                <v-list-item v-for="(stat, index) in quickStats" :key="index">
-                  <v-list-item-title class="d-flex justify-space-between align-center">
-                    <span>{{ stat.label }}</span>
-                    <span class="font-weight-bold" :class="stat.color">{{
-                      stat.value
-                    }}</span>
-                  </v-list-item-title>
-                </v-list-item>
-              </v-list>
-            </v-card-text>
-          </v-card>
-        </v-col> -->
       </v-row>
     </v-container>
   </v-layout>
 </template>
+
+<style scoped>
+/* Animation for fade-in */
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Gradient text styling */
+.gradient-text {
+  background: linear-gradient(45deg, hsl(var(--primary)), hsl(var(--secondary)));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+}
+
+/* Custom gradient backgrounds for icons */
+.bg-gradient-primary {
+  background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-variant)));
+}
+
+.bg-gradient-secondary {
+  background: linear-gradient(
+    135deg,
+    hsl(var(--secondary)),
+    hsl(var(--secondary-variant))
+  );
+}
+</style>
 
 <script setup lang="ts">
 import { ref, onMounted } from "vue";

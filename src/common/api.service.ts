@@ -395,8 +395,8 @@ class ApiServiceClass {
     data: object,
     config?: ApiCallConfig
   ): Promise<T> {
-    return this.request<T>("PUT", `${resource}/${slug}`, { ...config, data });
-  }
+    return this.request<T>("PATCH", `${resource}/${slug}`, { ...config, data });
+  }  
 
   put<T>(resource: string, data: object, config?: ApiCallConfig): Promise<T> {
     return this.request<T>("PUT", resource, { ...config, data });
