@@ -102,6 +102,8 @@ interface RouteParams {
 const lesson = ref<Lesson | null>(null);
 const showDialog = ref(false);
 const selectedModule = ref<Module>({} as Module);
+const showError = inject("showError") as (message: string) => void;
+const showSuccess = inject("showSuccess") as (message: string) => void;  
 
 const route = useRoute();
 const {  lessonId } = route.params as RouteParams;
@@ -110,7 +112,7 @@ const courseName = computed(() => {
   return typeof name === 'string' ? name : '';
 });
 
-const showError = inject("showError") as (message: string) => void;
+
 const breadcrumbsStore = useBreadcrumbsStore();
 
 function openDialog(module: Module) {
@@ -119,18 +121,15 @@ function openDialog(module: Module) {
 }
 
 const fetchRecommendedLesson = async () => {
-  try {
-    const fetchedLesson = await lessonsService.fetchRecommendedLesson(showError, lessonId);
-    lesson.value = fetchedLesson;
-    
+  const respone = await lessonsService.fetchRecommendedLesson({showError,showSuccess}, lessonId);
+  if (respone && "data" in respone && respone.data) {
+    lesson.value = respone.data as Lesson;
     if (lesson.value) {
       breadcrumbsStore.setBreadcrumbs([
         { title: courseName.value, disabled: true },
         { title: lesson.value.name, disabled: true }
       ]);
     }
-  } catch (error) {
-    console.error("Error fetching recommended lesson:", error);
   }
 };
 

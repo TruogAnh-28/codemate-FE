@@ -37,7 +37,6 @@ export default defineConfig({
     Vue({
       template: { transformAssetUrls },
     }),
-    // https://github.com/vuetifyjs/vuetify-loader/tree/master/packages/vite-plugin#readme
     Vuetify({
       autoImport: true,
     }),
@@ -48,7 +47,7 @@ export default defineConfig({
           styles: 'wght@100;300;400;500;700;900',
         }],
       },
-    }),
+    })
   ],
   define: { 'process.env': {} },
   resolve: {
@@ -65,6 +64,15 @@ export default defineConfig({
       '.vue',
     ],
   },
+  worker: {
+    format: 'es'
+  },
+  optimizeDeps: {
+    include: [
+      'monaco-editor-vue3',
+      'monaco-editor'
+    ]
+  },
   server: {
     host: '0.0.0.0',
     port: 5173,
@@ -77,5 +85,5 @@ export default defineConfig({
       overlay: true,
     },
   },
-  cacheDir: './.vite',
+  cacheDir: './.vite'
 })

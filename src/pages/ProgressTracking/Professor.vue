@@ -8,8 +8,8 @@
             <h1 class="text-3xl font-bold text-gray-900">Progress Course</h1>
             <v-select
               v-model="selectedCourseId"
-              :items="courses?.course_name_list || []"
-              item-title="course_name"
+              :items="formattedCourses"
+              item-title="formatted_title"
               item-value="course_id"
               label="Select Course"
               variant="outlined"
@@ -62,36 +62,43 @@
 import { ref, watch, inject, onMounted } from 'vue';
 import { progressServices } from "@/services/Professor/ProgressServices";
 import type {
-  GetCoursesListResponse,
-  GetExercisesListResponse,
   GetCourseGradesResponse,
   GetExerciseGradesResponse,
 } from "@/types/ProgressTracking";
-
+import { coursesService } from "@/services/Professor/CourseServices";
+import { GetCoursesTitle } from "@/types/Course";
+import { GetExercisesList } from "@/types/Exercise";
 const loading = ref(false);
 const viewMode = ref<'course' | 'exercise'>('course');
 const selectedCourseId = ref('');
 const selectedExerciseId = ref('');
-const courses = ref<GetCoursesListResponse>();
-const exercises = ref<GetExercisesListResponse>();
+const courses = ref<GetCoursesTitle[]>();
+const exercises = ref<GetExercisesList[]>();
 const courseGrades = ref<GetCourseGradesResponse | null>(null);
 const exerciseGrades = ref<GetExerciseGradesResponse | null>(null);
 
 const showError = inject("showError") as (message: string) => void;
 const showSuccess = inject("showSuccess") as (message: string) => void;
-
+const formattedCourses = computed(() => {
+  if (!courses.value) return [];
+  
+  return courses.value.map(course => ({
+    ...course,
+    formatted_title: `[${course.course_nSemester}] ${course.course_name} (${course.course_courseID})`
+  }));
+});
 // ... (rest of the fetch functions and watchers remain the same)
 const fetchCourses = async () => {
   try {
-    const response = await progressServices.fetchCoursesList({
+    const response = await coursesService.fetchCoursesTitleList({
       showError,
       showSuccess,
     });
 
     if ("data" in response && response.data) {
-      courses.value = response.data as GetCoursesListResponse;
-      if (courses.value.course_name_list.length > 0 && !selectedCourseId.value) {
-        selectedCourseId.value = courses.value.course_name_list[0].course_id;
+      courses.value = response.data as GetCoursesTitle[];
+      if (courses.value.length > 0 && !selectedCourseId.value) {
+        selectedCourseId.value = courses.value[0].course_id;
       }
     }
   } catch (error) {
@@ -103,13 +110,13 @@ const fetchExercises = async () => {
   if (!selectedCourseId.value) return;
   
   try {
-    const response = await progressServices.fetchExercisesList(
+    const response = await coursesService.fetchExercisesTitleList(
       { showError, showSuccess },
       selectedCourseId.value
     );
 
     if ("data" in response && response.data) {
-      exercises.value = response.data as GetExercisesListResponse;
+      exercises.value = response.data as GetExercisesList[];
     }
     console.log(exercises.value)
   } catch (error) {

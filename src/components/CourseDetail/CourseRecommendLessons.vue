@@ -91,7 +91,7 @@
 
 <script lang="ts" setup>
 import { coursesService } from "@/services/courseslistServices";
-import { useAuthStore } from "@/stores/auth";
+
 import {
   CourseDetailResponse,
   GetRecommendedLessonsResponse,

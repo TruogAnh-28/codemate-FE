@@ -1,5 +1,5 @@
 <template>
-  <v-card class="p-6" v-if="lessons.length > 0">
+  <v-card class="p-6" v-if="lessons">
     <div v-for="lesson in lessons" :key="lesson.id" class="mb-6">
       <v-row class="mb-4 m-0">
         <v-col cols="12" md="8" class="border-b-2">
@@ -61,39 +61,34 @@ import {
   LessonOriginalResponse,
   CourseDetailResponse,
   GetDocumentsProfessor,
-  GetLessonProfessor,
   GetCourseDetailProfessorResponse
 } from "@/types/Course";
 import { coursesService } from "@/services/courseslistServices";
+import { lessonService } from "@/services/lessonServices";
 
-// Props type union to handle both course types
 type CourseProps = {
   course: CourseDetailResponse | GetCourseDetailProfessorResponse;
 };
 
 const props = defineProps<CourseProps>();
 
-// Auth and role
-const role = computed(() => useAuthStore().getUser().role);
+const role = computed(() => useAuthStore().user?.role);
 const isStudent = computed(() => role.value === 'student');
-const isProfessor = computed(() => role.value === 'professor');
 
-// Refs
 const showDocumentsModal = ref(false);
 const showFeedbackModal = ref(false);
 const selectedLessonId = ref<string | undefined>(undefined);
 const selectedDocuments = ref<DocumentOriginalResponse[] | GetDocumentsProfessor[]>([]);
-const lessons = ref<LessonOriginalResponse[] | GetLessonProfessor[]>([]);
-
-// Injected utilities
+const lessons = ref<LessonOriginalResponse[]>([]);
+const documents = ref<DocumentOriginalResponse[]>([]);
 const showError = inject("showError") as (message: string) => void;
 const showSuccess = inject("showSuccess") as (message: string) => void;
 
-// Methods
-const handleButtonClick = (button: any, lesson: any) => {
+const handleButtonClick = async (button: any, lesson: LessonOriginalResponse) => {
   switch (button.index) {
     case 0:
-      showDocuments(isStudent ? lesson.documents : lesson.documents);
+      await fetchDocuments(lesson.id);
+      showDocuments(documents.value);
       break;
     case 1:
       downloadDocuments(lesson.id);
@@ -118,19 +113,25 @@ const showDocuments = (documentList: any[] | string) => {
 };
 
 const fetchLessons = async () => {
-  if (isProfessor.value && 'lessons' in props.course) {
-    lessons.value = props.course.lessons;
-  } else if (isStudent.value) {
     const response = await coursesService.getLessonsForCourse(
       { showError, showSuccess },
       props.course.course_id
     );
-    if (response) {
-      lessons.value = response;
+    if (response && "data" in response && response.data) {
+      lessons.value = response.data as LessonOriginalResponse[];
     }
-  }
 };
-
+const fetchDocuments = async (lessonId: string) => {
+    const response = await lessonService.getDocumentsfromLesson(
+      { showError, showSuccess },
+      lessonId
+    );
+    if (response && "data" in response && response.data) {
+      documents.value = response.data as DocumentOriginalResponse[];
+    }else{
+      documents.value = [];
+    }
+};
 const downloadDocuments = (lessonId: string) => {
   console.log("Downloading documents for lesson:", lessonId);
 };
@@ -169,7 +170,6 @@ const getActionButtons = (lesson: any) => {
     }
   ];
 
-  // Add feedback button only for students
   if (isStudent.value) {
     baseButtons.push({
       index: 2,
@@ -190,8 +190,8 @@ const getActionButtons = (lesson: any) => {
   return baseButtons;
 };
 
-onMounted(() => {
-  fetchLessons();
+onMounted(async () => {
+  await fetchLessons();
 });
 </script>
 

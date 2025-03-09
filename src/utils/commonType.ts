@@ -27,3 +27,9 @@ export enum ActivityType {
 }
 export type DifficultyLevel = "easy" | "medium" | "hard";
 export type ExerciseType = "quiz" | "code";
+export enum GradingMethodType {
+  highest = "highest",
+  average = "average",
+  latest = "latest",
+  first = "first"
+}

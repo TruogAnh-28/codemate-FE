@@ -1,10 +1,10 @@
 <template>
-  <v-card class="pa-4">
-    <div class="d-flex align-center mb-4">
-      <v-icon size="32" class="mr-2">mdi-lightbulb-outline</v-icon>
+  <v-card class="rounded-xl border-card" elevation="3">
+    <div class="card-header pa-6 d-flex align-center">
+      <v-icon color="primary" size="x-large" class="mr-4">mdi-lightbulb-outline</v-icon>
       <div>
-        <h2 class="text-h6 mb-1">Course: {{ courseName }}</h2>
-        <p class="text-body-2 text-grey-darken-1">
+        <h2 class="text-h5 font-weight-bold">Course: {{ courseName }}</h2>
+        <p class="text-subtitle-2 text-medium-emphasis mb-0">
           Please enter description of the learning outcomes for the course.
         </p>
       </div>
@@ -17,50 +17,72 @@
       ></v-btn>
     </div>
 
-    <v-form @submit.prevent="handleSubmit">
-      <div v-for="(_, index) in outcomes" :key="index" class="mb-4">
-        <div class="d-flex align-center mb-1">
-          <span class="text-body-2 font-weight-medium">LO{{ index + 1 }}:</span>
-          <v-spacer></v-spacer>
-          <!-- Thêm nút xóa với điều kiện -->
-          <v-icon
-            v-if="outcomes.length > 1"
-            size="small"
-            @click="removeOutcome(index)"
-            class="cursor-pointer"
-            color="grey-darken-1"
-          >
-            mdi-close
-          </v-icon>
-        </div>
-        <v-text-field
-          v-model="outcomes[index].value"
-          :placeholder="'Input the course\'s Learning Outcomes'"
-          variant="outlined"
-          hide-details
-          class="mt-1"
-          density="comfortable"
-        ></v-text-field>
+    <v-divider></v-divider>
+
+    <v-card-text class="pa-6">
+      <div class="d-flex align-center mb-3">
+        <v-icon color="primary" class="mr-2">mdi-certificate-outline</v-icon>
+        <h3 class="text-subtitle-1 font-weight-bold mb-0">Learning Outcomes</h3>
       </div>
 
-      <div class="d-flex justify-space-between mt-6">
+      <v-sheet rounded="lg" elevation="1" class="pa-4 mb-4 bg-grey-lighten-4">
+        <div v-for="(_, index) in outcomes" :key="`outcome-${index}`" class="mb-3">
+          <div class="d-flex align-center mb-1">
+            <span class="text-body-2 text-primary font-weight-medium">Outcome {{index + 1}}</span>
+            <v-spacer></v-spacer>
+            <v-btn
+              v-if="outcomes.length > 1"
+              icon="mdi-close"
+              size="small"
+              variant="text"
+              density="comfortable"
+              color="grey-darken-1"
+              @click="removeOutcome(index)"
+            ></v-btn>
+          </div>
+          <v-text-field
+            v-model="outcomes[index].value"
+            placeholder="Input the course's Learning Outcome"
+            variant="outlined"
+            density="comfortable"
+            class="rounded-lg"
+            hide-details="auto"
+          ></v-text-field>
+        </div>
+
         <v-btn
-          variant="outlined"
-          @click="addOutcome"
-          class="text-none"
-        >
-          More
-        </v-btn>
-        <v-btn
+          variant="tonal"
+          prepend-icon="mdi-plus"
           color="primary"
-          @click="handleSubmit"
-          class="text-none"
-          :disabled="!isValid"
+          class="text-none mt-2 rounded-lg"
+          block
+          @click="addOutcome"
         >
-          Confirm
+          Add Another Outcome
         </v-btn>
-      </div>
-    </v-form>
+      </v-sheet>
+    </v-card-text>
+
+    <v-card-actions class="d-flex justify-end pa-6">
+      <v-btn
+        variant="outlined"
+        prepend-icon="mdi-refresh"
+        class="rounded-lg mr-4"
+        @click="$emit('close')"
+      >
+        Cancel
+      </v-btn>
+      <v-btn
+        color="primary"
+        variant="elevated"
+        class="rounded-lg"
+        prepend-icon="mdi-check-circle"
+        @click="handleSubmit"
+        :disabled="!isValid"
+      >
+        Confirm
+      </v-btn>
+    </v-card-actions>
   </v-card>
 </template>
 
@@ -118,11 +140,37 @@ const handleSubmit = () => {
 </script>
 
 <style scoped>
-:deep(.v-field) {
-  border-radius: 16px !important;
+.border-card {
+  border: 1px solid rgba(var(--v-theme-primary), 0.05);
+  overflow: hidden;
+  transition: all 0.3s ease;
 }
 
-.cursor-pointer {
-  cursor: pointer;
+.border-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1) !important;
+}
+
+.card-header {
+  background: linear-gradient(to right, rgba(var(--v-theme-primary), 0.05), transparent);
+  border-bottom: 1px solid rgba(var(--v-theme-primary), 0.05);
+}
+
+.v-btn {
+  text-transform: none;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+
+:deep(.v-field) {
+  border-radius: 12px !important;
+}
+
+:deep(.v-field__outline__start) {
+  border-radius: 12px 0 0 12px !important;
+}
+
+:deep(.v-field__outline__end) {
+  border-radius: 0 12px 12px 0 !important;
 }
 </style>

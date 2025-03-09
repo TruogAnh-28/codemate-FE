@@ -1,7 +1,10 @@
 <template>
   <v-card class="p-6">
     <CourseBanner
+      v-if="course"
       :course="course"
+      :canEditImage="true" 
+      @update-image="handleImageUpload"
     />
 
     <v-tabs
@@ -41,7 +44,7 @@
 
       <v-window-item value="exercises">
         <CourseExercises v-if="isStudent && isCourseDetailResponse(course)" :course="course" />
-        <CourseExercisesProfessor v-else-if="isProfessor && !isCourseDetailResponse(course)" :course="course" />
+        <CourseExercisesProfessor v-else-if="isProfessor && !isCourseDetailResponse(course) && course" :course="course" />
       </v-window-item>
     </v-window>
   </v-card>
@@ -61,7 +64,7 @@ defineProps<{
   activeTab: string;
   tabs: Tab[];
 }>();
-const role = computed(() => useAuthStore().getUser().role);
+const role = computed(() => useAuthStore().user?.role);
 const isStudent = computed(() => role.value === 'student');
 const isProfessor = computed(() => role.value === 'professor');
 function isCourseDetailResponse(course: any): course is CourseDetailResponse {
@@ -84,4 +87,7 @@ const handleTabUpdate = (value: unknown) => {
     emit('update:active-tab', value);
   }
 };
+const handleImageUpload = async () => {
+
+}
 </script>

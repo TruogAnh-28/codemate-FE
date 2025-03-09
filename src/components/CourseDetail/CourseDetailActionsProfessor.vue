@@ -8,7 +8,7 @@
     </v-btn>
     <v-btn 
       color="primary" 
-      @click="showExerciseQuizModal = true"
+      :to="`/courses/${courseId}/exercise-quiz`"
     >
       Add Exercise Quiz
     </v-btn>
@@ -35,16 +35,6 @@
       />
     </v-dialog>
 
-    <!-- Exercise Quiz Modal -->
-    <v-dialog v-model="showExerciseQuizModal" persistent max-width="1200px" max-height="calc(100% - 130px)" class="mx-10">
-      <ExerciseQuizModal 
-        :courseId="courseId"
-        :courseName="courseName"
-        @close="showExerciseQuizModal = false"
-        @submit="handleExerciseQuizSubmit"
-      />
-    </v-dialog>
-
     <!-- Exercise Code Modal -->
     <v-dialog v-model="showExerciseCodeModal" persistent max-width="1200px" max-height="calc(100% - 130px)" class="mx-10">
       <ExerciseCodeModal 
@@ -68,15 +58,16 @@
 import { ref } from 'vue';
 import { coursesService } from '@/services/Professor/CourseServices';
 import { PutLearningOutcomesCoursesResponse } from '@/types/Course';
-import { ExerciseQuizResponse, ExerciseCodeResponse } from '@/types/Exercise';
+import { ExerciseCodeResponse } from '@/types/Exercise';
 import CreateLessonModal from './CreateLessonModal.vue';
+
 const props = defineProps<{
   courseId: string;
   courseName: string;
 }>();
+
 const showCreateLessonModal = ref(false);
 const showLearningOutcomesModal = ref(false);
-const showExerciseQuizModal = ref(false);
 const showExerciseCodeModal = ref(false);
 
 const showError = inject('showError') as (message: string) => void;
@@ -93,19 +84,6 @@ const handleLearningOutcomesSubmit = async (data: PutLearningOutcomesCoursesResp
     showSuccess('Learning outcomes updated successfully');
   } catch (error) {
     showError('Failed to update learning outcomes');
-  }
-};
-
-const handleExerciseQuizSubmit = async (data: ExerciseQuizResponse) => {
-  try {
-    await coursesService.postExerciseQuiz(
-      { showError, showSuccess },
-      data
-    );
-    showExerciseQuizModal.value = false;
-    showSuccess('Exercise quiz created successfully');
-  } catch (error) {
-    showError('Failed to create exercise quiz');
   }
 };
 

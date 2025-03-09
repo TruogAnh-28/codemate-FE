@@ -16,7 +16,6 @@
           v-if="dashboardData"
           :dashboardData="dashboardData"
         />
-    <!-- </div> -->
   </v-main>
   </v-layout>
 </template>

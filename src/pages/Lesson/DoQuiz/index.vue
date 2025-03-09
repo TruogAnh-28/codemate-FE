@@ -73,6 +73,8 @@ const isConfirmDialogOpen = ref(false);
 const isResultDialogOpen = ref(false);
 const score = ref(0);
 const quizResult = ref<QuizScoreResponse | null>(null);
+const showError = inject("showError") as (message: string) => void;
+const showSuccess = inject("showSuccess") as (message: string) => void;  
 
 const route = useRoute();
 const { quizId, moduleId } = route.params as RouteParams;
@@ -104,7 +106,7 @@ async function finishQuiz() {
 }
 
 const fetchQuizDetails = async () => {
-  const data = await moduleService.fetchQuizDetails(showError, moduleId, quizId);
+  const data = await moduleService.fetchQuizDetails({showError,showSuccess}, moduleId, quizId);
   quizExercise.value = data;
 
   if (data?.questions) {
@@ -121,7 +123,7 @@ const submitQuizAnswers = async () => {
   };
 
   const result = await moduleService.submitQuizAnswers(
-    showError,
+    { showError, showSuccess },
     moduleId,
     quizId,
     submitQuizAnswersRequest
@@ -132,8 +134,6 @@ const submitQuizAnswers = async () => {
     score.value = result.correct_answers;
   }
 };
-
-const showError = inject("showError") as (message: string) => void;
 
 onMounted(() => {
   fetchQuizDetails();

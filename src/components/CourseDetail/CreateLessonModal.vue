@@ -1,11 +1,10 @@
 <template>
-  <v-card class="pa-4">
-    <div class="d-flex align-center mb-4">
-      
-      <v-icon size="32" class="mr-2">mdi-book-education-outline</v-icon>
+  <v-card class="rounded-xl border-card" elevation="3">
+    <div class="card-header pa-6 d-flex align-center">
+      <v-icon color="primary" size="x-large" class="mr-4">mdi-book-education-outline</v-icon>
       <div>
-        <h2 class="text-h6 mb-1">Course: {{courseName}}</h2>
-        <p class="text-body-2 text-grey-darken-1">
+        <h2 class="text-h5 font-weight-bold">Course: {{courseName}}</h2>
+        <p class="text-subtitle-2 text-medium-emphasis mb-0">
           Please add a lesson for this course to guide learners effectively.
         </p>
       </div>
@@ -18,85 +17,143 @@
       ></v-btn>
     </div>
 
-    <v-form ref="form" @submit.prevent="handleSubmit">
-      <div class="mb-4">
-        <div class="mb-1">Title:</div>
+    <v-divider></v-divider>
+
+    <v-card-text class="pa-6">
+      <v-form ref="form" @submit.prevent="handleSubmit">
         <v-text-field
           v-model="lessonData.title"
+          label="Title*"
           placeholder="Input the title for this lesson"
           variant="outlined"
-          hide-details
           density="comfortable"
+          prepend-inner-icon="mdi-format-title"
+          class="mb-4 rounded-lg"
           :rules="[v => !!v || 'Title is required']"
+          hide-details="auto"
         ></v-text-field>
-      </div>
 
-      <div class="mb-4">
-        <div class="mb-1">Description:</div>
         <v-text-field
           v-model="lessonData.description"
+          label="Description*"
           placeholder="Input the description for this lesson"
           variant="outlined"
-          hide-details
           density="comfortable"
+          prepend-inner-icon="mdi-text-box-outline"
+          class="mb-4 rounded-lg"
           :rules="[v => !!v || 'Description is required']"
+          hide-details="auto"
         ></v-text-field>
-      </div>
 
-      <!-- Learning Outcomes Section -->
-      <div v-for="(outcome, index) in learningOutcomes" :key="index" class="mb-4">
-        <div class="d-flex align-center mb-1">
-          <span>LsO:</span>
-          <v-spacer></v-spacer>
-          <v-icon
-            v-if="learningOutcomes.length > 1"
-            size="small"
-            @click="removeOutcome(index)"
-            class="cursor-pointer"
-            color="grey-darken-1"
-          >
-            mdi-close
-          </v-icon>
+        <!-- Learning Outcomes Section -->
+        <div class="d-flex align-center mb-3">
+          <v-icon color="primary" class="mr-2">mdi-certificate-outline</v-icon>
+          <h3 class="text-subtitle-1 font-weight-bold mb-0">Learning Outcomes</h3>
         </div>
-        <v-text-field
-          v-model="outcome.value"
-          placeholder="Input the course's Lesson Outcomes"
-          variant="outlined"
-          hide-details
-          density="comfortable"
-        ></v-text-field>
-      </div>
 
+        <v-sheet rounded="lg" elevation="1" class="pa-4 mb-4 bg-grey-lighten-4">
+          <div v-for="(outcome, index) in learningOutcomes" :key="`outcome-${index}`" class="mb-3">
+            <div class="d-flex align-center mb-1">
+              <span class="text-body-2 text-primary font-weight-medium">Outcome {{index + 1}}</span>
+              <v-spacer></v-spacer>
+              <v-btn
+                v-if="learningOutcomes.length > 1"
+                icon="mdi-close"
+                size="small"
+                variant="text"
+                density="comfortable"
+                color="grey-darken-1"
+                @click="removeOutcome(index)"
+              ></v-btn>
+            </div>
+            <v-text-field
+              v-model="outcome.value"
+              placeholder="Input the course's Lesson Outcome"
+              variant="outlined"
+              density="comfortable"
+              class="rounded-lg"
+              hide-details="auto"
+            ></v-text-field>
+          </div>
+
+          <v-btn
+            variant="tonal"
+            prepend-icon="mdi-plus"
+            color="primary"
+            class="text-none mt-2 rounded-lg"
+            block
+            @click="addOutcome"
+          >
+            Add Another Outcome
+          </v-btn>
+        </v-sheet>
+
+        <!-- Document Upload Section -->
+        <div class="d-flex align-center mb-3">
+          <v-icon color="primary" class="mr-2">mdi-cloud-upload-outline</v-icon>
+          <h3 class="text-subtitle-1 font-weight-bold mb-0">Upload Documents</h3>
+        </div>
+
+        <div class="drop-zone pa-8 text-center rounded-lg mb-4">
+          <Uploader v-model="files" />
+          
+          <!-- Document Description Inputs -->
+          <v-expand-transition>
+            <div v-if="files.length > 0" class="mt-6">
+              <div class="d-flex align-center mb-2">
+                <v-icon color="primary" class="mr-2">mdi-file-document-outline</v-icon>
+                <h3 class="text-subtitle-1 font-weight-bold mb-0">Document Descriptions</h3>
+                <v-spacer></v-spacer>
+                <v-chip color="success" size="small">{{ files.length }} Files</v-chip>
+              </div>
+              <v-card variant="outlined" class="pa-4 bg-grey-lighten-4">
+                <div v-for="(file, index) in files" :key="`file-${index}`" class="mb-3">
+                  <div class="d-flex align-center mb-1">
+                    <v-icon size="small" color="primary" class="mr-2">mdi-file-document-outline</v-icon>
+                    <span class="text-caption font-weight-medium text-truncate">{{ file.name }}</span>
+                  </div>
+                  <v-text-field
+                    v-model="documentDescriptions[index]"
+                    placeholder="Enter description for this document"
+                    variant="outlined"
+                    density="comfortable"
+                    hide-details="auto"
+                    class="mt-1 rounded-lg"
+                  ></v-text-field>
+                </div>
+              </v-card>
+            </div>
+          </v-expand-transition>
+        </div>
+      </v-form>
+    </v-card-text>
+
+    <v-card-actions class="d-flex justify-end pa-6">
       <v-btn
         variant="outlined"
-        @click="addOutcome"
-        class="text-none mb-4"
-        block
+        prepend-icon="mdi-refresh"
+        class="rounded-lg mr-4"
+        @click="$emit('close')"
       >
-        More
+        Cancel
       </v-btn>
-
-      <div class="upload-area pa-8 text-center rounded-lg bg-grey-lighten-4 mb-4">
-        <Uploader v-model="files" />
-         
-      </div>
-
       <v-btn
         color="primary"
-        block
-        class="text-none"
+        variant="elevated"
+        class="rounded-lg"
         :loading="loading"
+        prepend-icon="mdi-check-circle"
         @click="handleSubmit"
         :disabled="!isValid"
       >
-        Confirm
+        Create Lesson
       </v-btn>
-    </v-form>
+    </v-card-actions>
   </v-card>
 </template>
 
 <script lang="ts" setup>
-import { ref, computed } from 'vue';
+import { ref, computed, watch, inject } from 'vue';
 import { lessonService } from '@/services/Professor/LessonServices';
 import type { CreateNewLessonRequest } from '@/types/Course';
 
@@ -115,6 +172,7 @@ const loading = ref(false);
 const files = ref<File[]>([]);
 const form = ref<any>(null);
 const learningOutcomes = ref<LearningOutcome[]>([{ value: '' }]);
+const documentDescriptions = ref<string[]>([]);
 
 const showError = inject('showError') as (message: string) => void;
 const showSuccess = inject('showSuccess') as (message: string) => void;
@@ -125,8 +183,24 @@ const lessonData = ref<CreateNewLessonRequest>({
   courseId: props.courseId,
   order: 0,
   learningOutcomes: [],
-  documents: []
+  documents: [],
+  documentDescriptions: []
 });
+
+// Watch for changes in the files array to adjust the documentDescriptions array
+watch(files, (newFiles) => {
+  // Ensure documentDescriptions has an entry for each file
+  if (newFiles.length > documentDescriptions.value.length) {
+    // Add empty descriptions for new files
+    const diff = newFiles.length - documentDescriptions.value.length;
+    for (let i = 0; i < diff; i++) {
+      documentDescriptions.value.push('');
+    }
+  } else if (newFiles.length < documentDescriptions.value.length) {
+    // Remove descriptions for removed files
+    documentDescriptions.value = documentDescriptions.value.slice(0, newFiles.length);
+  }
+}, { deep: true });
 
 const isValid = computed(() => {
   return lessonData.value.title.trim() !== '' && 
@@ -158,7 +232,8 @@ const handleSubmit = async () => {
       learningOutcomes: learningOutcomes.value
         .filter(outcome => outcome.value.trim() !== '')
         .map(outcome => outcome.value),
-      documents: documents
+      documents: documents,
+      documentDescriptions: documentDescriptions.value
     };
 
     await lessonService.fetchLessonProfessor(
@@ -178,16 +253,48 @@ const handleSubmit = async () => {
 </script>
 
 <style scoped>
+.border-card {
+  border: 1px solid rgba(var(--v-theme-primary), 0.05);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.border-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1) !important;
+}
+
+.card-header {
+  background: linear-gradient(to right, rgba(var(--v-theme-primary), 0.05), transparent);
+  border-bottom: 1px solid rgba(var(--v-theme-primary), 0.05);
+}
+
+.drop-zone {
+  border: 2px dashed rgba(var(--v-theme-primary), 0.3);
+  background-color: rgba(var(--v-theme-primary), 0.03);
+  transition: all 0.3s ease;
+}
+
+.drop-zone:hover {
+  border-color: rgb(var(--v-theme-primary));
+  background-color: rgba(var(--v-theme-primary), 0.08);
+}
+
+.v-btn {
+  text-transform: none;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+
 :deep(.v-field) {
-  border-radius: 16px !important;
+  border-radius: 12px !important;
 }
 
-.upload-area {
-  border: 2px dashed #E0E0E0;
-  border-radius: 16px;
+:deep(.v-field__outline__start) {
+  border-radius: 12px 0 0 12px !important;
 }
 
-.cursor-pointer {
-  cursor: pointer;
+:deep(.v-field__outline__end) {
+  border-radius: 0 12px 12px 0 !important;
 }
 </style>

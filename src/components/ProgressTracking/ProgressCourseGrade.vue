@@ -95,6 +95,7 @@
   const expandedStudents = ref<{ [key: string]: boolean }>({});
   
   const courseHeaders = [
+    { title: "Student ID", key: "student_mssv", align: "center" as const },
     { title: "Student Name", key: "student_name", align: "start" as const },
     { title: "Exercises", key: "exercises", align: "start" as const },
     { title: "Average Score", key: "average_score", align: "center" as const },
