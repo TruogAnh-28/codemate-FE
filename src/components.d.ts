@@ -18,6 +18,7 @@ declare module 'vue' {
     Cards: typeof import('./components/CourseList/Cards.vue')['default']
     ChangeLearningOutcomesModal: typeof import('./components/CourseDetail/ChangeLearningOutcomesModal.vue')['default']
     CodeEditor: typeof import('./components/Code/CodeEditor.vue')['default']
+    CodeQuestionsSection: typeof import('./components/Exercise/CodeQuestionsSection.vue')['default']
     ContactUs: typeof import('./components/LandingPage/Layout/ContactUs.vue')['default']
     CourseBanner: typeof import('./components/CourseDetail/CourseBanner.vue')['default']
     CourseDescription: typeof import('./components/CourseDetail/CourseDescription.vue')['default']
