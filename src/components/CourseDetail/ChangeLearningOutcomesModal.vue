@@ -87,12 +87,13 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { PutLearningOutcomesCoursesResponse } from '@/types/Course';
 
 const props = defineProps<{
   courseId: string;
   courseName: string;
+  course_outcomes?: string[];
 }>();
 
 const emit = defineEmits<{
@@ -104,12 +105,21 @@ interface LearningOutcome {
   value: string;
 }
 
-// Initialize with 3 outcomes
 const outcomes = ref<LearningOutcome[]>([
-  { value: '' },
-  { value: '' },
   { value: '' }
 ]);
+
+onMounted(() => {
+  if (props.course_outcomes && props.course_outcomes.length > 0) {
+    outcomes.value = props.course_outcomes.map(outcome => ({ value: outcome }));
+  } else {
+    outcomes.value = [
+      { value: '' },
+      { value: '' },
+      { value: '' }
+    ];
+  }
+});
 
 const isValid = computed(() => {
   return outcomes.value.some(outcome => outcome.value.trim() !== '');

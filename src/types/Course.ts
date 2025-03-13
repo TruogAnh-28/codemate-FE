@@ -240,9 +240,11 @@ export interface GetCourseDetailProfessorResponse {
   nDocuments: number;
 }
 export interface DocumentResponse {
+  id: UUID;
   name: string;
   type: string;
   documentUrl: string;
+  description: string;
   lessonId: UUID;
 }
 
@@ -264,13 +266,24 @@ export interface CreateNewLessonRequest {
   documents?: File[];
   documentDescriptions?: string[];
 }
+export interface UpdateLessonRequest {
+  lesson_id: UUID;
+  title: string;
+  description: string;
+  courseId: UUID;
+  order: number;
+  learningOutcomes?: string[];
+  // documents?: File[];
+  // documentDescriptions?: string[];
+}
 
-export interface PutLessonResponse {
+export interface LessonResponse {
   lessonId: UUID;
   title: string;
   description?: string;
   order: number;
-  learningOutcomes?: string[];
+  learning_outcomes?: string[];
+  documents?: DocumentResponse[];
 }
 export interface GetCoursesTitle{
   course_id: UUID; 

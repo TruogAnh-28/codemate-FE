@@ -95,13 +95,23 @@ export interface QuizModal {
 }
 
 export interface TestCaseModel {
-  input: string;
-  output: string;
+  input: any;
+  output: any;
+  is_hidden?: boolean;
+  description?: string;
 }
 
 export interface CodeModel {
   question: string;
   testcases: TestCaseModel[];
+  starter_code?: string;
+  solution_code?: string;
+  hints?: string[];
+  score?: number;
+  difficulty?: DifficultyLevel;
+  allowed_languages?: string[];
+  time_limit_seconds?: number;
+  memory_limit_mb?: number;
 }
 export interface ExerciseQuizRequest {
   name: string;
@@ -147,19 +157,30 @@ export interface ExerciseQuizResponse {
 }
 
 
-export interface ExerciseCodeResponse {
-  exercise_id: UUID;
+export interface ExerciseCodeRequest  {
   name: string;
   description?: string;
-  deadline?: string;
-  time?: number;
   topic?: string;
-  difficulty: DifficultyLevel;
+  type: ExerciseType;
+  course_id: string;
   questions: CodeModel[];
   max_score?: number;
-  type: ExerciseType;
-  course_id: UUID;
+  time_open?: DateTimeString;
+  time_close?: DateTimeString;
+  time_limit?: number;
+  attempts_allowed?: number;
+  grading_method?: GradingMethodType;
+  shuffle_questions?: boolean;
+  shuffle_answers?: boolean;
+  review_after_completion?: boolean;
+  show_correct_answers?: boolean;
+  penalty_per_attempt?: number;
+  pass_mark?: number;
 }
+export interface ExerciseCodeResponse extends ExerciseCodeRequest {
+  id: string;
+}
+
 export interface GetExercisesList{
   id: UUID; 
   name: string;
