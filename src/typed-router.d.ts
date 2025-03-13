@@ -20,7 +20,6 @@ declare module 'vue-router/auto-routes' {
   export interface RouteNamedMap {
     '/': RouteRecordInfo<'/', '/', Record<never, never>, Record<never, never>>,
     '/Code/': RouteRecordInfo<'/Code/', '/Code', Record<never, never>, Record<never, never>>,
-    '/Code/test': RouteRecordInfo<'/Code/test', '/Code/test', Record<never, never>, Record<never, never>>,
     '/Course/CourseDetail/': RouteRecordInfo<'/Course/CourseDetail/', '/Course/CourseDetail', Record<never, never>, Record<never, never>>,
     '/Course/CourseDetail/Professor': RouteRecordInfo<'/Course/CourseDetail/Professor', '/Course/CourseDetail/Professor', Record<never, never>, Record<never, never>>,
     '/Course/CourseList/': RouteRecordInfo<'/Course/CourseList/', '/Course/CourseList', Record<never, never>, Record<never, never>>,
@@ -30,6 +29,7 @@ declare module 'vue-router/auto-routes' {
     '/Dashboard/': RouteRecordInfo<'/Dashboard/', '/Dashboard', Record<never, never>, Record<never, never>>,
     '/Dashboard/Admin': RouteRecordInfo<'/Dashboard/Admin', '/Dashboard/Admin', Record<never, never>, Record<never, never>>,
     '/Dashboard/Professor': RouteRecordInfo<'/Dashboard/Professor', '/Dashboard/Professor', Record<never, never>, Record<never, never>>,
+    '/ExerciseCode/': RouteRecordInfo<'/ExerciseCode/', '/ExerciseCode', Record<never, never>, Record<never, never>>,
     '/ExerciseQuiz/': RouteRecordInfo<'/ExerciseQuiz/', '/ExerciseQuiz', Record<never, never>, Record<never, never>>,
     '/FeedbackManagement/': RouteRecordInfo<'/FeedbackManagement/', '/FeedbackManagement', Record<never, never>, Record<never, never>>,
     '/FeedbackManagement/FeedbackStatistics': RouteRecordInfo<'/FeedbackManagement/FeedbackStatistics', '/FeedbackManagement/FeedbackStatistics', Record<never, never>, Record<never, never>>,
