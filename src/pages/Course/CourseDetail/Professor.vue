@@ -1,9 +1,9 @@
 <template>
-  <!-- <v-container fluid class="py-6">
+  <v-container fluid class="py-6">
     <v-row>
       <v-col cols="12" md="8">
         <!-- Add the CourseDetailActions component -->
-  <!-- <CourseDetailActionsProfessor
+        <CourseDetailActionsProfessor
           v-if="course"
           :courseId="id"
           :courseName="course.course_name"
@@ -18,17 +18,13 @@
         />
       </v-col>
       <v-col cols="12" md="4">
-        <ProgressStatsProfessor v-if="course" :course="course" /> -->
+        <ProgressStatsProfessor v-if="course" :course="course" />
 
-  <!-- Add the new StudentList component -->
-  <!-- <StudentsList :students="students" />
-
-        <span>hihihihi</span>
+        <!-- Add the new StudentList component -->
+        <StudentsList :students="students" />
       </v-col>
     </v-row>
-  </v-container>  -->
-
-  <span>hihihihi</span>
+  </v-container>
 </template>
 
 <script lang="ts" setup>
