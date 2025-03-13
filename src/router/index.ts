@@ -8,7 +8,7 @@
 import { createRouter, createWebHistory } from "vue-router";
 import { setupLayouts } from "virtual:generated-layouts";
 import { routes as autoRoutes } from "vue-router/auto-routes";
-import ApiService, { manageExpirationTimer, PUBLIC_ROUTES } from "@/common/api.service";
+import ApiService, { PUBLIC_ROUTES } from "@/common/api.service";
 import { useAuthStore } from "@/stores/auth";
 import { usersService } from "@/services/usersServices";
 

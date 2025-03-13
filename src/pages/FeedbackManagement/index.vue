@@ -253,11 +253,6 @@ const MinEndDate = computed(() => {
   }
 });
 
-const months = Array.from({ length: 12 }, (_, i) => ({
-  title: new Date(0, i).toLocaleString("default", { month: "long" }),
-  value: i + 1,
-}));
-
 const getListYear = (
   rawData: GetListFeedbackResponse[]
 ): { title: number; value: number }[] => {
@@ -265,15 +260,6 @@ const getListYear = (
   const uniqueYears = Array.from(new Set(years)).sort((a, b) => b - a);
   return uniqueYears.map((year) => ({ title: year, value: year }));
 };
-
-const availableYears = computed(() => {
-  const dataYears = getListYear(feedbacks.value);
-  if (dataYears.length === 0) {
-    const currentYear = new Date().getFullYear();
-    return [{ title: currentYear, value: currentYear }];
-  }
-  return dataYears;
-});
 
 const statusOptions = [
   { title: "Pending", value: "pending" },

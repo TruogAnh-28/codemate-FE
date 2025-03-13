@@ -1,4 +1,3 @@
-import { V1_API_URL } from "@/common/config";
 import router from "@/router";
 import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from "axios";
 import { IResponseData } from "@/modals/apis/response";
@@ -83,7 +82,7 @@ class ApiServiceClass {
    * Set base URL and configure request/response interceptors
    */
   init(): void {
-    axios.defaults.baseURL = V1_API_URL;
+    axios.defaults.baseURL = import.meta.env.VITE_APP_V1_API_URL;
     this.setupInterceptors();
   }
 

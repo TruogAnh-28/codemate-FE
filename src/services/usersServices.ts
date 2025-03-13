@@ -2,7 +2,6 @@ import ApiService from "@/common/api.service";
 import { AuthConfig } from "./authenServices";
 import { IResponseData } from "@/modals/apis/response";
 import { GetAllUsersResponse, CreateUserRequest, CreateUserResponse, GetProfileResponse, CreateUserLogin, UserLoginResponse } from "@/types/User";
-import { get } from "node_modules/axios/index.cjs";
 
 interface GetUserParams {
     search_query?: string

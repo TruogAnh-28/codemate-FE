@@ -341,15 +341,12 @@ const emit = defineEmits(["update:userInfo"]);
 const showError = inject("showError") as (message: string) => void;
 const showSuccess = inject("showSuccess") as (message: string) => void;
 import { usersService } from "@/services/usersServices";
+import { useAuthStore } from "@/stores/auth";
 import { GetProfileResponse } from "@/types/User";
 const userInfo = ref<GetProfileResponse | undefined>();
 
 // Original user info for reset when canceling
 const originalUserInfo = ref<GetProfileResponse | undefined>();
-
-// Date picker menu control
-const datePickerMenu = ref(false);
-
 const fetchUserProfile = async () => {
   try {
     const response = await usersService.getProfile({ showError, showSuccess });
@@ -384,12 +381,6 @@ const editedInfo = reactive<GetProfileResponse>({
   ms: "",
   date_of_birth: new Date().toISOString(),
   role: "",
-});
-
-// Computed property for formatted date display
-const formattedDateForDisplay = computed(() => {
-  if (!editedInfo.date_of_birth) return "";
-  return formatDate(editedInfo.date_of_birth);
 });
 
 // Computed property for date input binding
@@ -451,7 +442,7 @@ async function saveChanges() {
         fullname: editedInfo.fullname,
         date_of_birth: formattedDate,
         avatar: avatarFile.value || undefined,
-        role: "student",
+        role: (useAuthStore().userRole as "student" | "professor" | "admin") || "student",
       },
       {
         showError,
