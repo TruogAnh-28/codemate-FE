@@ -76,5 +76,27 @@ export const lessonService = {
             `lessons/${lesson_id}`,
             { showError, showSuccess }
         );
+    },
+    async addDocuments(
+        { showError, showSuccess }: AuthConfig,
+        lessonId: string,
+        files: File[],
+        descriptions: string[],
+    ) {
+        // Prepare FormData to send the documents
+        const formData = new FormData();
+        formData.append("lesson_id", lessonId);
+        
+        // Append each file and its description to the FormData
+        files.forEach((file, index) => {
+            formData.append("files", file);
+            formData.append("descriptions", descriptions[index]);
+        });
+
+        return await ApiService.post(
+            "/lessons/documents", 
+            formData,
+            { showError, showSuccess, headers: { "Content-Type": "multipart/form-data" } }
+        );
     }
 };
