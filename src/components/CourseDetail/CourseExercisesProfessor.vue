@@ -144,7 +144,7 @@ const handleEditExercise = async (exercise: GetExercisesProfessor) => {
   if (exercise.type === 'quiz') {
     router.push(`/courses/${props.course.course_id}/exercise-quiz/${exercise.id}`);
   } else {
-    emit('edit', exercise);
+    router.push(`/courses/${props.course.course_id}/exercise-code/${exercise.id}`);
   }
 };
 

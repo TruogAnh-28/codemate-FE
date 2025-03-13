@@ -211,6 +211,12 @@ const ProfessorRoutes = [
     component: () => import("@/pages/ExerciseQuiz/index.vue"),
     meta: { requiresAuth: true, role: "professor" },
   },
+  {
+    path: "/courses/:courseId/exercise-code/:exerciseId?",
+    name: "ExerciseCode",
+    component: () => import("@/pages/ExerciseCode/index.vue"),
+    meta: { requiresAuth: true, role: "professor" },
+  },
 ];
 
 const router = createRouter({

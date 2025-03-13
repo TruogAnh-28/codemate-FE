@@ -12,14 +12,28 @@
       <!-- Code Editor Panel -->
       <v-col cols="9">
         <div class="d-flex flex-column fill-height">
-          <CodeEditor 
+          <!-- <CodeEditor 
             :test-input="testInput" 
             @run-result="handleRunResult" 
             @submit-result="handleSubmitResult"
             @update:loading="isLoading = $event"
             :style="codeEditorStyle"
+          /> -->
+          <!-- <CodeEditor 
+            v-model="code"
+            :language="selectedLanguage"
+            :style="codeEditorStyle"
+          /> -->
+          <CodeEditor 
+            modelValue="// Your code here\n" 
+            onUpdate:modelValue=fn 
+            language="javascript"
+            @run-result="handleRunResult" 
+            @submit-result="handleSubmitResult"
+            @update:loading="isLoading = $event"
+            :testInput="{ nums: [2, 7, 11, 15], target: 9 }"
+            :style="codeEditorStyle"
           />
-          
           <Testcase 
             :initial-tab="testTab" 
             :result="testResult" 
@@ -54,7 +68,8 @@ const codeEditorStyle = computed(() => {
     transition: 'height 0.2s ease-in-out'
   };
 });
-
+const code = ref('// Your code here\n');
+const selectedLanguage = ref('javascript');
 // Handler methods
 const handleRunResult = (result) => {
   testResult.value = result;

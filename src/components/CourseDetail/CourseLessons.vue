@@ -25,6 +25,7 @@
                 @click="handleButtonClick(button, lesson)"
                 v-bind="activatorProps"
                 :class="button.class"
+                :color="button.color"
               ></v-btn>
             </template>
             <span>{{ button.value }}</span>
@@ -47,6 +48,33 @@
     @feedback-submitted="handleFeedbackSubmitted"
   />
 
+  <!-- Add CreateLessonModal for edit functionality -->
+  <v-dialog v-model="showEditModal" persistent max-width="800px" max-height="calc(100% - 130px)">
+    <CreateLessonModal
+      v-if="!isStudent && showEditModal"
+      :courseId="props.course.course_id"
+      :courseName="props.course.course_name "
+      :lessonId="selectedLessonId"
+      @update="fetchLessons"
+      @close="showEditModal = false"
+    />
+  </v-dialog>
+
+  <!-- Confirmation Dialog for Delete -->
+  <v-dialog v-model="showDeleteConfirmDialog" max-width="500px">
+    <v-card>
+      <v-card-title class="text-h5">Confirm Deletion</v-card-title>
+      <v-card-text>
+        Are you sure you want to delete this lesson? This action cannot be undone.
+      </v-card-text>
+      <v-card-actions>
+        <v-spacer></v-spacer>
+        <v-btn color="blue-darken-1" variant="text" @click="showDeleteConfirmDialog = false">Cancel</v-btn>
+        <v-btn color="error" variant="text" @click="confirmDeleteLesson">Delete</v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
+
   <ShowDocumentsModal
     :showModal="showDocumentsModal"
     @update:showModal="showDocumentsModal = $event"
@@ -65,6 +93,7 @@ import {
 } from "@/types/Course";
 import { coursesService } from "@/services/courseslistServices";
 import { lessonService } from "@/services/lessonServices";
+import { lessonService as lessonProfessorService } from "@/services/Professor/LessonServices";
 
 type CourseProps = {
   course: CourseDetailResponse | GetCourseDetailProfessorResponse;
@@ -77,6 +106,8 @@ const isStudent = computed(() => role.value === 'student');
 
 const showDocumentsModal = ref(false);
 const showFeedbackModal = ref(false);
+const showEditModal = ref(false);
+const showDeleteConfirmDialog = ref(false);
 const selectedLessonId = ref<string | undefined>(undefined);
 const selectedDocuments = ref<DocumentOriginalResponse[] | GetDocumentsProfessor[]>([]);
 const lessons = ref<LessonOriginalResponse[]>([]);
@@ -94,8 +125,17 @@ const handleButtonClick = async (button: any, lesson: LessonOriginalResponse) =>
       downloadDocuments(lesson.id);
       break;
     case 2:
-      if (isStudent) {
+      if (isStudent.value) {
         openFeedbackModal(lesson.id);
+      } else {
+        // For professors, open edit modal
+        openEditModal(lesson.id);
+      }
+      break;
+    case 3:
+      // Only for professors - delete lesson
+      if (!isStudent.value) {
+        openDeleteConfirmDialog(lesson.id);
       }
       break;
     default:
@@ -121,6 +161,7 @@ const fetchLessons = async () => {
       lessons.value = response.data as LessonOriginalResponse[];
     }
 };
+
 const fetchDocuments = async (lessonId: string) => {
     const response = await lessonService.getDocumentsfromLesson(
       { showError, showSuccess },
@@ -132,6 +173,7 @@ const fetchDocuments = async (lessonId: string) => {
       documents.value = [];
     }
 };
+
 const downloadDocuments = (lessonId: string) => {
   console.log("Downloading documents for lesson:", lessonId);
 };
@@ -143,6 +185,40 @@ const updateFeedbackModal = (value: boolean): void => {
 const openFeedbackModal = (lessonId: string): void => {
   selectedLessonId.value = lessonId;
   showFeedbackModal.value = true;
+};
+
+const openEditModal = (lessonId: string): void => {
+  selectedLessonId.value = lessonId;
+  showEditModal.value = true;
+};
+
+// New function to open delete confirmation dialog
+const openDeleteConfirmDialog = (lessonId: string): void => {
+  selectedLessonId.value = lessonId;
+  showDeleteConfirmDialog.value = true;
+};
+
+// New function to handle lesson deletion
+const confirmDeleteLesson = async (): Promise<void> => {
+  if (selectedLessonId.value) {
+    try {
+      const response = await lessonProfessorService.deleteLesson(
+        { showError, showSuccess },
+        selectedLessonId.value
+      );
+      
+      if (response) {
+        showSuccess("Lesson deleted successfully");
+        await fetchLessons(); // Refresh lesson list
+      }
+    } catch (error) {
+      showError("Failed to delete lesson");
+      console.error("Error deleting lesson:", error);
+    } finally {
+      showDeleteConfirmDialog.value = false;
+      selectedLessonId.value = undefined;
+    }
+  }
 };
 
 const handleFeedbackSubmitted = (feedbackData: { lessonId: string; feedback: string }): void => {
@@ -161,12 +237,14 @@ const getActionButtons = (lesson: any) => {
       icon: "mdi-file-document",
       value: "Show Documents",
       class: "text-text-primary",
+      color: "primary", // Blue color for document icon
     },
     {
       index: 1,
       icon: "mdi-download",
       value: "Download Documents",
       class: "text-text-primary",
+      color: "success", // Green color for download icon
     }
   ];
 
@@ -176,14 +254,26 @@ const getActionButtons = (lesson: any) => {
       icon: "mdi-comment-text-outline",
       value: "Feedback Lesson",
       class: "text-text-primary",
+      color: "info", // Light blue for feedback
     });
   }
   else {
+    // For professors only
     baseButtons.push({
       index: 2,
       icon: "mdi-pencil",
-      value: "Feedback Lesson",
+      value: "Edit Lesson",
       class: "text-text-primary",
+      color: "warning", // Orange/yellow color for edit
+    });
+    
+    // Add delete button for professors
+    baseButtons.push({
+      index: 3,
+      icon: "mdi-delete",
+      value: "Delete Lesson",
+      class: "text-text-primary",
+      color: "error", // Red color for delete
     });
   }
 

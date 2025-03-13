@@ -4,7 +4,7 @@
       color="primary" 
       @click="showLearningOutcomesModal = true"
     >
-      Add Learning Outcomes
+      Update Learning Outcomes
     </v-btn>
     <v-btn 
       color="primary" 
@@ -14,7 +14,7 @@
     </v-btn>
     <v-btn 
       color="primary" 
-      @click="showExerciseCodeModal = true"
+      :to="`/courses/${courseId}/exercise-code`"
     >
       Add Exercise Code
     </v-btn>
@@ -30,6 +30,7 @@
       <ChangeLearningOutcomesModal 
         :courseId="courseId"
         :courseName="courseName"
+        :course_outcomes="course_outcomes"
         @close="showLearningOutcomesModal = false"
         @submit="handleLearningOutcomesSubmit"
       />
@@ -64,6 +65,7 @@ import CreateLessonModal from './CreateLessonModal.vue';
 const props = defineProps<{
   courseId: string;
   courseName: string;
+  course_outcomes: string[];
 }>();
 
 const showCreateLessonModal = ref(false);

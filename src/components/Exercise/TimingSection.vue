@@ -50,10 +50,10 @@
 </template>
 
 <script lang="ts" setup>
-import { ExerciseQuizRequest } from '@/types/Exercise';
+import { ExerciseQuizRequest,ExerciseCodeRequest } from '@/types/Exercise';
 
 defineProps<{
-  formData: ExerciseQuizRequest
+  formData: ExerciseQuizRequest|ExerciseCodeRequest
 }>();
 
 defineEmits<{

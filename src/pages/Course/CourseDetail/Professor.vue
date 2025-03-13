@@ -7,6 +7,7 @@
           v-if="course"
           :courseId="id"
           :courseName="course.course_name"
+          :course_outcomes="course.course_learning_outcomes"
           @update:course="fetchCourseDetail"
         />
         
