@@ -72,6 +72,8 @@ const autoLogin = async () => {
           name: userInfo.name,
           rememberMe: localStorage.getItem("rememberMe") || "false",
         });
+        authStore.setAvatar(userInfo.avatar);
+        authStore.setMs(userInfo.ms);
         authStore.isAuthenticated = true;
         redirectUser(userInfo.role);
         loading.value = false;

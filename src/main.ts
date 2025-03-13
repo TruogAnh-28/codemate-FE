@@ -19,12 +19,11 @@ import ApiService, { startExpirationTimer } from "./common/api.service";
 import { createPinia } from "pinia";
 import vue3GoogleLogin from "vue3-google-login";
 import piniaPluginPersistedstate from "pinia-plugin-persistedstate";
-import { CLIENT_ID } from "./common/config";
 ApiService.init();
 startExpirationTimer();
 const app = createApp(App);
 app.use(vue3GoogleLogin, {
-  clientId: CLIENT_ID,
+  clientId: import.meta.env.VITE_APP_CLIENT_ID,
 });
 
 const pinia = createPinia();

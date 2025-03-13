@@ -10,7 +10,7 @@
           :course_outcomes="course.course_learning_outcomes"
           @update:course="fetchCourseDetail"
         />
-        
+
         <CourseMainContent
           :course="course"
           :active-tab="activeTab"
@@ -19,15 +19,10 @@
         />
       </v-col>
       <v-col cols="12" md="4">
-        <ProgressStatsProfessor
-          v-if="course"
-          :course="course"
-        />
-        
+        <ProgressStatsProfessor v-if="course" :course="course" />
+
         <!-- Add the new StudentList component -->
-        <StudentsList
-          :students="students"
-        />
+        <StudentsList :students="students" />
       </v-col>
     </v-row>
   </v-container>
@@ -35,7 +30,7 @@
 
 <script lang="ts" setup>
 import { GetCourseDetailProfessorResponse, ProfessorInformation } from "@/types/Course";
-import { coursesService as professorCoursesService} from "@/services/Professor/CourseServices";
+import { coursesService as professorCoursesService } from "@/services/Professor/CourseServices";
 import { coursesService } from "@/services/courseslistServices";
 import { Tab } from "@/components/CourseDetail/CourseMainContent.vue";
 import { StudentOfCourseListModal } from "@/types/Course";
