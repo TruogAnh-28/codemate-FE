@@ -1,7 +1,7 @@
 <template>
-  <v-card class="rounded-xl border-card" elevation="3">
+  <v-card class="rounded-xl border-card bg-grey-lighten-4" elevation="3">
     <div class="card-header pa-6 d-flex align-center">
-      <v-icon color="primary" size="x-large" class="mr-4">mdi-help-box</v-icon>
+      <v-icon color="primary" size="x-large" class="mr-4">mdi-book</v-icon>
       <div>
         <h2 class="text-h5 font-weight-bold">
           {{ data ? 'Edit Exercise: Quiz' : 'Add Exercise: Quiz' }}
@@ -251,6 +251,7 @@ const handleSubmit = async () => {
         navigateBack();
       }
     } else {
+      console.log('formData.value', formData.value);
       const response = await coursesService.postExerciseQuiz(
         { showError, showSuccess },
         formData.value

@@ -24,38 +24,45 @@
   </v-sheet>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { EditorState } from '@codemirror/state';
 import { EditorView, keymap, lineNumbers, highlightActiveLine, highlightSpecialChars, drawSelection, dropCursor, rectangularSelection, crosshairCursor, highlightActiveLineGutter, hoverTooltip } from '@codemirror/view';
 import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
 import { indentOnInput, syntaxHighlighting, defaultHighlightStyle, bracketMatching, foldGutter, indentUnit } from '@codemirror/language';
 import { closeBrackets, closeBracketsKeymap } from '@codemirror/autocomplete';
 import { lintGutter } from '@codemirror/lint';
-import { javascript } from '@codemirror/lang-javascript';
+// import { javascript } from '@codemirror/lang-javascript';
 import { cpp } from '@codemirror/lang-cpp';
 import { python } from '@codemirror/lang-python';
 import { java } from '@codemirror/lang-java';
-import { rust } from '@codemirror/lang-rust';
+// import { rust } from '@codemirror/lang-rust';
 import { LANGUAGES, LANGUAGE_MAP, DEFAULT_CODE } from '@/constants/templateLanguage';
 import { createSubmission, pollSubmission, prepareStdin } from '@/services/Professor/judge0api';
 import { llmCodeServices } from '@/services/llmCodeServices';
-const props = defineProps({
-  testInput: {
-    type: Object,
-    required: true
-  }
-});
+import { TestInput,LineExplanation,CodeAnalysisRequest,LanguageKey } from '@/types/LLM_code';
+// import { SubmissionResult as Judge0SubmissionResult } from '@/types/Judge0API';
 
-const emit = defineEmits(['run-result', 'submit-result', 'update:loading']);
+// Define props
+const props = defineProps<{
+  testInput: TestInput;
+}>();
 
-const selectedLanguage = ref('cpp');
-const code = ref(DEFAULT_CODE.cpp);
-const editorContainer = ref(null);
+const emit = defineEmits<{
+  (e: 'run-result', result: string): void;
+  (e: 'submit-result', result: string): void;
+  (e: 'update:loading', isLoading: boolean): void;
+}>();
+
+const selectedLanguage = ref<LanguageKey>('cpp');
+const code = ref<string>(DEFAULT_CODE[selectedLanguage.value]);
+const editorContainer = ref<HTMLElement | null>(null);
 const languages = ref(LANGUAGES);
-const isLoading = ref(false);
-const isExplaining = ref(false);
-const lineExplanations = ref([]);
-let editor = null;
+const isLoading = ref<boolean>(false);
+const isExplaining = ref<boolean>(false);
+const lineExplanations = ref<LineExplanation[]>([]);
+const showError = inject("showError") as (message: string) => void;
+const showSuccess = inject("showSuccess") as (message: string) => void;
+let editor: EditorView | null = null;
 
 // Create a basic setup configuration since there's no basicSetup in CM6
 const createBasicSetup = () => [
@@ -82,13 +89,11 @@ const createBasicSetup = () => [
   indentUnit.of("  ")
 ];
 
-// Language mapping for CodeMirror
-const cmLanguages = {
+// Language mapping for CodeMirror with proper typing
+const cmLanguages: Record<LanguageKey, any> = {
   cpp: cpp(),
-  javascript: javascript(),
   python: python(),
   java: java(),
-  rust: rust()
 };
 
 // Create hover tooltip handler based on line explanations
@@ -144,7 +149,7 @@ const darkTheme = EditorView.theme({
 }, { dark: true });
 
 // Initialize editor
-const initEditor = () => {
+const initEditor = (): void => {
   if (!editorContainer.value) return;
   
   // Clean up previous instance if it exists
@@ -152,7 +157,7 @@ const initEditor = () => {
     editor.destroy();
   }
   
-  const languageSupport = cmLanguages[selectedLanguage.value] || javascript();
+  const languageSupport = cmLanguages[selectedLanguage.value];
   
   const startState = EditorState.create({
     doc: code.value,
@@ -180,7 +185,7 @@ const initEditor = () => {
 };
 
 // Get code explanations using the llmCodeServices
-const explainCode = async () => {
+const explainCode = async (): Promise<void> => {
   try {
     isExplaining.value = true;
     
@@ -188,17 +193,14 @@ const explainCode = async () => {
     lineExplanations.value = [];
     
     // Prepare request payload
-    const codeAnalysisRequest = {
+    const codeAnalysisRequest: CodeAnalysisRequest = {
       code: code.value,
       language: selectedLanguage.value
     };
     
     // Call the service to get explanations
     const response = await llmCodeServices.getCodeExplanation(
-      { 
-        showError: true, 
-        showSuccess: false 
-      },
+      { showError, showSuccess },
       codeAnalysisRequest
     );
     
@@ -219,7 +221,7 @@ const explainCode = async () => {
 };
 
 // Run code with test case
-const runCode = async () => {
+const runCode = async (): Promise<void> => {
   try {
     isLoading.value = true;
     emit('update:loading', true);
@@ -261,7 +263,7 @@ const runCode = async () => {
       }
       
       emit('run-result', resultText);
-    } catch (apiError) {
+    } catch (apiError: any) {
       // Handle API errors
       if (apiError.response) {
         // Server returned an error with status code
@@ -291,7 +293,7 @@ const runCode = async () => {
         emit('run-result', `Error setting up request: ${apiError.message}`);
       }
     }
-  } catch (error) {
+  } catch (error: any) {
     emit('run-result', `Error running code: ${error.message}`);
   } finally {
     isLoading.value = false;
@@ -300,7 +302,7 @@ const runCode = async () => {
 };
 
 // Submit code with similar logic as runCode
-const submitCode = async () => {
+const submitCode = async (): Promise<void> => {
   try {
     isLoading.value = true;
     emit('update:loading', true);
@@ -326,7 +328,7 @@ const submitCode = async () => {
       
       // Format and emit results
       let resultText = '';
-      if (result.status.id === 3 && result.stdout.trim() === '[0,1]') {
+      if (result.status.id === 3 && result.stdout && result.stdout.trim() === '[0,1]') {
         resultText = `
 ✅ Solution Accepted!
 Your solution passed all test cases.
@@ -354,7 +356,7 @@ ${result.compile_output ? 'Compiler output: ' + result.compile_output + '\n' : '
       }
       
       emit('submit-result', resultText);
-    } catch (apiError) {
+    } catch (apiError: any) {
       // Handle API errors
       if (apiError.response) {
         // Server returned an error with status code
@@ -384,7 +386,7 @@ ${result.compile_output ? 'Compiler output: ' + result.compile_output + '\n' : '
         emit('submit-result', `Error setting up request: ${apiError.message}`);
       }
     }
-  } catch (error) {
+  } catch (error: any) {
     emit('submit-result', `Error submitting code: ${error.message}`);
   } finally {
     isLoading.value = false;
@@ -407,7 +409,7 @@ onUnmounted(() => {
 
 // Watch for language changes
 watch(selectedLanguage, (newLang) => {
-  code.value = DEFAULT_CODE[newLang];
+  code.value = DEFAULT_CODE[newLang as keyof typeof DEFAULT_CODE];
   // Re-initialize editor with new language
   nextTick(() => {
     initEditor();
@@ -429,7 +431,6 @@ watch(code, (newCode) => {
   }
 });
 </script>
-
 <style>
 .editor-container {
   width: 100%;

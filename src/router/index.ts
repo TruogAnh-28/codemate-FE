@@ -243,7 +243,7 @@ const ProfessorRoutes = [
     }],
   },
   {
-    path: "/professor-courselist/course/:id",
+    path: "/professor-courselist/courses/:id",
     component: () => import("@/layouts/default.vue"),
     children: [{
       path: "",
@@ -279,6 +279,22 @@ const ProfessorRoutes = [
     component: () => import("@/pages/Code/index.vue"),
     meta: { requiresAuth: true, role: "professor" },
   },
+  {
+    path: "/professor-schedule",
+    component: () => import("@/layouts/default.vue"),
+    children: [{
+      path: "",
+      name: "ProfessorSchedule",
+      component: () => import("@/pages/Schedule/Professor.vue"),
+      meta: { requiresAuth: true, role: "professor" },
+    }],
+  },
+  // {
+  //   path: "/professor-schedule",
+  //   name: "ProfessorSchedule",
+  //   component: () => import("@/pages/Schedule/Professor.vue"),
+  //   meta: { requiresAuth: true, role: "professor" },
+  // },
   {
     path: "/courses/:courseId/exercise-quiz/:exerciseId?",
     name: "ExerciseQuiz",
