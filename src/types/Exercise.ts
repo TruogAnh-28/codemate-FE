@@ -70,19 +70,19 @@ export interface ClearAnswerResponse {
 export enum QuestionType {
   MultipleChoice = "multiple_choice",
   SingleChoice = "single_choice",
-  TrueFalse = "true_false",
-  FillInTheBlank = "fill_in_the_blank",
-  ShortAnswer = "short_answer",
-  LongAnswer = "long_answer",
-  Matching = "matching",
-  Ordering = "ordering",
-  Essay = "essay",
-  ProblemSolving = "problem_solving",
-  Project = "project",
-  Presentation = "presentation",
-  Report = "report",
-  CaseStudy = "case_study",
-  Other = "other"
+  // TrueFalse = "true_false",
+  // FillInTheBlank = "fill_in_the_blank",
+  // ShortAnswer = "short_answer",
+  // LongAnswer = "long_answer",
+  // Matching = "matching",
+  // Ordering = "ordering",
+  // Essay = "essay",
+  // ProblemSolving = "problem_solving",
+  // Project = "project",
+  // Presentation = "presentation",
+  // Report = "report",
+  // CaseStudy = "case_study",
+  // Other = "other"
 }
 export interface QuizModal {
   question: string;
@@ -95,7 +95,7 @@ export interface QuizModal {
 }
 
 export interface TestCaseModel {
-  input: any;
+  inputs: any[];
   output: any;
   is_hidden?: boolean;
   description?: string;
