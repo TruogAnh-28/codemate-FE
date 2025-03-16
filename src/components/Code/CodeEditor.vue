@@ -12,54 +12,216 @@
         width="150"
       ></v-select>
       <v-spacer></v-spacer>
+      <v-btn variant="tonal" color="info" class="mr-2" @click="explainCode" :loading="isExplaining">Explain Code</v-btn>
       <v-btn variant="tonal" color="success" class="mr-2" @click="runCode" :loading="isLoading">Run</v-btn>
       <v-btn variant="tonal" color="primary" @click="submitCode" :loading="isLoading">Submit</v-btn>
     </v-toolbar>
 
-    <!-- Monaco Editor -->
+    <!-- CodeMirror Editor -->
     <div class="flex-grow-1 overflow-hidden">
-      <MonacoEditor
-        v-model:value="code"
-        :options="editorOptions"
-        theme="vs-dark"
-        :language="selectedLanguage"
-        class="h-100"
-        @mount="handleEditorDidMount"
-      />
+      <div ref="editorContainer" class="editor-container"></div>
     </div>
   </v-sheet>
 </template>
 
-<script setup>
-import { ref, watch } from 'vue';
-import MonacoEditor from 'monaco-editor-vue3';
-import { LANGUAGES, LANGUAGE_MAP, DEFAULT_CODE, EDITOR_OPTIONS } from '@/constants/templateLanguage';
+<script setup lang="ts">
+import { EditorState } from '@codemirror/state';
+import { EditorView, keymap, lineNumbers, highlightActiveLine, highlightSpecialChars, drawSelection, dropCursor, rectangularSelection, crosshairCursor, highlightActiveLineGutter, hoverTooltip } from '@codemirror/view';
+import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
+import { indentOnInput, syntaxHighlighting, defaultHighlightStyle, bracketMatching, foldGutter, indentUnit } from '@codemirror/language';
+import { closeBrackets, closeBracketsKeymap } from '@codemirror/autocomplete';
+import { lintGutter } from '@codemirror/lint';
+// import { javascript } from '@codemirror/lang-javascript';
+import { cpp } from '@codemirror/lang-cpp';
+import { python } from '@codemirror/lang-python';
+import { java } from '@codemirror/lang-java';
+// import { rust } from '@codemirror/lang-rust';
+import { LANGUAGES, LANGUAGE_MAP, DEFAULT_CODE } from '@/constants/templateLanguage';
 import { createSubmission, pollSubmission, prepareStdin } from '@/services/Professor/judge0api';
+import { llmCodeServices } from '@/services/llmCodeServices';
+import { TestInput,LineExplanation,CodeAnalysisRequest,LanguageKey } from '@/types/LLM_code';
+// import { SubmissionResult as Judge0SubmissionResult } from '@/types/Judge0API';
 
-const props = defineProps({
-  testInput: {
-    type: Object,
-    required: true
-  }
-});
+// Define props
+const props = defineProps<{
+  testInput: TestInput;
+}>();
 
-const emit = defineEmits(['run-result', 'submit-result', 'update:loading']);
+const emit = defineEmits<{
+  (e: 'run-result', result: string): void;
+  (e: 'submit-result', result: string): void;
+  (e: 'update:loading', isLoading: boolean): void;
+}>();
 
-const selectedLanguage = ref('cpp');
-const code = ref(DEFAULT_CODE.cpp);
-const editor = ref(null);
-const editorOptions = ref(EDITOR_OPTIONS);
+const selectedLanguage = ref<LanguageKey>('cpp');
+const code = ref<string>(DEFAULT_CODE[selectedLanguage.value]);
+const editorContainer = ref<HTMLElement | null>(null);
 const languages = ref(LANGUAGES);
-const isLoading = ref(false);
+const isLoading = ref<boolean>(false);
+const isExplaining = ref<boolean>(false);
+const lineExplanations = ref<LineExplanation[]>([]);
+const showError = inject("showError") as (message: string) => void;
+const showSuccess = inject("showSuccess") as (message: string) => void;
+let editor: EditorView | null = null;
 
-// Methods
-const handleEditorDidMount = (editorInstance) => {
-  editor.value = editorInstance;
+// Create a basic setup configuration since there's no basicSetup in CM6
+const createBasicSetup = () => [
+  lineNumbers(),
+  highlightActiveLineGutter(),
+  highlightSpecialChars(),
+  history(),
+  drawSelection(),
+  dropCursor(),
+  EditorState.allowMultipleSelections.of(true),
+  indentOnInput(),
+  syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
+  bracketMatching(),
+  closeBrackets(),
+  rectangularSelection(),
+  crosshairCursor(),
+  highlightActiveLine(),
+  keymap.of([
+    ...defaultKeymap,
+    ...historyKeymap,
+    ...closeBracketsKeymap
+  ]),
+  foldGutter(),
+  indentUnit.of("  ")
+];
+
+// Language mapping for CodeMirror with proper typing
+const cmLanguages: Record<LanguageKey, any> = {
+  cpp: cpp(),
+  python: python(),
+  java: java(),
+};
+
+// Create hover tooltip handler based on line explanations
+const createLineExplanationTooltip = () => {
+  return hoverTooltip((view, pos) => {
+    if (lineExplanations.value.length === 0) return null;
+    
+    // Get line number at position
+    const line = view.state.doc.lineAt(pos);
+    const lineNumber = line.number;
+    
+    // Find explanation for this line
+    const explanation = lineExplanations.value.find(exp => exp.line === lineNumber);
+    if (!explanation) return null;
+    
+    return {
+      pos: line.from,
+      end: line.to,
+      above: true,
+      create(view) {
+        const dom = document.createElement('div');
+        dom.className = 'cm-tooltip-explanation';
+        dom.textContent = explanation.explanation;
+        return { dom };
+      }
+    };
+  });
+};
+
+// Create a dark theme
+const darkTheme = EditorView.theme({
+  "&": {
+    backgroundColor: "#1e1e1e",
+    color: "#ddd"
+  },
+  ".cm-content": {
+    caretColor: "#0e9"
+  },
+  "&.cm-focused .cm-cursor": {
+    borderLeftColor: "#0e9"
+  },
+  "&.cm-focused .cm-selectionBackground, .cm-selectionBackground, .cm-content ::selection": {
+    backgroundColor: "#074"
+  },
+  ".cm-gutters": {
+    backgroundColor: "#1e1e1e",
+    color: "#8f8f8f",
+    border: "none"
+  },
+  ".cm-activeLineGutter": {
+    backgroundColor: "#222"
+  }
+}, { dark: true });
+
+// Initialize editor
+const initEditor = (): void => {
+  if (!editorContainer.value) return;
+  
+  // Clean up previous instance if it exists
+  if (editor) {
+    editor.destroy();
+  }
+  
+  const languageSupport = cmLanguages[selectedLanguage.value];
+  
+  const startState = EditorState.create({
+    doc: code.value,
+    extensions: [
+      ...createBasicSetup(),
+      darkTheme,
+      languageSupport,
+      lintGutter(),
+      createLineExplanationTooltip(),
+      EditorView.lineWrapping,
+      EditorView.updateListener.of((update) => {
+        if (update.docChanged) {
+          code.value = update.state.doc.toString();
+          // Clear explanations when code changes
+          lineExplanations.value = [];
+        }
+      })
+    ]
+  });
+  
+  editor = new EditorView({
+    state: startState,
+    parent: editorContainer.value
+  });
+};
+
+// Get code explanations using the llmCodeServices
+const explainCode = async (): Promise<void> => {
+  try {
+    isExplaining.value = true;
+    
+    // Clear previous explanations
+    lineExplanations.value = [];
+    
+    // Prepare request payload
+    const codeAnalysisRequest: CodeAnalysisRequest = {
+      code: code.value,
+      language: selectedLanguage.value
+    };
+    
+    // Call the service to get explanations
+    const response = await llmCodeServices.getCodeExplanation(
+      { showError, showSuccess },
+      codeAnalysisRequest
+    );
+    
+    // Process the response
+    if (response.data && Array.isArray(response.data)) {
+      lineExplanations.value = response.data;
+      
+      // Reinitialize editor to apply new tooltips
+      nextTick(() => {
+        initEditor();
+      });
+    }
+  } catch (error) {
+    console.error('Error getting code explanations:', error);
+  } finally {
+    isExplaining.value = false;
+  }
 };
 
 // Run code with test case
-// Cập nhật hàm runCode
-const runCode = async () => {
+const runCode = async (): Promise<void> => {
   try {
     isLoading.value = true;
     emit('update:loading', true);
@@ -101,10 +263,10 @@ const runCode = async () => {
       }
       
       emit('run-result', resultText);
-    } catch (apiError) {
-      // Xử lý lỗi API một cách chi tiết
+    } catch (apiError: any) {
+      // Handle API errors
       if (apiError.response) {
-        // Máy chủ trả về lỗi với status code
+        // Server returned an error with status code
         const errorData = apiError.response.data;
         let detailedError = `Error (${apiError.response.status}): `;
         
@@ -124,14 +286,14 @@ const runCode = async () => {
         
         emit('run-result', detailedError);
       } else if (apiError.request) {
-        // Yêu cầu được gửi nhưng không nhận được phản hồi
+        // Request was sent but no response received
         emit('run-result', 'Error: No response received from server');
       } else {
-        // Lỗi khác khi thiết lập yêu cầu
+        // Other errors when setting up the request
         emit('run-result', `Error setting up request: ${apiError.message}`);
       }
     }
-  } catch (error) {
+  } catch (error: any) {
     emit('run-result', `Error running code: ${error.message}`);
   } finally {
     isLoading.value = false;
@@ -139,8 +301,8 @@ const runCode = async () => {
   }
 };
 
-// Cập nhật tương tự cho hàm submitCode
-const submitCode = async () => {
+// Submit code with similar logic as runCode
+const submitCode = async (): Promise<void> => {
   try {
     isLoading.value = true;
     emit('update:loading', true);
@@ -166,7 +328,7 @@ const submitCode = async () => {
       
       // Format and emit results
       let resultText = '';
-      if (result.status.id === 3 && result.stdout.trim() === '[0,1]') {
+      if (result.status.id === 3 && result.stdout && result.stdout.trim() === '[0,1]') {
         resultText = `
 ✅ Solution Accepted!
 Your solution passed all test cases.
@@ -194,10 +356,10 @@ ${result.compile_output ? 'Compiler output: ' + result.compile_output + '\n' : '
       }
       
       emit('submit-result', resultText);
-    } catch (apiError) {
-      // Xử lý lỗi API một cách chi tiết
+    } catch (apiError: any) {
+      // Handle API errors
       if (apiError.response) {
-        // Máy chủ trả về lỗi với status code
+        // Server returned an error with status code
         const errorData = apiError.response.data;
         let detailedError = `Error (${apiError.response.status}): `;
         
@@ -217,14 +379,14 @@ ${result.compile_output ? 'Compiler output: ' + result.compile_output + '\n' : '
         
         emit('submit-result', detailedError);
       } else if (apiError.request) {
-        // Yêu cầu được gửi nhưng không nhận được phản hồi
+        // Request was sent but no response received
         emit('submit-result', 'Error: No response received from server');
       } else {
-        // Lỗi khác khi thiết lập yêu cầu
+        // Other errors when setting up the request
         emit('submit-result', `Error setting up request: ${apiError.message}`);
       }
     }
-  } catch (error) {
+  } catch (error: any) {
     emit('submit-result', `Error submitting code: ${error.message}`);
   } finally {
     isLoading.value = false;
@@ -232,14 +394,63 @@ ${result.compile_output ? 'Compiler output: ' + result.compile_output + '\n' : '
   }
 };
 
-// Watch for language changes to update code
+// Initialize editor when component is mounted
+onMounted(() => {
+  initEditor();
+});
+
+// Clean up when component is unmounted
+onUnmounted(() => {
+  if (editor) {
+    editor.destroy();
+    editor = null;
+  }
+});
+
+// Watch for language changes
 watch(selectedLanguage, (newLang) => {
-  code.value = DEFAULT_CODE[newLang];
+  code.value = DEFAULT_CODE[newLang as keyof typeof DEFAULT_CODE];
+  // Re-initialize editor with new language
+  nextTick(() => {
+    initEditor();
+  });
+  
+  // Clear explanations when language changes
+  lineExplanations.value = [];
+});
+
+// Watch for external code changes
+watch(code, (newCode) => {
+  if (!editor) return;
+  
+  const currentValue = editor.state.doc.toString();
+  if (newCode !== currentValue) {
+    editor.dispatch({
+      changes: { from: 0, to: currentValue.length, insert: newCode }
+    });
+  }
 });
 </script>
+<style>
+.editor-container {
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+}
 
-<style scoped>
 .language-select {
   width: 150px;
+}
+
+/* Custom tooltip styling */
+.cm-tooltip-explanation {
+  background-color: #2d2d2d;
+  color: #eee;
+  border: 1px solid #444;
+  padding: 5px 8px;
+  border-radius: 4px;
+  font-size: 14px;
+  max-width: 300px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
 }
 </style>

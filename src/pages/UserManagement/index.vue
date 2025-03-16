@@ -97,12 +97,14 @@
       </v-expand-transition>
 
       <!-- Data Table -->
-      <v-card class="max-w-7xl mx-auto rounded-xl bg-surface shadow-md animate-fade-in">
+      <v-card
+        class="mt-4 max-w-7xl mx-auto rounded-xl bg-surface shadow-md animate-fade-in"
+      >
         <v-data-table
           :headers="headers"
           :items="users"
           :loading="loading"
-          class="elevation-0 table-hover"
+          class="elevation-0 table-hover enhanced-table"
           hover
         >
           <template v-slot:item.role="{ item }">
@@ -146,6 +148,7 @@ import { ref, computed, onMounted, watch } from "vue";
 import { usersService } from "@/services/usersServices";
 import type { GetAllUsersResponse } from "@/types/User";
 import debounce from "@/composables/useDebounce";
+import "../table.css";
 
 const users = ref<GetAllUsersResponse[]>([]);
 const loading = ref(false);

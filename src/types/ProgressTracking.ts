@@ -43,6 +43,7 @@ export interface ExerciseStudentProgressInCourse {
 export interface StudentProgressInCourse {
     student_id: UUID
     student_name: string;
+    student_email: string;
     student_mssv: string;
     exercises: ExerciseStudentProgressInCourse[];
     learning_path?: LearningPathProgressInCourse;
@@ -61,6 +62,7 @@ export interface AnswerQuizExercise {
 export interface StudentProgressInExercise {
     student_id: UUID
     student_name: string;
+    student_email: string;
     student_mssv: string;
     score: number;
     date?: DateString;

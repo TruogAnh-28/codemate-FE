@@ -1,11 +1,11 @@
 <template>
-  <v-layout class="bg-gray-50 min-h-screen">
-    <v-main class="px-6 py-8">
+  <div class="bg-gray-50 min-h-screen">
+    <main class="px-6 py-8">
       <!-- Header Section -->
       <div class="max-w-7xl mx-auto mb-6">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-6">
-            <h1 class="text-3xl font-bold text-gray-900">Progress Course</h1>
+            <h1 class="text-3xl font-bold gradient-text">Progress Course</h1>
             <v-select
               v-model="selectedCourseId"
               :items="formattedCourses"
@@ -14,26 +14,31 @@
               label="Select Course"
               variant="outlined"
               density="comfortable"
-              class="w-64 rounded-lg"
+              class="w-64 rounded-lg transition-all hover:border-primary-lighten-1"
               hide-details
+              prepend-icon="mdi-book-open-variant"
             ></v-select>
           </div>
           <div class="flex items-center gap-4">
             <v-btn
               @click="viewMode = 'course'"
               variant="tonal"
-              class="rounded-lg"
-              :class="{ 'bg-primary text-white': viewMode === 'course' }"
+              color="primary"
+              class="rounded-lg transition-all duration-200 hover:scale-105"
+              :class="{ 'bg-primary-lighten-1 text-white': viewMode === 'course' }"
             >
+              <v-icon start>mdi-view-dashboard</v-icon>
               Course Overview
             </v-btn>
             <v-btn
               @click="viewMode = 'exercise'"
               variant="tonal"
-              class="rounded-lg"
-              :class="{ 'bg-primary text-white': viewMode === 'exercise' }"
+              color="primary"
+              class="rounded-lg transition-all duration-200 hover:scale-105"
+              :class="{ 'bg-primary-lighten-1 text-white': viewMode === 'exercise' }"
               :disabled="!selectedCourseId"
             >
+              <v-icon start>mdi-file-document</v-icon>
               Exercise Details
             </v-btn>
           </div>
@@ -54,12 +59,11 @@
         :loading="loading"
         @update:selected-exercise-id="selectedExerciseId = $event"
       />
-    </v-main>
-  </v-layout>
+    </main>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { ref, watch, inject, onMounted } from 'vue';
 import { progressServices } from "@/services/Professor/ProgressServices";
 import type {
   GetCourseGradesResponse,
@@ -68,26 +72,29 @@ import type {
 import { coursesService } from "@/services/Professor/CourseServices";
 import { GetCoursesTitle } from "@/types/Course";
 import { GetExercisesList } from "@/types/Exercise";
+import "../table.css";
+
 const loading = ref(false);
 const viewMode = ref<'course' | 'exercise'>('course');
 const selectedCourseId = ref('');
 const selectedExerciseId = ref('');
-const courses = ref<GetCoursesTitle[]>();
-const exercises = ref<GetExercisesList[]>();
+const courses = ref<GetCoursesTitle[]>([]);
+const exercises = ref<GetExercisesList[]>([]);
 const courseGrades = ref<GetCourseGradesResponse | null>(null);
 const exerciseGrades = ref<GetExerciseGradesResponse | null>(null);
 
 const showError = inject("showError") as (message: string) => void;
 const showSuccess = inject("showSuccess") as (message: string) => void;
+
 const formattedCourses = computed(() => {
-  if (!courses.value) return [];
+  if (!courses.value || courses.value.length === 0) return [];
   
   return courses.value.map(course => ({
     ...course,
     formatted_title: `[${course.course_nSemester}] ${course.course_name} (${course.course_courseID})`
   }));
 });
-// ... (rest of the fetch functions and watchers remain the same)
+
 const fetchCourses = async () => {
   try {
     const response = await coursesService.fetchCoursesTitleList({
@@ -118,7 +125,6 @@ const fetchExercises = async () => {
     if ("data" in response && response.data) {
       exercises.value = response.data as GetExercisesList[];
     }
-    console.log(exercises.value)
   } catch (error) {
     console.error("Error fetching exercises:", error);
   }
@@ -193,24 +199,3 @@ onMounted(() => {
   fetchCourses();
 });
 </script>
-
-<style scoped>
-:deep(.v-data-table) {
-  border-radius: 12px;
-  overflow: hidden;
-}
-
-:deep(.v-data-table__thead) {
-  background-color: rgb(249, 250, 251);
-}
-
-:deep(.v-data-table__thead th) {
-  font-weight: 600 !important;
-  text-transform: none !important;
-  white-space: nowrap;
-}
-
-:deep(.v-data-table-footer) {
-  background-color: rgb(249, 250, 251);
-}
-</style>

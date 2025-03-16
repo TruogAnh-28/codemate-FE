@@ -1,6 +1,5 @@
 <script lang="ts" setup>
 import { usersService } from "@/services/usersServices";
-import { ref, inject, watch, onMounted } from "vue";
 import * as XLSX from "xlsx";
 
 interface CreateUserRequest {
@@ -35,9 +34,6 @@ const isDragging = ref(false);
 
 // Computed properties
 const msLabel = computed(() => (selectedRole.value === "student" ? "MSSV" : "MSCB"));
-const msDescription = computed(() =>
-  selectedRole.value === "student" ? "Student ID Number" : "Employee ID Number"
-);
 
 // Injections
 const showError = inject("showError") as (message: string) => void;

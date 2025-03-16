@@ -5,7 +5,7 @@
       <h3 class="text-subtitle-1 font-weight-bold mb-0">General Information</h3>
     </div>
     
-    <v-sheet rounded="lg" elevation="1" class="pa-4 mb-4 bg-grey-lighten-4">
+    <v-sheet rounded="lg" elevation="1" class="pa-4 mb-4">
       <v-text-field
         v-model="formData.name"
         label="Title*"
@@ -46,10 +46,10 @@
 </template>
 
 <script lang="ts" setup>
-import { ExerciseQuizRequest } from '@/types/Exercise';
+import { ExerciseQuizRequest,ExerciseCodeRequest } from '@/types/Exercise';
 
 defineProps<{
-  formData: ExerciseQuizRequest
+  formData: ExerciseQuizRequest|ExerciseCodeRequest
 }>();
 
 defineEmits<{

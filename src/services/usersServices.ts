@@ -2,7 +2,6 @@ import ApiService from "@/common/api.service";
 import { AuthConfig } from "./authenServices";
 import { IResponseData } from "@/modals/apis/response";
 import { GetAllUsersResponse, CreateUserRequest, CreateUserResponse, GetProfileResponse, CreateUserLogin, UserLoginResponse } from "@/types/User";
-import { get } from "node_modules/axios/index.cjs";
 
 interface GetUserParams {
     search_query?: string
@@ -88,5 +87,43 @@ export const usersService = {
                 showSuccess: config.showSuccess,
             }
         );
-    }
+    },
+    /**
+   * Update user information
+   * @param data - The user data to be updated
+   * @param config - Configuration for success/error handling
+   */
+    async updateUser(
+        data: {
+            name: string;
+            fullname: string;
+            date_of_birth: string;
+            role: "student" | "professor" | "admin";
+            avatar?: File; // File to be uploaded
+        },
+        config: { showError?: (message: string) => void; showSuccess?: (message: string) => void } = {}
+    ) {
+        const formData = new FormData();
+        formData.append("name", data.name);
+        formData.append("fullname", data.fullname);
+        formData.append("date_of_birth", data.date_of_birth);
+        formData.append("role", data.role);
+
+        if (data.avatar) {
+            formData.append("file", data.avatar);
+        }
+
+        return ApiService.update<IResponseData<boolean>>(
+            "users", 
+            "", 
+            formData, 
+            {
+                showError: config.showError,
+                showSuccess: config.showSuccess,
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                },
+            }
+        );
+    },
 }

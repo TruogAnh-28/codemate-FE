@@ -8,7 +8,7 @@
 import { createRouter, createWebHistory } from "vue-router";
 import { setupLayouts } from "virtual:generated-layouts";
 import { routes as autoRoutes } from "vue-router/auto-routes";
-import ApiService, { manageExpirationTimer, PUBLIC_ROUTES } from "@/common/api.service";
+import ApiService, { PUBLIC_ROUTES } from "@/common/api.service";
 import { useAuthStore } from "@/stores/auth";
 import { usersService } from "@/services/usersServices";
 
@@ -49,155 +49,229 @@ const LoginRoute = [
 const StudentRoutes = [
   {
     path: "/dashboard",
-    name: "Dashboard",
-    component: () => import("@/pages/Dashboard/index.vue"),
-    meta: { requiresAuth: true, role: "student" },
+    component: () => import("@/layouts/default.vue"),
+    children: [{
+      path: "",
+      name: "Dashboard",
+      component: () => import("@/pages/Dashboard/index.vue"),
+      meta: { requiresAuth: true, role: "student" },
+    }],
   },
   {
     path: "/progress-tracking",
-    name: "ProgressTracking",
-    component: () => import("@/pages/ProgressTracking/index.vue"),
-    meta: { requiresAuth: true, role: "student" },
+    component: () => import("@/layouts/default.vue"),
+    children: [{
+      path: "",
+      name: "ProgressTracking",
+      component: () => import("@/pages/ProgressTracking/index.vue"),
+      meta: { requiresAuth: true, role: "student" },
+    }],
   },
   {
     path: "/courselist",
-    name: "CourseList",
-    component: () => import("@/pages/Course/CourseList/index.vue"),
-    meta: { requiresAuth: true, role: "student" },
+    component: () => import("@/layouts/default.vue"),
+    children: [{
+      path: "",
+      name: "CourseList",
+      component: () => import("@/pages/Course/CourseList/index.vue"),
+      meta: { requiresAuth: true, role: "student" },
+    }],
   },
   {
     path: "/courselist/course/:id",
-    name: "CourseDetail",
-    component: () => import("@/pages/Course/CourseDetail/index.vue"),
-    props: true,
-    meta: { requiresAuth: true, role: "student" },
+    component: () => import("@/layouts/default.vue"),
+    children: [{
+      path: "",
+      name: "CourseDetail",
+      component: () => import("@/pages/Course/CourseDetail/index.vue"),
+      props: true,
+      meta: { requiresAuth: true, role: "student" },
+    }],
   },
   {
     path: "/lessonRecommend/:lessonId",
-    name: "Lesson",
-    component: () => import("@/pages/Lesson/index.vue"),
-    props: true,
-    meta: { requiresAuth: true, role: "student" },
-    children: [
-      {
-        path: "",
-        name: "LessonRecommend",
-        component: () => import("@/pages/Lesson/LessonRecommend/index.vue"),
-        props: true,
-        meta: { requiresAuth: true, role: "student" },
-      },
-      {
-        path: "Module/:moduleId/Quiz",
-        name: "LessonRecommendQuiz",
-        component: () => import("@/pages/Lesson/Quiz/index.vue"),
-        props: true,
-        meta: { requiresAuth: true, role: "student" },
-      },
-      {
-        path: "Module/:moduleId/Quiz/:quizId",
-        name: "LessonRecommendDoQuiz",
-        component: () => import("@/pages/Lesson/DoQuiz/index.vue"),
-        props: true,
-        meta: { requiresAuth: true, role: "student" },
-      },
-      {
-        path: "Module/:moduleId/Code",
-        name: "LessonRecommendCode",
-        component: () => import("@/pages/Lesson/Code/index.vue"),
-        props: true,
-        meta: { requiresAuth: true, role: "student" },
-      },
-      {
-        path: "Module/:moduleId/Document",
-        name: "LessonRecommendDocument",
-        component: () => import("@/pages/Lesson/Document/index.vue"),
-        props: true,
-        meta: { requiresAuth: true, role: "student" },
-      },
-    ],
+    component: () => import("@/layouts/default.vue"),
+    children: [{
+      path: "",
+      name: "Lesson",
+      component: () => import("@/pages/Lesson/index.vue"),
+      props: true,
+      meta: { requiresAuth: true, role: "student" },
+      children: [
+        {
+          path: "",
+          name: "LessonRecommend",
+          component: () => import("@/pages/Lesson/LessonRecommend/index.vue"),
+          props: true,
+          meta: { requiresAuth: true, role: "student" },
+        },
+        {
+          path: "Module/:moduleId/Quiz",
+          name: "LessonRecommendQuiz",
+          component: () => import("@/pages/Lesson/Quiz/index.vue"),
+          props: true,
+          meta: { requiresAuth: true, role: "student" },
+        },
+        {
+          path: "Module/:moduleId/Quiz/:quizId",
+          name: "LessonRecommendDoQuiz",
+          component: () => import("@/pages/Lesson/DoQuiz/index.vue"),
+          props: true,
+          meta: { requiresAuth: true, role: "student" },
+        },
+        {
+          path: "Module/:moduleId/Code",
+          name: "LessonRecommendCode",
+          component: () => import("@/pages/Lesson/Code/index.vue"),
+          props: true,
+          meta: { requiresAuth: true, role: "student" },
+        },
+        {
+          path: "Module/:moduleId/Document",
+          name: "LessonRecommendDocument",
+          component: () => import("@/pages/Lesson/Document/index.vue"),
+          props: true,
+          meta: { requiresAuth: true, role: "student" },
+        },
+      ],
+    }],
   },
 ];
+
 const AdminRoutes = [
   {
     path: "/admin-dashboard",
-    name: "AdminDashboard",
-    component: () => import("@/pages/Dashboard/Admin.vue"),
-    meta: { requiresAuth: true, role: "admin" },
+    component: () => import("@/layouts/default.vue"),
+    children: [{
+      path: "",
+      name: "AdminDashboard",
+      component: () => import("@/pages/Dashboard/Admin.vue"),
+      meta: { requiresAuth: true, role: "admin" },
+    }],
   },
   {
     path: "/feedback-management",
-    name: "FeedbackManagement",
-    component: () => import("@/pages/FeedbackManagement/index.vue"),
-    meta: { requiresAuth: true, role: "admin" },
+    component: () => import("@/layouts/default.vue"),
+    children: [{
+      path: "",
+      name: "FeedbackManagement",
+      component: () => import("@/pages/FeedbackManagement/index.vue"),
+      meta: { requiresAuth: true, role: "admin" },
+    }],
   },
   {
     path: "/user-management",
-    name: "UserManagement",
-    component: () => import("@/pages/UserManagement/index.vue"),
-    meta: { requiresAuth: true, role: "admin" },
+    component: () => import("@/layouts/default.vue"),
+    children: [{
+      path: "",
+      name: "UserManagement",
+      component: () => import("@/pages/UserManagement/index.vue"),
+      meta: { requiresAuth: true, role: "admin" },
+    }],
   },
   {
     path: "/course-management",
-    name: "CourseManagement",
-    component: () => import("@/pages/CourseManagement/index.vue"),
-    meta: { requiresAuth: true, role: "admin" },
+    component: () => import("@/layouts/default.vue"),
+    children: [{
+      path: "",
+      name: "CourseManagement",
+      component: () => import("@/pages/CourseManagement/index.vue"),
+      meta: { requiresAuth: true, role: "admin" },
+    }],
   },
   {
     path: "/add-course",
-    name: "AddCourse",
-    component: () => import("@/pages/CourseManagement/AddCourse.vue"),
-    meta: { requiresAuth: true, role: "admin" },
+    component: () => import("@/layouts/default.vue"),
+    children: [{
+      path: "",
+      name: "AddCourse",
+      component: () => import("@/pages/CourseManagement/AddCourse.vue"),
+      meta: { requiresAuth: true, role: "admin" },
+    }],
   },
   {
     path: "/add-user",
-    name: "AddUser",
-    component: () => import("@/pages/UserManagement/AddUser.vue"),
-    meta: { requiresAuth: true, role: "admin" },
+    component: () => import("@/layouts/default.vue"),
+    children: [{
+      path: "",
+      name: "AddUser",
+      component: () => import("@/pages/UserManagement/AddUser.vue"),
+      meta: { requiresAuth: true, role: "admin" },
+    }],
   },
   {
     path: "/feedback-statistics",
-    name: "FeedbackStatistics",
-    component: () => import("@/pages/FeedbackManagement/FeedbackStatistics.vue"),
-    meta: { requiresAuth: true, role: "admin" },
+    component: () => import("@/layouts/default.vue"),
+    children: [{
+      path: "",
+      name: "FeedbackStatistics",
+      component: () => import("@/pages/FeedbackManagement/FeedbackStatistics.vue"),
+      meta: { requiresAuth: true, role: "admin" },
+    }],
   },
   {
     path: "/system-usage-statistics",
-    name: "SystemUsageStatistics",
-    component: () => import("@/pages/SystemUsageManagement/index.vue"),
-    meta: { requiresAuth: true, role: "admin" },
+    component: () => import("@/layouts/default.vue"),
+    children: [{
+      path: "",
+      name: "SystemUsageStatistics",
+      component: () => import("@/pages/SystemUsageManagement/index.vue"),
+      meta: { requiresAuth: true, role: "admin" },
+    }],
   }
 ];
+
 const ProfessorRoutes = [
   {
     path: "/professor-dashboard",
-    name: "ProfessorDashboard",
-    component: () => import("@/pages/Dashboard/Professor.vue"),
-    meta: { requiresAuth: true, role: "professor" },
+    component: () => import("@/layouts/default.vue"),
+    children: [{
+      path: "",
+      name: "ProfessorDashboard",
+      component: () => import("@/pages/Dashboard/Professor.vue"),
+      meta: { requiresAuth: true, role: "professor" },
+    }],
   },
   {
     path: "/professor-courselist",
-    name: "ProfessorCourseList",
-    component: () => import("@/pages/Course/CourseList/Professor.vue"),
-    meta: { requiresAuth: true, role: "professor" },
+    component: () => import("@/layouts/default.vue"),
+    children: [{
+      path: "",
+      name: "ProfessorCourseList",
+      component: () => import("@/pages/Course/CourseList/Professor.vue"),
+      meta: { requiresAuth: true, role: "professor" },
+    }],
   },
   {
     path: "/professor-courselist/courses/:id",
-    name: "ProfessorCourseDetail",
-    component: () => import("@/pages/Course/CourseDetail/Professor.vue"),
-    props: true,
-    meta: { requiresAuth: true, role: "professor" },
+    component: () => import("@/layouts/default.vue"),
+    children: [{
+      path: "",
+      name: "ProfessorCourseDetail",
+      component: () => import("@/pages/Course/CourseDetail/Professor.vue"),
+      props: true,
+      meta: { requiresAuth: true, role: "professor" },
+    }],
   },
   {
     path: "/professor-feedback",
-    name: "ProfessorFeedback",
-    component: () => import("@/pages/FeedbackManagement/Professor.vue"),
-    meta: { requiresAuth: true, role: "professor" },
+    component: () => import("@/layouts/default.vue"),
+    children: [{
+      path: "",
+      name: "ProfessorFeedback",
+      component: () => import("@/pages/FeedbackManagement/Professor.vue"),
+      meta: { requiresAuth: true, role: "professor" },
+    }],
   },
   {
     path: "/professor-progress",
-    name: "ProfessorProgress",
-    component: () => import("@/pages/ProgressTracking/Professor.vue"),
-    meta: { requiresAuth: true, role: "professor" },
+    component: () => import("@/layouts/default.vue"),
+    children: [{
+      path: "",
+      name: "ProfessorProgress",
+      component: () => import("@/pages/ProgressTracking/Professor.vue"),
+      meta: { requiresAuth: true, role: "professor" },
+    }],
   },
   {
     path: "/professor-code",
@@ -206,29 +280,63 @@ const ProfessorRoutes = [
     meta: { requiresAuth: true, role: "professor" },
   },
   {
+    path: "/professor-schedule",
+    component: () => import("@/layouts/default.vue"),
+    children: [{
+      path: "",
+      name: "ProfessorSchedule",
+      component: () => import("@/pages/Schedule/Professor.vue"),
+      meta: { requiresAuth: true, role: "professor" },
+    }],
+  },
+  // {
+  //   path: "/professor-schedule",
+  //   name: "ProfessorSchedule",
+  //   component: () => import("@/pages/Schedule/Professor.vue"),
+  //   meta: { requiresAuth: true, role: "professor" },
+  // },
+  {
     path: "/courses/:courseId/exercise-quiz/:exerciseId?",
     name: "ExerciseQuiz",
     component: () => import("@/pages/ExerciseQuiz/index.vue"),
     meta: { requiresAuth: true, role: "professor" },
   },
+  {
+    path: "/courses/:courseId/exercise-code/:exerciseId?",
+    name: "ExerciseCode",
+    component: () => import("@/pages/ExerciseCode/index.vue"),
+    meta: { requiresAuth: true, role: "professor" },
+  },
 ];
+
+const ProfileRoute = {
+  path: "/profile",
+  component: () => import("@/layouts/default.vue"),
+  children: [{
+    path: "",
+    name: "Profile",
+    component: () => import("@/pages/Profile/index.vue"),
+    props: (route: { query: { email: string; role: string; }; }) => ({ email: route.query.email, role: route.query.role }),
+    meta: { requiresAuth: true },
+  }],
+};
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    ...LoginRoute,
-    ...setupLayouts([
-      ...autoRoutes,
-      ...StudentRoutes,
-      ...AdminRoutes,
-      ...ProfessorRoutes,
-    ]),
+    ...LoginRoute, 
+    ...StudentRoutes,
+    ...AdminRoutes, 
+    ...ProfessorRoutes, 
+    ProfileRoute,  
+
+    ...setupLayouts([...autoRoutes]),
   ],
 });
 
+
 const showError = (msg: string) => alert(msg);
 
-// Function to get user profile
 const getUserInfo = async () => {
   try {
     const response = await usersService.getProfile({
@@ -250,23 +358,24 @@ router.beforeEach(async (to, from, next) => {
   const refreshToken = ApiService.getRefreshToken();
   const isToPublic = PUBLIC_ROUTES.includes(to.path);
   const isFromPublic = PUBLIC_ROUTES.includes(from.path);
-  console.log("isToPublic", to.path, "isFromPublic", from.path);
 
   if (isToPublic && isFromPublic && !((to.path === "/") && (from.path === "/"))) {
-    console.log("isToPublic && isFromPublic");
+
     return next();
   }
 
   else if ((!isToPublic && isFromPublic) || (isToPublic && isFromPublic && ((to.path === "/") && (from.path === "/")))) {
+
     if (!authStore.isAuthenticated) {
       authStore.checkAuth();
     }
+
     if (!accessToken || !authStore.isAuthenticated) {
       sessionStorage.setItem("redirectUrl", to.fullPath);
       return next("/login");
     }
     if ((to.meta.role && to.meta.role !== authStore.userRole) || (!to.meta.role && authStore.userRole)) {
-      console.log("check 3", to.meta.role, authStore.userRole)
+
       const rolePaths = {
         student: "/dashboard",
         professor: "/professor-dashboard",

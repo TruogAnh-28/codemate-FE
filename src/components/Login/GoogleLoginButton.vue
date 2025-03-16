@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { googleTokenLogin } from "vue3-google-login";
 import ApiService from "@/common/api.service";
-import { googleApiLink } from "@/common/config";
 import { FetchUserInformationFromGoogleResponse } from "@/types/Auth";
 import { authenService } from "@/services/authenServices";
 import googleLogo from "@/assets/login/googleLogo.vue";
@@ -41,14 +40,13 @@ const login = async () => {
       showError("No access token received from Google");
     }
 
-    const googleUserInfo =
-      await ApiService.query<FetchUserInformationFromGoogleResponse>(
-        googleApiLink,
-        { access_token: responseFromGoogle.access_token },
-        {
-          parseResponse: (response) => response.data,
-        }
-      );
+    const googleUserInfo = await ApiService.query<FetchUserInformationFromGoogleResponse>(
+      import.meta.env.VITE_APP_googleApiLink,
+      { access_token: responseFromGoogle.access_token },
+      {
+        parseResponse: (response) => response.data,
+      }
+    );
 
     if (!googleUserInfo?.email) {
       showError("Unable to retrieve email from Google");
@@ -89,12 +87,12 @@ const login = async () => {
             sendGoogleTokenResponse.data.refresh_token
           );
 
-          const user = authStore.getUser();
-          if (user.role === "student") {
+          const user = authStore.user;
+          if (user?.role === "student") {
             router.push("/dashboard");
-          } else if (user.role === "professor") {
-            // router.push({ name: "DashboardProfessor" });
-          } else if (user.role === "admin") {
+          } else if (user?.role === "professor") {
+            router.push("/professor-dashboard");
+          } else if (user?.role === "admin") {
             router.push("/admin-dashboard");
           } else {
             router.push("/login");
@@ -145,12 +143,12 @@ watch(
                 response.data.refresh_token
               );
 
-              const user = authStore.getUser();
-              if (user.role === "student") {
+              const user = authStore.user;
+              if (user?.role === "student") {
                 router.push("/dashboard");
-              } else if (user.role === "professor") {
-                // router.push({ name: "DashboardProfessor" });
-              } else if (user.role === "admin") {
+              } else if (user?.role === "professor") {
+                router.push("/professor-dashboard");
+              } else if (user?.role === "admin") {
                 router.push("/admin-dashboard");
               } else {
                 router.push("/login");
@@ -161,7 +159,7 @@ watch(
           showError("Cannot fetch your email from google");
         }
       } catch (error) {
-        showError(("Error during login: " + error) as unknown as string);
+        showError((("Error during login: " + error) as unknown) as string);
       }
     }
   }

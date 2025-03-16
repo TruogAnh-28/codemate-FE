@@ -1,10 +1,10 @@
 <template>
   <v-card class="rounded-xl border-card bg-grey-lighten-4" elevation="3">
     <div class="card-header pa-6 d-flex align-center">
-      <v-icon color="primary" size="x-large" class="mr-4">mdi-book</v-icon>
+      <v-icon color="primary" size="x-large" class="mr-4">mdi-code-tags</v-icon>
       <div>
         <h2 class="text-h5 font-weight-bold">
-          {{ data ? 'Edit Exercise: Quiz' : 'Add Exercise: Quiz' }}
+          {{ data ? 'Edit Exercise: Code' : 'Add Exercise: Code' }}
         </h2>
         <p class="text-subtitle-2 text-medium-emphasis mb-0">
           {{ course ? `Course: [${course.course_nSemester}] ${course.course_name} (${course?.course_courseID}) - [${course.course_class_name}]` : 'Loading course...' }}
@@ -36,24 +36,14 @@
         />
 
         <!-- Options Section -->
-        <OptionsSection v-model:formData="formData" />
+        <!-- <OptionsSection v-model:formData="formData" /> -->
 
-        <!-- Questions Section -->
-        <QuestionsSection 
+        <!-- Coding Questions Section -->
+        <CodeQuestionsSection 
           v-model:questions="formData.questions"
-          :questionTypes="Object.values(QuestionType)"
           :difficultyLevels="difficultyLevels"
+          :programmingLanguages="programmingLanguages"
         />
-
-        <v-btn
-          variant="tonal"
-          prepend-icon="mdi-plus"
-          color="primary"
-          class="text-none mt-2 mb-6 rounded-lg"
-          @click="addQuestion"
-        >
-          Add Another Question
-        </v-btn>
       </v-form>
     </v-card-text>
 
@@ -73,7 +63,7 @@
         prepend-icon="mdi-check-circle"
         @click="handleSubmit"
       >
-        {{ data ? 'Update Quiz' : 'Create Quiz' }}
+        {{ data ? 'Update Coding Exercise' : 'Create Coding Exercise' }}
       </v-btn>
     </v-card-actions>
   </v-card>
@@ -81,7 +71,7 @@
 
 <script lang="ts" setup>
 import { useRoute, useRouter } from 'vue-router';
-import { ExerciseQuizRequest, ExerciseQuizResponse, QuestionType } from '@/types/Exercise';
+import { ExerciseCodeRequest, ExerciseCodeResponse } from '@/types/Exercise';
 import { GradingMethodType } from "@/utils/commonType";
 import { exercisesService } from '@/services/Professor/ExerciseServices';
 import { coursesService } from '@/services/Professor/CourseServices';
@@ -96,26 +86,35 @@ const route = useRoute();
 const router = useRouter();
 const { courseId, exerciseId } = route.params as RouteParams;
 const difficultyLevels = ['easy', 'medium', 'hard'];
+const programmingLanguages = ['python', 'javascript', 'java', 'c++', 'c#'];
 const showError = inject('showError') as (message: string) => void;
 const showSuccess = inject('showSuccess') as (message: string) => void;
 const form = ref<any>(null);
-const data = ref<ExerciseQuizResponse | null>(null);
+const data = ref<ExerciseCodeResponse | null>(null);
 const course = ref<GetCourseDetailProfessorResponse | null>(null);
-const formData = ref<ExerciseQuizRequest>({
+const formData = ref<ExerciseCodeRequest>({
   name: '',
   description: '',
   topic: '',
   questions: [{
     question: '',
-    answer: ['0'],
-    options: ['', '', '', ''],
-    feedback: '',
-    type: QuestionType.SingleChoice,
+    testcases: [{
+      inputs: [''],
+      output: '',
+      is_hidden: false,
+      description: 'Basic test case'
+    }],
+    starter_code: '# Your code here',
+    solution_code: '# Solution code here',
+    hints: [''],
+    score: 1,
     difficulty: 'medium',
-    score: 1
+    allowed_languages: ['python'],
+    time_limit_seconds: 5,
+    memory_limit_mb: 128
   }],
   max_score: 0,
-  type: 'quiz',
+  type: 'code',
   course_id: courseId,
   time_open: '',
   time_close: '',
@@ -172,16 +171,26 @@ const fetchExerciseDetails = async () => {
   if (!exerciseId) return;
 
   try {
-    const response = await exercisesService.getExerciseQuiz({ showError }, exerciseId);
+    const response = await exercisesService.getExerciseCode({ showError }, exerciseId);
     if (response.isSuccess && response.data) {
       data.value = response.data;
       const exerciseData = response.data;
       const formattedQuestions = exerciseData.questions.map(q => ({
         ...q,
-        options: q.options.length ? q.options : ['', ''],
-        answer: Array.isArray(q.answer) ? q.answer : [q.answer || '0'],
-        feedback: q.feedback || '',
-        difficulty: q.difficulty || 'medium'
+        testcases: q.testcases?.length ? q.testcases : [{
+          inputs: [''],
+          output: '',
+          is_hidden: false,
+          description: 'Basic test case'
+        }],
+        starter_code: q.starter_code || '# Your code here',
+        solution_code: q.solution_code || '# Solution code here',
+        hints: q.hints || [''],
+        score: q.score || 1,
+        difficulty: q.difficulty || 'medium',
+        allowed_languages: q.allowed_languages?.length ? q.allowed_languages : ['python'],
+        time_limit_seconds: q.time_limit_seconds || 5,
+        memory_limit_mb: q.memory_limit_mb || 128
       }));
       formData.value = {
         ...formData.value, // Preserve defaults for fields not in response
@@ -218,18 +227,6 @@ onMounted(async () => {
   await fetchExerciseDetails();
 });
 
-const addQuestion = () => {
-  formData.value.questions.push({
-    question: '',
-    answer: ['0'],
-    options: ['', '', '', ''],
-    feedback: '',
-    type: QuestionType.SingleChoice,
-    difficulty: 'medium',
-    score: 1
-  });
-};
-
 const handleSubmit = async () => {
   if (!form.value?.validate()) {
     showError('Please check the form for errors');
@@ -241,28 +238,28 @@ const handleSubmit = async () => {
   
   try {
     if (exerciseId) {
-      const response = await exercisesService.editExerciseQuiz(
+      const response = await exercisesService.editExerciseCode(
         { showError, showSuccess },
         exerciseId,
         formData.value
       );
       if (response.isSuccess) {
-        showSuccess('Exercise quiz updated successfully');
+        showSuccess('Coding exercise updated successfully');
         navigateBack();
       }
     } else {
-      console.log('formData.value', formData.value);
-      const response = await coursesService.postExerciseQuiz(
+      console.log('Creating exercise', formData.value);
+      const response = await exercisesService.postExerciseCode(
         { showError, showSuccess },
         formData.value
       );
       if (response) {
-        showSuccess('Exercise quiz created successfully');
+        showSuccess('Coding exercise created successfully');
         navigateBack();
       }
     }
   } catch (error) {
-    showError('Failed to save exercise quiz');
+    showError('Failed to save coding exercise');
   }
 };
 </script>
