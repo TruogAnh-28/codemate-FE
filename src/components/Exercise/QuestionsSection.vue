@@ -6,7 +6,7 @@
     </div>
     
     <v-sheet v-for="(question, index) in questions" :key="`question-${index}`" 
-      rounded="lg" elevation="1" class="pa-4 mb-4 bg-grey-lighten-4">
+      rounded="lg" elevation="1" class="pa-4 mb-4">
       <div class="d-flex align-center">
         <div class="d-flex align-center" style="flex: 1">
           <span class="text-primary font-weight-medium">Question {{ index + 1 }}</span>

@@ -1,5 +1,5 @@
 <template>
-  <v-card class="rounded-xl border-card" elevation="3">
+  <v-card class="rounded-xl border-card bg-grey-lighten-4" elevation="3">
     <div class="card-header pa-6 d-flex align-center">
       <v-icon color="primary" size="x-large" class="mr-4">mdi-code-tags</v-icon>
       <div>
@@ -44,16 +44,6 @@
           :difficultyLevels="difficultyLevels"
           :programmingLanguages="programmingLanguages"
         />
-
-        <v-btn
-          variant="tonal"
-          prepend-icon="mdi-plus"
-          color="primary"
-          class="text-none mt-2 mb-6 rounded-lg"
-          @click="addQuestion"
-        >
-          Add Another Coding Question
-        </v-btn>
       </v-form>
     </v-card-text>
 
@@ -109,7 +99,7 @@ const formData = ref<ExerciseCodeRequest>({
   questions: [{
     question: '',
     testcases: [{
-      input: '',
+      inputs: [''],
       output: '',
       is_hidden: false,
       description: 'Basic test case'
@@ -188,7 +178,7 @@ const fetchExerciseDetails = async () => {
       const formattedQuestions = exerciseData.questions.map(q => ({
         ...q,
         testcases: q.testcases?.length ? q.testcases : [{
-          input: '',
+          inputs: [''],
           output: '',
           is_hidden: false,
           description: 'Basic test case'
@@ -237,26 +227,6 @@ onMounted(async () => {
   await fetchExerciseDetails();
 });
 
-const addQuestion = () => {
-  formData.value.questions.push({
-    question: '',
-    testcases: [{
-      input: '',
-      output: '',
-      is_hidden: false,
-      description: 'Basic test case'
-    }],
-    starter_code: '# Your code here',
-    solution_code: '# Solution code here',
-    hints: [''],
-    score: 1,
-    difficulty: 'medium',
-    allowed_languages: ['python'],
-    time_limit_seconds: 5,
-    memory_limit_mb: 128
-  });
-};
-
 const handleSubmit = async () => {
   if (!form.value?.validate()) {
     showError('Please check the form for errors');
@@ -278,6 +248,7 @@ const handleSubmit = async () => {
         navigateBack();
       }
     } else {
+      console.log('Creating exercise', formData.value);
       const response = await exercisesService.postExerciseCode(
         { showError, showSuccess },
         formData.value
