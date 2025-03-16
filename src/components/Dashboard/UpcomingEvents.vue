@@ -1,10 +1,16 @@
 <template>
   <v-card class="flex-1 rounded-lg overflow-hidden" elevation="2">
-    <v-card-title class="py-4 px-6 bg-gray-50 border-b">
-      <h3 class="text-body-large-1 font-semibold text-gray-800">
-        Upcoming Events
-      </h3>
-    </v-card-title>
+    <v-card-item class="py-4 px-6 bg-gray-50 border-b">
+      <template v-slot:title class="text-body-large-1 font-semibold text-gray-800"> Upcoming Events </template>
+      <template v-slot:append>
+        <v-btn
+          text="View Details"
+          color="primary"
+          :to="'/professor-schedule'"
+          variant="text"
+        />
+      </template>
+    </v-card-item>
     <v-list v-if="items.length > 0" class="max-h-96 overflow-y-auto px-2">
       <EventItem
         v-for="item in items"
