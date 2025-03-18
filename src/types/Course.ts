@@ -146,14 +146,18 @@ export interface DocumentOriginalResponse {
 
 
 export interface GetRecommendedLessonsResponse {
-  course_id: string
-  course_name: string
+  id: string
+  learning_path_id: string
   lesson_id: string
-  bookmark: boolean
+  progress: number
+  explain: string
   status: string
-  title: string
-  description: string
-  order: number
+  start_date: string
+  end_date: string
+  duration_notes: string
+  bookmark: boolean
+  modules: any
+  lesson_title: string
 }
 
 //---------------------------------Professor---------------------------------

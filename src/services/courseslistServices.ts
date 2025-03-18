@@ -85,8 +85,8 @@ export const coursesService = {
     { showError, showSuccess }: AuthConfig,
     course_id: string
   ) {
-    return await ApiService.get<GetRecommendedLessonsResponse[]>(
-      `courses/${course_id}/lessons_recommendation/`,
+    return await ApiService.get<IResponseData<GetRecommendedLessonsResponse[]>>(
+      `courses/${course_id}/learning-path/recommended-lessons`,
       "",
       { showError, showSuccess }
     );
