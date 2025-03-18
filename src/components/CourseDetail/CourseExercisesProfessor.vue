@@ -89,33 +89,14 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-
-    <!-- Exercise Quiz Edit Modal -->
-    <!-- <ExerciseQuizModal
-      v-if="showQuizModal"
-      :course-id="props.course?.course_id || ''"
-      :course-name="props.course?.course_name || ''"
-      :initial-data="selectedExercise"
-      @close="closeQuizModal"
-      @submit="handleQuizSubmit"
-    /> -->
-    <v-dialog v-model="showQuizModal" persistent max-width="1200px" max-height="calc(100% - 130px)" class="mx-10">
-      <ExerciseQuizModal 
-        :course-id="props.course?.course_id || ''"
-        :course-name="props.course?.course_name || ''"
-        :data="selectedExercise"
-        @close="closeQuizModal"
-        @submit="handleQuizSubmit"
-      />
-    </v-dialog>
+  
   </div>
 </template>
 
 <script lang="ts" setup>
 import { ref } from 'vue';
 import { GetCourseDetailProfessorResponse, GetExercisesProfessor } from "@/types/Course";
-import { ExerciseQuizResponse, ExerciseQuizRequest } from '@/types/Exercise';
-import { exercisesService } from '@/services/Professor/ExerciseServices';
+import { ExerciseQuizResponse } from '@/types/Exercise';
 import { coursesService } from '@/services/Professor/CourseServices';
 import {GetExercisesList} from "@/types/Exercise";
 const props = defineProps<{
@@ -125,7 +106,6 @@ const router = useRouter();
 const exercises = ref<GetExercisesList[]>([]);
 const deleteDialog = ref(false);
 const selectedExercise = ref<ExerciseQuizResponse | null>(null);
-const showQuizModal = ref(false);
 const showError = inject("showError") as (message: string) => void;
 const showSuccess = inject("showSuccess") as (message: string) => void;
 const emit = defineEmits(['view', 'edit', 'delete', 'update']);
@@ -145,34 +125,6 @@ const handleEditExercise = async (exercise: GetExercisesProfessor) => {
     router.push(`/courses/${props.course.course_id}/exercise-quiz/${exercise.id}`);
   } else {
     router.push(`/courses/${props.course.course_id}/exercise-code/${exercise.id}`);
-  }
-};
-
-const closeQuizModal = () => {
-  showQuizModal.value = false;
-  selectedExercise.value = null;
-};
-
-const handleQuizSubmit = async (data: ExerciseQuizRequest) => {
-  if (selectedExercise.value) {
-    try {
-      const response = await exercisesService.editExerciseQuiz(
-        { showError, showSuccess },
-        selectedExercise.value.exercise_id,
-        data as ExerciseQuizRequest
-      );
-      
-      // Update the exercises list with the edited exercise
-      // const index = exercises.value.findIndex(e => e.id === selectedExercise.value?.exercise_id);
-      // if (index !== -1) {
-      //   exercises.value[index] = response;
-      // }
-      
-      emit('update', response);
-      closeQuizModal();
-    } catch (error) {
-      console.error('Error updating quiz:', error);
-    }
   }
 };
 

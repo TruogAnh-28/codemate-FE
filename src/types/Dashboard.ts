@@ -1,6 +1,6 @@
-import { UUID, DateTimeString } from "@/utils/commonType"
+import { UUID, DateTimeString, ExerciseType } from "@/utils/commonType"
 
-export interface GetRecentCourseResponse {
+export interface GetRecentCorseRespounse {
   course: string
   course_id: string
   last_accessed: string
@@ -28,6 +28,7 @@ export interface UpcomingEvent {
   exercise_name: string;
   exercise_time_open: DateTimeString;
   exercise_time_close: DateTimeString;
+  exercise_type: ExerciseType;
   course_name: string;
   course_id: UUID;
   course_courseID: string

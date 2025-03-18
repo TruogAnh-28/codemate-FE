@@ -78,7 +78,7 @@
             <!-- View Course Button with hover effect -->
             <v-btn
               color="secondary"
-              :to="`/professor-courselist/course/${course.id}`"
+              :to="`/professor-courselist/courses/${course.id}`"
               rounded
               class="view-button"
             >

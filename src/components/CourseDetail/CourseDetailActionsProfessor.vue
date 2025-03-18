@@ -36,15 +36,6 @@
       />
     </v-dialog>
 
-    <!-- Exercise Code Modal -->
-    <v-dialog v-model="showExerciseCodeModal" persistent max-width="1200px" max-height="calc(100% - 130px)" class="mx-10">
-      <ExerciseCodeModal 
-        :course-id="courseId"
-        :courseName="courseName"
-        @close="showExerciseCodeModal = false"
-        @submit="handleExerciseCodeSubmit"
-      />
-    </v-dialog>
     <v-dialog v-model="showCreateLessonModal" persistent max-width="800px" max-height="calc(100% - 130px)">
       <CreateLessonModal 
         :courseId="courseId"
@@ -59,7 +50,6 @@
 import { ref } from 'vue';
 import { coursesService } from '@/services/Professor/CourseServices';
 import { PutLearningOutcomesCoursesResponse } from '@/types/Course';
-import { ExerciseCodeResponse } from '@/types/Exercise';
 import CreateLessonModal from './CreateLessonModal.vue';
 
 const props = defineProps<{
@@ -70,8 +60,6 @@ const props = defineProps<{
 
 const showCreateLessonModal = ref(false);
 const showLearningOutcomesModal = ref(false);
-const showExerciseCodeModal = ref(false);
-
 const showError = inject('showError') as (message: string) => void;
 const showSuccess = inject('showSuccess') as (message: string) => void;
 
@@ -89,16 +77,5 @@ const handleLearningOutcomesSubmit = async (data: PutLearningOutcomesCoursesResp
   }
 };
 
-const handleExerciseCodeSubmit = async (data: ExerciseCodeResponse) => {
-  try {
-    await coursesService.postExerciseCode(
-      { showError, showSuccess },
-      data
-    );
-    showExerciseCodeModal.value = false;
-    showSuccess('Exercise code created successfully');
-  } catch (error) {
-    showError('Failed to create exercise code');
-  }
-};
+
 </script>
