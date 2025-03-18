@@ -13,9 +13,10 @@
         <CourseSidebar
           :course="course"
           :dialog="dialog"
+          :show-recommendations-modal="showCourseRecommendationsModal"
           @open-recommendation="openRecommendationModal"
-          @open-course-recommendations="openCourseRecommendationsModal"
           @update:dialog="dialog = $event"
+          @update:show-recommendations-modal="showCourseRecommendationsModal = $event"
           @submit-goal="handleGoalSubmission"
         />
       </v-col>
@@ -27,6 +28,8 @@
 import { CourseDetailResponse, ProfessorInformation } from "@/types/Course";
 import { coursesService } from "@/services/courseslistServices";
 import { Tab } from "@/components/CourseDetail/CourseMainContent.vue";
+import { useCourseStore } from "@/stores/courseStore";
+import { aiGenerateServices } from "@/services/aiGenerateServices";
 
 const props = defineProps<{
   id: string;
@@ -58,12 +61,10 @@ const tabs = ref<Tab[]>([
 ]);
 
 const fetchCourseDetail = async () => {
-  const response = await coursesService.fetchCourseDetail(
-    { showError, showSuccess },
-    id
-  );
+  const response = await coursesService.fetchCourseDetail({ showError, showSuccess }, id);
   if (response && "data" in response && response.data) {
     course.value = response.data as CourseDetailResponse;
+    useCourseStore().setCourseDetails(response.data as CourseDetailResponse);
   }
 };
 
@@ -81,13 +82,36 @@ const openRecommendationModal = () => {
   dialog.value = true;
 };
 
-const openCourseRecommendationsModal = () => {
+const showCourseRecommendationsModal = ref(false);
 
+const openCourseRecommendationsModal = () => {
+  showCourseRecommendationsModal.value = true;
 };
 
-const handleGoalSubmission = (goal: string) => {
-  console.log("Learning Goal Submitted:", goal);
-  dialog.value = false;
+// Sửa hàm handleGoalSubmission
+const handleGoalSubmission = async (goal: string) => {
+  try {
+    const response = await aiGenerateServices.generateLearningPath(
+      {
+        showError,
+        showSuccess,
+      },
+      {
+        course_id: id,
+        goal: goal,
+      }
+    );
+
+    if (response && "data" in response && response.data) {
+      dialog.value = false;
+      openCourseRecommendationsModal();
+      showSuccess("Learning path generated successfully");
+    }
+  } catch (error) {
+    showError("Failed to generate learning path");
+  } finally {
+    dialog.value = false;
+  }
 };
 
 watch(

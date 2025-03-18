@@ -2,43 +2,40 @@
   <v-container>
     <v-row v-if="props.courses.length > 0">
       <v-col
-        v-for="(course) in coursesWithProfessors"
+        v-for="course in coursesWithProfessors"
         :key="course.id"
         cols="12"
         class="mb-6"
       >
-        <v-card
-          class="rounded-lg shadow-md course-card"
-          :elevation="2"
-          v-ripple
-        >
+        <v-card class="rounded-lg shadow-md course-card" :elevation="2" v-ripple>
           <div class="d-flex p-4 gap-4 course-content">
             <div class="image-container">
-              <v-img
-                class="flex-shrink-0 course-image"
-                width="300px"
-                height="200px"
-                :src="course.image"
-                cover
-              >
-                <template v-slot:error>
-                  <CourseInitialAvatar :course-name="course.name"  />
-                </template>
-              </v-img>
+              <template v-if="course.image">
+                <v-img
+                  class="flex-shrink-0 course-image"
+                  width="150px"
+                  height="150px"
+                  :src="course.image"
+                  cover
+                >
+                  <template v-slot:error>
+                    <CourseInitialAvatar :course-name="course.name" />
+                  </template>
+                </v-img>
+              </template>
+              <template v-else>
+                <CourseInitialAvatar :course-name="course.name" />
+              </template>
             </div>
 
             <div class="flex-grow-1 middle-content">
               <div class="mb-4 course-header">
-                <h3
-                  class="text-body-large-1 font-bold text-wrap mb-1 course-title"
-                >
+                <h3 class="text-body-large-1 font-bold text-wrap mb-1 course-title">
                   {{ course.name }}
                 </h3>
 
                 <p
-                  v-if="
-                    course.start_date !== 'None' && course.end_date !== 'None'
-                  "
+                  v-if="course.start_date !== 'None' && course.end_date !== 'None'"
                   class="text-body-small-1 text-wrap"
                 >
                   {{ formatStart_EndDate(course.start_date) }} to
@@ -49,11 +46,7 @@
                 </p>
               </div>
 
-              <AvatarStack
-                :courses="course"
-                :max-visible="3"
-                class="avatar-stack"
-              />
+              <AvatarStack :courses="course" :max-visible="3" class="avatar-stack" />
             </div>
 
             <!-- Learning Outcomes with fixed width -->
@@ -64,9 +57,7 @@
               />
             </div>
             <!-- Professor Info and Status -->
-            <div
-              class="d-flex flex-column justify-space-between align-end info-section"
-            >
+            <div class="d-flex flex-column justify-space-between align-end info-section">
               <div class="text-end mb-2">
                 <p class="text-body-base-4 mb-4 professor-info">
                   <strong>Professor:</strong>

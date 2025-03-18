@@ -1,13 +1,13 @@
 import { defineStore } from "pinia";
-import { CoursesListResponse } from "@/types/Course";
+import { CourseDetailResponse, CoursesListResponse } from "@/types/Course";
 
 export const useCourseStore = defineStore("course", {
   state: () => ({
-    courseDetails: null as CoursesListResponse | null,
+    courseDetails: null as CoursesListResponse | CourseDetailResponse | null,
   }),
 
   actions: {
-    setCourseDetails(course: CoursesListResponse) {
+    setCourseDetails(course: CoursesListResponse | CourseDetailResponse) {
       this.courseDetails = course;
       localStorage.setItem("courseDetails", JSON.stringify(course));
     },

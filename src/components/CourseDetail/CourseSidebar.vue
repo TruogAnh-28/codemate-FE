@@ -24,10 +24,9 @@
     </v-dialog>
 
     <CourseRecommendLessons
-    :course="course"
-      v-if="showRecommendationsModal"
+      :course="course"
       :show-modal="showRecommendationsModal"
-      @update:show-modal="updateRecommendationsModal"
+      @update:show-modal="$emit('update:show-recommendations-modal', $event)"
       @close="closeRecommendationsModal"
     />
   </div>
@@ -41,13 +40,13 @@ const showRecommendationsModal = ref(false);
 defineProps<{
   course: CourseDetailResponse | null;
   dialog: boolean;
+  showRecommendationsModal: boolean;
 }>();
-
 const emit = defineEmits<{
-  'open-recommendation': [];
-  'open-course-recommendations': [];
-  'update:dialog': [value: boolean];
-  'submit-goal': [goal: string];
+  "open-recommendation": [];
+  "update:dialog": [value: boolean];
+  "update:show-recommendations-modal": [value: boolean];
+  "submit-goal": [goal: string];
 }>();
 
 const openRecommendationsModal = () => {
@@ -56,15 +55,12 @@ const openRecommendationsModal = () => {
 
 const closeRecommendationsModal = () => {
   showRecommendationsModal.value = false;
-};
-
-const updateRecommendationsModal = (value: boolean) => {
-  showRecommendationsModal.value = value;
+  emit("update:show-recommendations-modal", false);
 };
 
 const handleDialogUpdate = (value: unknown) => {
-  if (typeof value === 'boolean') {
-    emit('update:dialog', value);
+  if (typeof value === "boolean") {
+    emit("update:dialog", value);
   }
 };
 </script>

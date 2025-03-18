@@ -4,20 +4,19 @@
     @update:model-value="$emit('update:show-modal', $event)"
     max-width="800"
     class="rounded-lg"
-    :persistent="true"
   >
     <v-card class="p-6">
       <div class="d-flex justify-space-between align-center mb-6">
         <h2 class="text-body-large-1 font-weight-bold">
           Recommended Lessons for
           <span class="text-heading-4 text-secondary-variant">{{
-            courseName
+            props.course?.course_name
           }}</span>
         </h2>
         <v-btn
           icon="mdi-close"
           variant="text"
-          @click="$emit('close')"
+          @click="closeModal()"
           class="text-body-small"
         ></v-btn>
       </div>
@@ -46,9 +45,9 @@
       >
         <v-row class="mb-4 m-0">
           <v-col cols="12" md="8" class="border-b-2 pb-4">
-            <div class="font-bold text-body-large-1">{{ lesson.title }}</div>
+            <div class="font-bold text-body-large-1">{{ lesson.lesson_title }}</div>
             <div class="text-text-tetiary text-body-base-1">
-              {{ lesson.description }}
+              {{ lesson.duration_notes }}
             </div>
           </v-col>
           <v-col
@@ -56,11 +55,7 @@
             md="4"
             class="flex justify-center items-center border-b-2 pb-4"
           >
-            <v-tooltip
-              bottom
-              v-for="button in actionButtons(lesson)"
-              :key="button.index"
-            >
+            <v-tooltip bottom v-for="button in actionButtons(lesson)" :key="button.index">
               <template v-slot:activator="{ props: activatorProps }">
                 <v-btn
                   variant="text"
@@ -92,26 +87,27 @@
 <script lang="ts" setup>
 import { coursesService } from "@/services/courseslistServices";
 
-import {
-  CourseDetailResponse,
-  GetRecommendedLessonsResponse,
-} from "@/types/Course";
+import { CourseDetailResponse, GetRecommendedLessonsResponse } from "@/types/Course";
 const props = defineProps<{
   showModal: boolean;
   course: CourseDetailResponse | null;
 }>();
 
-defineEmits<{
+const emit = defineEmits<{
   "update:show-modal": [value: boolean];
   close: [];
 }>();
 
+const closeModal = () => {
+  emit("update:show-modal", false);
+  emit("close");
+};
 const loading = ref(true);
 const error = ref<string | null>(null);
 const showFeedbackModal = ref(false);
 const selectedLessonId = ref<string | undefined>(undefined);
 const recommendedLessons = ref<GetRecommendedLessonsResponse[]>([]);
-const courseName = ref<string>("");
+const courseName = props.course?.course_name;
 const showError = inject("showError") as (message: string) => void;
 const showSuccess = inject("showSuccess") as (message: string) => void;
 const router = useRouter();
@@ -124,15 +120,14 @@ const fetchRecommendedLessons = async () => {
         { showError, showSuccess },
         props.course.course_id
       );
-      if (response) {
-        recommendedLessons.value = response;
-        courseName.value = response[0].course_name;
+      if (response && "data" in response && response.data) {
+        recommendedLessons.value = response.data;
       } else {
         showError("Failed to fetch recommended lessons");
       }
     }
   } catch (err) {
-    error.value = "An error occurred while loading recommendations";
+    error.value = "You haven't had any learning paths for this course yet.";
   } finally {
     loading.value = false;
   }
@@ -152,7 +147,7 @@ const handleFeedbackSubmitted = (feedbackData: {
   feedback: string;
 }): void => {
   console.log(
-    "Feedback received for lesson ${feedbackData.lessonId}:, feedbackData.feedback"
+    `Feedback received for lesson ${feedbackData.lessonId}:,${feedbackData.feedback}`
   );
   showFeedbackModal.value = false;
   selectedLessonId.value = undefined;
@@ -162,12 +157,8 @@ const actionButtons = (recommendedLesson: GetRecommendedLessonsResponse) => {
   return [
     {
       index: 0,
-      icon: recommendedLesson.bookmark
-        ? "mdi-bookmark"
-        : "mdi-bookmark-outline",
-      value: recommendedLesson.bookmark
-        ? "Unbookmark Lesson"
-        : "Bookmark Lesson",
+      icon: recommendedLesson.bookmark ? "mdi-bookmark" : "mdi-bookmark-outline",
+      value: recommendedLesson.bookmark ? "Unbookmark Lesson" : "Bookmark Lesson",
       class: recommendedLesson.bookmark ? "text-error" : "text-text-primary",
     },
     {
@@ -191,12 +182,12 @@ const handleButtonClick = (
 ) => {
   switch (button.index) {
     case 1:
-      openFeedbackModal(recommendedLesson.lesson_id);
+      openFeedbackModal(recommendedLesson.id);
       break;
     case 2:
       router.push({
-        path: `/lessonRecommend/${recommendedLesson.lesson_id}`,
-        query: { courseName: courseName.value },
+        path: `/lessonRecommend/${recommendedLesson.id}`,
+        query: { courseName: courseName },
       });
 
       break;
@@ -238,6 +229,8 @@ onMounted(() => {
     fetchRecommendedLessons();
   }
 });
+
+// Close the dialog
 </script>
 
 <style scoped>
