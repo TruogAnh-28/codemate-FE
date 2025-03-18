@@ -275,9 +275,13 @@ const ProfessorRoutes = [
   },
   {
     path: "/professor-code",
-    name: "ProfessorCode",
-    component: () => import("@/pages/Code/index.vue"),
-    meta: { requiresAuth: true, role: "professor" },
+    component: () => import("@/layouts/default.vue"),
+    children: [{
+      path: "",
+      name: "ProfessorCode",
+      component: () => import("@/pages/Code/index.vue"),
+      meta: { requiresAuth: true, role: "professor" },
+    }],
   },
   {
     path: "/professor-schedule",
