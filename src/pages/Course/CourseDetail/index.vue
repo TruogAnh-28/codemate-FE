@@ -82,22 +82,14 @@ const openRecommendationModal = () => {
   dialog.value = true;
 };
 
-// Thêm ref để quản lý trạng thái hiển thị modal CourseRecommendLessons
 const showCourseRecommendationsModal = ref(false);
 
-// Sửa hàm openCourseRecommendationsModal
 const openCourseRecommendationsModal = () => {
   showCourseRecommendationsModal.value = true;
 };
 
-// Thêm hàm đóng modal
-const closeCourseRecommendationsModal = () => {
-  showCourseRecommendationsModal.value = false;
-};
-
 // Sửa hàm handleGoalSubmission
 const handleGoalSubmission = async (goal: string) => {
-  // Gọi API để tạo đường học tập
   try {
     const response = await aiGenerateServices.generateLearningPath(
       {
@@ -111,15 +103,14 @@ const handleGoalSubmission = async (goal: string) => {
     );
 
     if (response && "data" in response && response.data) {
-      dialog.value = false; // Đóng modal goals
-      // Mở modal hiển thị đường học tập
-      showCourseRecommendationsModal.value = true;
+      dialog.value = false;
+      openCourseRecommendationsModal();
       showSuccess("Learning path generated successfully");
     }
   } catch (error) {
     showError("Failed to generate learning path");
   } finally {
-    dialog.value = false; // Đảm bảo đóng modal goals dù có lỗi
+    dialog.value = false;
   }
 };
 
@@ -153,8 +144,4 @@ onMounted(() => {
   fetchCourseDetail();
   fetchProfessorInformation();
 });
-
-function emit(arg0: string) {
-  throw new Error("Function not implemented.");
-}
 </script>

@@ -182,11 +182,11 @@ const handleButtonClick = (
 ) => {
   switch (button.index) {
     case 1:
-      openFeedbackModal(recommendedLesson.lesson_id);
+      openFeedbackModal(recommendedLesson.id);
       break;
     case 2:
       router.push({
-        path: `/lessonRecommend/${recommendedLesson.lesson_id}`,
+        path: `/lessonRecommend/${recommendedLesson.id}`,
         query: { courseName: courseName },
       });
 

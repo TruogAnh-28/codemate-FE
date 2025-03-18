@@ -1,6 +1,7 @@
 <template>
   <v-container fluid class="px-12" v-if="lesson">
-      <v-breadcrumbs class="ma-0 pa-0"
+    <v-breadcrumbs
+      class="ma-0 pa-0"
       :items="breadcrumbsStore.breadcrumbs"
       divider="/"
     ></v-breadcrumbs>
@@ -22,7 +23,7 @@
 
     <v-col cols="3" class="text-body-base-4 mb-4">
       <v-row>
-        <v-icon color="primary" class="mr-2">mdi-book-open-outline</v-icon> 
+        <v-icon color="primary" class="mr-2">mdi-book-open-outline</v-icon>
         {{ lesson.modules.length }} Modules
       </v-row>
     </v-col>
@@ -53,7 +54,13 @@
           </v-card-title>
           <v-card-text class="pa-0">
             <ul class="list-disc pl-6 space-y-2">
-              <li v-for="(outcome, index) in lesson.learning_outcomes" :key="index" class="text-body-base-1">
+              <li
+                v-for="(outcome, index) in parsedLearningOutcomes(
+                  lesson.learning_outcomes
+                )"
+                :key="index"
+                class="text-body-base-1"
+              >
                 {{ outcome }}
               </li>
             </ul>
@@ -73,7 +80,9 @@
           class="p-4 text-center bg-secondary hover:bg-secondary-variant cursor-pointer"
           @click="openDialog(module)"
         >
-          <v-card-text class="font-weight-bold text-body-base-1">{{ module.title }}</v-card-text>
+          <v-card-text class="font-weight-bold text-body-base-1">{{
+            module.title
+          }}</v-card-text>
         </v-card>
       </v-col>
     </v-row>
@@ -90,7 +99,7 @@
 </template>
 
 <script lang="ts" setup>
-import { lessonsService } from '@/services/recommendLesson';
+import { lessonsService } from "@/services/recommendLesson";
 import { Lesson, Module } from "@/types/Lesson";
 import { renderStatusLabel } from "@/utils/functions/render";
 import { useBreadcrumbsStore } from "@/stores/breadcrumbs";
@@ -103,15 +112,14 @@ const lesson = ref<Lesson | null>(null);
 const showDialog = ref(false);
 const selectedModule = ref<Module>({} as Module);
 const showError = inject("showError") as (message: string) => void;
-const showSuccess = inject("showSuccess") as (message: string) => void;  
+const showSuccess = inject("showSuccess") as (message: string) => void;
 
 const route = useRoute();
-const {  lessonId } = route.params as RouteParams;
+const { lessonId } = route.params as RouteParams;
 const courseName = computed(() => {
   const name = route.query.courseName;
-  return typeof name === 'string' ? name : '';
+  return typeof name === "string" ? name : "";
 });
-
 
 const breadcrumbsStore = useBreadcrumbsStore();
 
@@ -120,14 +128,30 @@ function openDialog(module: Module) {
   showDialog.value = true;
 }
 
+const parsedLearningOutcomes = (learning_outcomes: string[]) => {
+  try {
+    return learning_outcomes
+      .map((outcome) => {
+        return JSON.parse(outcome);
+      })
+      .flat();
+  } catch (e) {
+    console.error("Error parsing learning outcomes:", e);
+    return [];
+  }
+};
+
 const fetchRecommendedLesson = async () => {
-  const respone = await lessonsService.fetchRecommendedLesson({showError,showSuccess}, lessonId);
+  const respone = await lessonsService.fetchRecommendedLesson(
+    { showError, showSuccess },
+    lessonId
+  );
   if (respone && "data" in respone && respone.data) {
     lesson.value = respone.data as Lesson;
     if (lesson.value) {
       breadcrumbsStore.setBreadcrumbs([
         { title: courseName.value, disabled: true },
-        { title: lesson.value.name, disabled: true }
+        { title: lesson.value.name, disabled: true },
       ]);
     }
   }
@@ -136,5 +160,4 @@ const fetchRecommendedLesson = async () => {
 onMounted(fetchRecommendedLesson);
 </script>
 
-<style scoped>
-</style>
+<style scoped></style>

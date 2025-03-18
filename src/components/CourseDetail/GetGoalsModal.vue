@@ -64,8 +64,13 @@
       <!-- Right Panel -->
       <div class="w-full md:w-1/2 p-6 bg-gray-50">
         <div v-if="isLoading" class="h-full flex flex-col items-center justify-center">
-          <v-progress-circular indeterminate color="primary" size="48" class="mb-4" />
-          <p class="text-gray-600">{{ loadingMessage }}</p>
+          <v-progress-circular
+            indeterminate
+            color="primary"
+            size="48"
+            class="mb-4 loading-spinner"
+          />
+          <p class="loading-text">{{ loadingMessage }}</p>
         </div>
 
         <div
@@ -167,8 +172,13 @@
       v-if="isLearningPath"
       class="h-full flex flex-col items-center justify-center bg-white"
     >
-      <v-progress-circular indeterminate color="primary" size="48" class="mb-4" />
-      <p class="text-gray-600">{{ loadingLearningPath }}</p>
+      <v-progress-circular
+        indeterminate
+        color="primary"
+        size="48"
+        class="mb-4 loading-spinner"
+      />
+      <p class="text-gray-600 loading-text">{{ loadingLearningPath }}</p>
     </div>
   </v-dialog>
 </template>
@@ -324,5 +334,44 @@ const getLessonChipColor = (index: number) => {
 <style scoped>
 .overflow-y-auto {
   max-height: 400px;
+}
+.loading-spinner {
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+.loading-text {
+  color: #4a5568;
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  opacity: 0;
+  transform: translateY(10px);
+  animation: fadeIn 0.6s forwards ease-out;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.95);
+    opacity: 0.7;
+  }
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 </style>
