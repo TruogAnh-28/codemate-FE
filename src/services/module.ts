@@ -3,13 +3,13 @@ import { AuthConfig } from "@/services/authenServices";
 import { ModuleQuizResponse, QuizExerciseResponse, ClearAnswerResponse } from "@/types/Exercise";
 import { DocumentResponse } from "@/types/Document";
 import { QuizScoreResponse, QuizAnswerRequest } from "@/types/Exercise";
-
+import { IResponseData } from "@/modals/apis/response";
 export const moduleService = {
   async fetchModuleQuizzes(
     { showError, showSuccess }: AuthConfig,
     moduleId: string
   ) {
-    return await ApiService.get<ModuleQuizResponse>(
+    return await ApiService.get<IResponseData<ModuleQuizResponse>>(
       `modules/${moduleId}/quizzes`,
       "",
       { showError, showSuccess }

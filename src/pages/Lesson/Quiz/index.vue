@@ -1,116 +1,178 @@
-<template class="tailwind-scope">
-  <v-container fluid class="px-12">
-    <v-breadcrumbs class="ma-0 pa-0"
+<template>
+  <v-container fluid class="px-12" v-if="moduleQuizzes">
+    <!-- Breadcrumbs -->
+    <v-breadcrumbs
+      class="ma-0 pa-0 mb-4"
       :items="breadcrumbs"
       divider="/"
     ></v-breadcrumbs>
-    <v-card flat class="pa-0 mb-4">
-      <v-sheet class="font-weight-bold text-heading-3 pa-0">
-        {{ moduleQuizzes.title }}
-        <v-chip variant="flat" class="ma-2">
+    
+    <!-- Main Header Card -->
+    <v-card class="border-card mb-6 overflow-hidden" elevation="3">
+      <div class="card-header pa-6 d-flex align-center">
+        <v-icon color="primary" size="x-large" class="mr-4">mdi-book-education-outline</v-icon>
+        <div>
+          <h2 class="text-h5 font-weight-bold">{{ moduleQuizzes.title }}</h2>
+          <p class="text-subtitle-2 text-medium-emphasis mb-0">
+            {{ moduleQuizzes.quizzes.length }} quizzes to complete
+          </p>
+        </div>
+        <v-spacer></v-spacer>
+        <v-chip
+          class="px-4 py-2"
+          color="primary"
+          prepend-icon="mdi-school"
+          elevation="1"
+        >
           Quiz
         </v-chip>
-      </v-sheet>
-      <!-- <v-card-subtitle class="text-body-base-1 pa-0">
-        {{ lesson.name }}
-      </v-card-subtitle> -->
+      </div>
+      
+      <v-card-text class="px-6 pt-4 pb-6">
+        <v-row>
+          <v-col cols="6">
+            <!-- Introduction Section -->
+            <div class="mb-6">
+              <div class="d-flex align-center mb-2">
+                <v-icon color="primary" class="mr-2">mdi-lightbulb-outline</v-icon>
+                <h3 class="text-subtitle-1 font-weight-bold mb-0">Introduction</h3>
+              </div>
+              <v-sheet rounded="lg" elevation="0" class="pa-4 bg-grey-lighten-4 border-left-primary">
+                <p class="text-body-1 mb-2">
+                  Welcome to the <span class="text-error font-weight-bold">'{{ moduleQuizzes.title }}'</span> module!
+                </p>
+                <p class="text-body-1 mb-2">
+                  This module uses interactive quizzes to help you test your knowledge. Work through each quiz at your own speed, and check your answers along the way.
+                </p>
+                <p class="text-body-1 mb-0">
+                  You can retake any quiz for better understanding.
+                </p>
+              </v-sheet>
+            </div>
+          </v-col>
+          
+          <!-- Learning Outcomes Section -->
+          <v-col cols="6">
+            <div class="d-flex align-center mb-2">
+              <v-icon color="error" class="mr-2">mdi-certificate-outline</v-icon>
+              <h3 class="text-subtitle-1 font-weight-bold mb-0 text-error">Learning Outcomes</h3>
+            </div>
+            <v-sheet rounded="lg" elevation="1" class="pa-4 bg-error-lighten-5 border-left-error learning-outcomes-sheet">
+              <v-list density="compact" class="bg-transparent pa-0">
+                <v-list-item
+                  v-for="(outcome, index) in moduleQuizzes.objectives"
+                  :key="index"
+                  prepend-icon="mdi-check-circle"
+                  class="px-0 py-1"
+                  :class="{'mb-2': index !== moduleQuizzes.objectives.length - 1}"
+                >
+                  <v-list-item-title class="text-body-1 learning-outcome-text">{{ outcome }}</v-list-item-title>
+                </v-list-item>
+              </v-list>
+            </v-sheet>
+          </v-col>
+        </v-row>
+      </v-card-text>
     </v-card>
-    <v-row class="mb-4">
-      <v-col cols="6" class="py-6">
-        <v-card flat class="pa-0 mb-2">
-          <v-card-text class="pa-0 mb-2 text-body-base-4">
-            Welcome to the <span class="text-error">'{{ moduleQuizzes.title }}'</span> module!
+
+    <!-- Quizzes Section -->
+    <div class="mb-4 d-flex align-center">
+      <v-icon color="primary" size="large" class="mr-2">mdi-help-circle-outline</v-icon>
+      <h2 class="text-h5 font-weight-bold mb-0">Quizzes</h2>
+      <v-spacer></v-spacer>
+      <v-btn 
+        @click="generateQuiz" 
+        color="primary" 
+        :loading="isLoading"
+        :disabled="isLoading"
+      >
+    {{ isLoading ? 'Generating...' : 'Generate New Quiz' }}
+  </v-btn>
+    </div>
+    
+    <v-row>
+      <v-col
+        cols="12"
+        sm="6"
+        md="4"
+        v-for="(quiz, index) in moduleQuizzes.quizzes"
+        :key="quiz.id"
+      >
+        <v-card
+          class="module-card rounded-xl border-card h-100"
+          elevation="2"
+        >
+          <div class="module-header pa-4">
+            <div class="d-flex align-center">
+              <v-avatar
+                :color="`primary-${(index % 3) + 1}`"
+                class="mr-3"
+                size="42"
+              >
+                <span class="text-h6 font-weight-bold white--text">{{ index + 1 }}</span>
+              </v-avatar>
+              <v-chip
+                size="small"
+                :color="getDifficultyColor(quiz.difficulty)"
+                class="ml-auto"
+              >
+                {{ quiz.difficulty }}
+              </v-chip>
+            </div>
+          </div>
+          
+          <v-card-text class="pa-4">
+            <h3 class="text-subtitle-1 font-weight-medium mb-2">{{ quiz.name }}</h3>
+            <div class="d-flex align-center text-caption text-medium-emphasis">
+              <v-icon size="small" class="mr-1">mdi-clipboard-check-outline</v-icon>
+              <span>Status: </span>
+              <v-chip
+                size="x-small"
+                class="ml-2"
+                :color="quiz.status === 'completed' ? 'success' : (quiz.status === 'on going' ? 'warning' : 'grey')"
+              >
+                {{ quiz.status }}
+              </v-chip>
+            </div>
+            <div v-if="quiz.status === 'completed'" class="d-flex align-center mt-2 text-caption">
+              <v-icon size="small" color="error" class="mr-1">mdi-star</v-icon>
+              <span class="text-error font-weight-medium">Score: {{ quiz.score }}</span>
+            </div>
           </v-card-text>
-          <v-card-text class="pa-0 mb-2 text-body-base-4">
-            This module uses interactive quizzes to help you test your knowledge. Work through each quiz at your own speed, and check your answers along the way.
-          </v-card-text>
-          <v-card-text class="pa-0 text-body-base-4">
-            You can retake any quiz for better understanding.
-          </v-card-text>
-        </v-card>
-      </v-col>
-      <v-col col="2"></v-col>
-      <v-col cols="4" class="pl-4">
-        <v-card flat class="pa-0">
-          <v-card-title class="font-weight-bold text-heading-4 text-error">
-            Learning Outcomes:
-          </v-card-title>
-          <v-card-text class="pa-0 text-body-base-4">
-            <ul class="list-disc pl-6">
-              <li v-for="(outcome, index) in moduleQuizzes.objectives" :key="index">
-                {{ outcome }}
-              </li>
-            </ul>
-          </v-card-text>
+          
+          <v-card-actions class="pa-4 pt-0">
+            <v-btn
+              v-if="quiz.status === 'completed' || quiz.status === 'on going'"
+              color="secondary"
+              variant="outlined"
+              class="text-none rounded-lg mr-2"
+              @click="viewAgain(quiz.id)"
+            >
+              View Again
+            </v-btn>
+            <v-btn
+              color="primary"
+              variant="tonal"
+              class="text-none rounded-lg"
+              @click="doQuiz(quiz.id, quiz.status)"
+              prepend-icon="mdi-play-circle-outline"
+              :block="!(quiz.status === 'completed' || quiz.status === 'on going')"
+            >
+              Start Quiz
+            </v-btn>
+          </v-card-actions>
         </v-card>
       </v-col>
     </v-row>
-    <v-card class="rounded-lg overflow-hidden" elevation="2">
-      <div>
-        <div class="flex justify-between items-center mb-4">
-          <h3 class="text-body-large-1 font-semibold text-gray-800 pl-4">Quiz List</h3>
-          <v-col cols="auto">
-            <v-btn color="primary" @click="generateQuiz">Add Quiz</v-btn>
-          </v-col>
-        </div>
-        <v-col cols="12" v-for="quiz in moduleQuizzes.quizzes" :key="quiz.id">
-          <v-card outlined class="py-0">
-            <v-card-title class="text-body-large-4">
-              <v-row align="center" justify="space-between" class="w-full">
-                <v-col cols="auto" class="d-flex align-center">
-                  <v-icon class="mr-2">mdi-book-open-outline</v-icon>
-                  {{ quiz.name }}
-                </v-col>
-                <v-col cols="auto" class="text-right">
-                  <span v-if="quiz.status === 'completed'" class="text-red px-2 py-2 text-body-large-4">
-                    {{ quiz.score }} điểm
-                  </span>
-                </v-col>
-              </v-row>
-            </v-card-title>
-            <v-card-subtitle style="opacity: 1;">
-              <v-row align="center" justify="space-between" class="w-full my-0">
-                <v-col cols="auto" class="d-flex align-center">
-                  <v-chip :color="getDifficultyColor(quiz.difficulty)">
-                    {{ quiz.difficulty }}
-                  </v-chip>
-                  <v-chip class="ml-2" :color="quiz.status === 'completed' ? 'green' : (quiz.status === 'on going' ? 'orange' : 'red')">
-                    {{ quiz.status }}
-                  </v-chip>
-                </v-col>
-                <v-card-actions>
-                  <v-btn
-                    elevation="2"
-                    v-if="quiz.status === 'completed' || quiz.status === 'on going'"
-                    color="secondary"
-                    @click="viewAgain(quiz.id)"
-                    class="px-2 text-body-base-4"
-                  >
-                    View Again
-                  </v-btn>
-                  <v-btn
-                    elevation="2"
-                    color="primary"
-                    @click="doQuiz(quiz.id, quiz.status)"
-                    class="px-2 text-body-base-4"
-                  >
-                    Start
-                  </v-btn>
-                </v-card-actions>
-              </v-row>
-            </v-card-subtitle>
-          </v-card>
-        </v-col>
-      </div>
-    </v-card>
   </v-container>
 </template>
+
 <script lang="ts" setup>
 import { moduleService } from "@/services/module";
-import { ModuleQuizResponse,ClearAnswerResponse } from "@/types/Exercise";
+import { ModuleQuizResponse, ClearAnswerResponse } from "@/types/Exercise";
 import { useBreadcrumbsStore } from "@/stores/breadcrumbs";
 import { Breadcrumbs } from "@/types/Breadcrumbs";
-
+import { aiGenerateServices } from "@/services/aiGenerateServices";
 interface RouteParams {
   moduleId: string,
   lessonId: string
@@ -126,7 +188,8 @@ const moduleQuizzes = ref<ModuleQuizResponse>({
 const clearSuccess = ref<ClearAnswerResponse | null>(null);
 const router = useRouter();
 const route = useRoute();
-const {  moduleId, lessonId } = route.params as RouteParams;
+const isLoading = ref(false);
+const { moduleId, lessonId } = route.params as RouteParams;
 const breadcrumbsStore = useBreadcrumbsStore();
 const routeState = computed(() => {
   const state = (route as any & { state?: { breadcrumbs?: Breadcrumbs[] } }).state;
@@ -138,7 +201,6 @@ if (routeState.value.breadcrumbs) {
 }
 
 const breadcrumbs = computed(() => breadcrumbsStore.breadcrumbs);
-
 
 async function doQuiz(quizId: string, status: string): Promise<void> {
   const path = `/lessonRecommend/${lessonId}/module/${moduleId}/Quiz/${quizId}`;
@@ -156,11 +218,11 @@ function viewAgain(quizId: string) {
 function getDifficultyColor(difficulty: string) {
   switch (difficulty) {
     case "easy":
-      return "green";
+      return "success";
     case "medium":
-      return "orange";
+      return "warning";
     case "hard":
-      return "red";
+      return "error";
     default:
       return "grey";
   }
@@ -169,24 +231,126 @@ function getDifficultyColor(difficulty: string) {
 const showError = inject("showError") as (message: string) => void;
 const showSuccess = inject("showSuccess") as (message: string) => void;  
 
-
-
 const fetchModuleQuizzes = async () => {
-  moduleQuizzes.value = await moduleService.fetchModuleQuizzes({showError,showSuccess}, moduleId) ||{
-    module_id: "",
-    title: "",
-    objectives: [],
-    quizzes: []
-  };
+  const response = await moduleService.fetchModuleQuizzes({showError, showSuccess}, moduleId);
+  if (response && "data" in response && response.data) {
+    moduleQuizzes.value = response.data as ModuleQuizResponse;
+  }
 };
-const clearQuizAnswers = async (quizId:string) => {
-  clearSuccess.value = await moduleService.clearQuizAnswers({showError,showSuccess}, moduleId, quizId) || "";
+
+const clearQuizAnswers = async (quizId: string) => {
+  clearSuccess.value = await moduleService.clearQuizAnswers({showError, showSuccess}, moduleId, quizId) || "";
 };
+
 onMounted(() => {
   fetchModuleQuizzes();
 });
 
-function generateQuiz() {
-  console.log("Generating a new quiz...");
+
+async function generateQuiz() {
+  try {
+    isLoading.value = true;
+    
+    // Use the aiGenerateServices to generate a new quiz
+    const response = await aiGenerateServices.generateQuiz(
+      { showError, showSuccess },
+      { module_id: moduleId }
+    );
+    
+    // Check if the response is successful and contains data
+    if (response && "data" in response && response.data) {
+      showSuccess("Quiz generated successfully!");
+      
+      // Refresh the module quizzes to include the newly generated quiz
+      await fetchModuleQuizzes();
+      
+      // Optionally, you can redirect to the newly created quiz
+      // const newQuizId = response.data.quiz_id;
+      // router.push(`/lessonRecommend/${lessonId}/module/${moduleId}/Quiz/${newQuizId}`);
+    }
+  } catch (error) {
+    console.error("Error generating quiz:", error);
+    showError("Failed to generate quiz. Please try again.");
+  } finally {
+    isLoading.value = false;
+  }
 }
 </script>
+
+<style scoped>
+.border-card {
+  border: 1px solid rgba(var(--v-theme-primary), 0.05);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.border-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1) !important;
+}
+
+.card-header {
+  background: linear-gradient(to right, rgba(var(--v-theme-primary), 0.05), transparent);
+  border-bottom: 1px solid rgba(var(--v-theme-primary), 0.05);
+}
+
+.module-card {
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.module-header {
+  background: linear-gradient(to right, rgba(var(--v-theme-primary), 0.05), transparent);
+}
+
+.primary-1 {
+  background-color: var(--v-theme-primary) !important;
+}
+
+.primary-2 {
+  background-color: #6200ea !important;
+}
+
+.primary-3 {
+  background-color: #3949ab !important;
+}
+
+.border-left-primary {
+  border-left: 4px solid var(--v-theme-primary);
+}
+
+.border-left-error {
+  border-left: 4px solid var(--v-theme-error);
+}
+
+.learning-outcomes-sheet {
+  max-height: 100%;
+  overflow-y: auto;
+}
+
+.learning-outcome-text {
+  white-space: normal;
+  word-break: break-word;
+  line-height: 1.5;
+}
+
+:deep(.v-list-item__prepend) {
+  padding-right: 8px !important;
+}
+
+:deep(.v-list-item__prepend .v-icon) {
+  color: var(--v-theme-error) !important;
+  opacity: 0.7;
+}
+
+:deep(.v-list-item__content) {
+  overflow: visible;
+  white-space: normal;
+}
+
+:deep(.v-list-item-title) {
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+}
+</style>

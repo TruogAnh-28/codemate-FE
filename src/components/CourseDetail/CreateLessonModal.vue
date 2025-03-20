@@ -255,6 +255,7 @@ const handleSubmit = async () => {
       .map(outcome => outcome.value);
 
     if (props.lessonId) {
+      // Update existing lesson
       const updateData = {
         lesson_id: props.lessonId,
         title: lessonData.value.title,
@@ -271,20 +272,33 @@ const handleSubmit = async () => {
       
       showSuccess('Lesson updated successfully');
     } else {
-      // Tạo mới lesson với đầy đủ thông tin bao gồm file
-      const newLesson = {
-        ...lessonData.value,
-        learningOutcomes: outcomes,
-        documents: files.value,
-        documentDescriptions: documentDescriptions.value
+      // Create new lesson first
+      const newLessonData = {
+        title: lessonData.value.title,
+        description: lessonData.value.description,
+        courseId: props.courseId,
+        order: lessonData.value.order,
+        learningOutcomes: outcomes
       };
       
-      await lessonService.fetchLessonProfessor(
+      const response = await lessonService.fetchLessonProfessor(
         { showError, showSuccess },
-        newLesson
+        newLessonData
       );
       
-      showSuccess('Lesson created successfully');
+      // If there are files to upload, add them using addDocuments
+      if (files.value.length > 0 && response && response.data && response.data as LessonResponse ) {
+        const lessonId = response.data.lessonId;
+        await lessonService.addDocuments(
+          { showError, showSuccess },
+          lessonId,
+          files.value,
+          documentDescriptions.value
+        );
+        showSuccess('Lesson and documents created successfully');
+      } else {
+        showSuccess('Lesson created successfully');
+      }
     }
     
     emit('update');
