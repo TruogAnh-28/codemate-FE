@@ -259,7 +259,7 @@ export interface CreateNewLessonResponse {
   courseId: UUID;
   order: number;
   learningOutcomes?: string[];
-  documents?: DocumentResponse[];
+  // documents?: DocumentResponse[];
 }
 export interface CreateNewLessonRequest {
   title: string;

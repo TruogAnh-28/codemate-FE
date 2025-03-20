@@ -1,6 +1,6 @@
 import ApiService from "@/common/api.service";
 import { IResponseData } from "@/modals/apis/response";
-import { LearningPathGenerateRequest, LearningPathGenerateResponse, SuggestGoalsResponse } from "@/types/AI_generate";
+import { LearningPathGenerateRequest, LearningPathGenerateResponse, SuggestGoalsResponse, GenerateQuizRequest, GenerateQuizResponse } from "@/types/AI_generate";
 
 
 export interface AuthConfig {
@@ -26,6 +26,19 @@ export const aiGenerateServices = {
       showError,
       showSuccess,
     });
+  },
+  async generateQuiz(
+    { showError, showSuccess }: AuthConfig,
+    request: GenerateQuizRequest
+  ) {
+    return await ApiService.post<IResponseData<GenerateQuizResponse>>(
+      "ai/generate-quiz",
+      request,
+      {
+        showError,
+        showSuccess,
+      }
+    );
   },
 
 }

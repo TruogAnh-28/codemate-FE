@@ -44,3 +44,28 @@ export interface LearningPathGenerateModule {
   objectives: string[]
   last_accessed: string
 }
+
+export interface GenerateQuizRequest {
+  module_id: string;
+}
+
+export interface GenerateQuizResponse {
+  quiz_id: string;
+  name: string;
+  description: string;
+  time_limit: number;
+  max_score: number;
+  module_id: string;
+  questions: QuizQuestion[];
+}
+
+export interface QuizQuestion {
+  id: string;
+  question_text: string;
+  question_type: 'single_choice' | 'multiple_choice' | 'true_false';
+  options: string[];
+  correct_answer: string[];
+  difficulty: 'easy' | 'medium' | 'hard';
+  explanation: string;
+  points: number;
+}
