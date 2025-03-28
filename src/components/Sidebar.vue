@@ -65,7 +65,7 @@
 import { ref, computed } from "vue";
 import { useAuthStore } from "@/stores/auth";
 import feedbackManagement from "@/assets/icons/feedbackManagement.vue";
-
+const authStore = useAuthStore;
 const props = defineProps<{
   modelValue: boolean;
 }>();
@@ -74,14 +74,14 @@ const emit = defineEmits<{
   (e: "update:modelValue", value: boolean): void;
   (e: "expand", value: boolean): void;
 }>();
-
+const { user } = authStore.getState();
 const drawer = computed({
   get: () => props.modelValue,
   set: (value) => emit("update:modelValue", value),
 });
 
 const expanded = ref(false);
-const role = computed(() => useAuthStore().userRole);
+const role = computed(() => user?.role);
 
 const handleExpand = (value: boolean) => {
   expanded.value = value;
@@ -103,7 +103,12 @@ const studentItems: NavigationItem[] = [
     value: "dashboard",
     to: "/dashboard",
   },
-  { icon: "mdi-school", title: "My Courses", value: "course", to: "/courselist" },
+  {
+    icon: "mdi-school",
+    title: "My Courses",
+    value: "course",
+    to: "/courselist",
+  },
   {
     icon: "mdi-chart-pie",
     title: "My Progress",
@@ -190,25 +195,25 @@ const adminItems: NavigationItem[] = [
       },
     ],
   },
-  {
-    icon: "mdi-chart-pie",
-    title: "Statistics",
-    value: "statistics",
-    children: [
-      {
-        icon: "mdi-chart-bar",
-        title: "Feedback Statistics",
-        value: "feedback-statistics",
-        to: "/feedback-statistics",
-      },
-      {
-        icon: "mdi-chart-line",
-        title: "System Usage Statistics",
-        value: "system-usage-statistics",
-        to: "/system-usage-statistics",
-      },
-    ],
-  },
+  // {
+  //   icon: "mdi-chart-pie",
+  //   title: "Statistics",
+  //   value: "statistics",
+  //   children: [
+  //     {
+  //       icon: "mdi-chart-bar",
+  //       title: "Feedback Statistics",
+  //       value: "feedback-statistics",
+  //       to: "/feedback-statistics",
+  //     },
+  //     {
+  //       icon: "mdi-chart-line",
+  //       title: "System Usage Statistics",
+  //       value: "system-usage-statistics",
+  //       to: "/system-usage-statistics",
+  //     },
+  //   ],
+  // },
 ];
 
 // Add a computed property to filter navigation items based on role

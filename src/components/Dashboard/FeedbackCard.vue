@@ -126,8 +126,9 @@ import { feedbackServices } from "@/services/feedbackServices";
 import { CreateFeedbackRequest } from "@/types/Feedback";
 import { FeedbackCategory } from "@/utils/constant";
 import { useAuthStore } from "@/stores/auth";
-
-const role = computed(() => useAuthStore().user?.role);
+const authStore = useAuthStore;
+const { user } = authStore.getState();
+const role = computed(() => user?.role);
 interface Props {
   type: "system" | "course";
 }
@@ -198,7 +199,7 @@ const submitFeedback = async () => {
       }
     );
     if (add_feedback) {
-      await reloadManager.trigger('activities');
+      await reloadManager.trigger("activities");
     }
   }
   showFeedbackModal.value = false;

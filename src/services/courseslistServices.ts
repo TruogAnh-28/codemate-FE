@@ -9,7 +9,8 @@ import {
   CreateCourseRequest,
   CreateCourseResponse,
   CoursesAdminListPaginatedResponse,
-  GetAvailableCourses
+  GetAvailableCourses,
+  _GetRecommendedLessonsResponse
 } from "@/types/Course";
 import { AuthConfig } from "./authenServices";
 import { IResponseData } from "@/modals/apis/response";
@@ -85,7 +86,7 @@ export const coursesService = {
     { showError, showSuccess }: AuthConfig,
     course_id: string
   ) {
-    return await ApiService.get<IResponseData<GetRecommendedLessonsResponse[]>>(
+    return await ApiService.get<IResponseData<_GetRecommendedLessonsResponse>>(
       `courses/${course_id}/learning-path/recommended-lessons`,
       "",
       { showError, showSuccess }

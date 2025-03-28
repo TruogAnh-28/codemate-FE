@@ -196,7 +196,7 @@ const emit = defineEmits<{
 }>();
 const suggestGoal = ref<SuggestedGoal[] | null>(null);
 const internalDialog = ref(props.dialog);
-const courseStore = useCourseStore();
+const courseStore = useCourseStore.getState();
 const learningGoal = ref("");
 const isLoading = ref(false);
 const isLearningPath = ref(false);

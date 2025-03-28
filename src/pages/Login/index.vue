@@ -1,9 +1,9 @@
 <template>
   <div id="login">
-    <v-container className="fill-height">
-      <v-main className="pt-0">
-        <div class="flex w-full">
-          <div class="flex-1 p-20">
+    <v-container class="fill-height">
+      <v-main class="pt-0">
+        <div class="flex w-full flex-col lg:flex-row">
+          <div class="flex-1 p-20 hidden md:block">
             <h2 class="text-heading-4 font-semibold mb-4">
               Unlock your potential
             </h2>

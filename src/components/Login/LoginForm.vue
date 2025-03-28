@@ -93,8 +93,7 @@ import { authenService } from "@/services/authenServices";
 import { useAuthStore } from "@/stores/auth";
 import { EMAIL_PATTERN, PASSWORD_PATTERN } from "@/utils/constant";
 import type { LoginSuccessResponse } from "@/types/Auth";
-import ApiService, { PUBLIC_ROUTES } from "@/common/api.service";
-import { usersService } from "@/services/usersServices";
+import { PUBLIC_ROUTES } from "@/common/api.service";
 
 const email = ref("");
 const password = ref("");
@@ -106,7 +105,8 @@ const loading = ref(false);
 const messageToVerifyModal = ref("");
 const isModalVisible = ref(false);
 
-const authStore = useAuthStore();
+const authStore = useAuthStore;
+const { setTokens, setUser } = authStore.getState();
 const router = useRouter();
 
 const showError = inject("showError") as (message: string) => void;
@@ -154,9 +154,8 @@ const handleSuccessfulLogin = (data: LoginSuccessResponse) => {
     rememberMe: rememberMe.value.toString(),
   };
 
-  authStore.setUser(userInfo);
-  authStore.isAuthenticated = true;
-  authStore.setTokens(data.access_token, data.refresh_token);
+  setUser(userInfo);
+  setTokens(data.access_token, data.refresh_token);
 
   const redirectUrl = sessionStorage.getItem("redirectUrl");
   if (redirectUrl && !PUBLIC_ROUTES.includes(redirectUrl)) {

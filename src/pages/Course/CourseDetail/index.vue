@@ -64,7 +64,7 @@ const fetchCourseDetail = async () => {
   const response = await coursesService.fetchCourseDetail({ showError, showSuccess }, id);
   if (response && "data" in response && response.data) {
     course.value = response.data as CourseDetailResponse;
-    useCourseStore().setCourseDetails(response.data as CourseDetailResponse);
+    useCourseStore.getState().setCourseDetails(response.data as CourseDetailResponse);
   }
 };
 

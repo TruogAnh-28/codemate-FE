@@ -5,13 +5,14 @@
     max-width="800"
     class="rounded-lg"
   >
-    <v-card class="p-6">
+    <v-card class="pa-6">
       <div class="d-flex justify-space-between align-center mb-6">
         <h2 class="text-body-large-1 font-weight-bold">
-          Recommended Lessons for
-          <span class="text-heading-4 text-secondary-variant">{{
-            props.course?.course_name
-          }}</span>
+          Learning Path for
+          <span class="text-heading-4 text-secondary-variant">
+            {{ props.course?.course_name }}
+          </span>
+          with the goal is: <span class="text-body-large-medium text-secondary">{{ student_goal }}</span>
         </h2>
         <v-btn
           icon="mdi-close"
@@ -20,6 +21,7 @@
           class="text-body-small"
         ></v-btn>
       </div>
+
       <div v-if="loading" class="d-flex justify-center align-center pa-4">
         <v-progress-circular
           indeterminate
@@ -33,48 +35,84 @@
         <v-btn color="primary" @click="fetchRecommendedLessons">Retry</v-btn>
       </div>
 
-      <div v-else-if="recommendedLessons.length === 0" class="text-center pa-4">
+      <div v-else-if="orderedLessons.length === 0" class="text-center pa-4">
         <p>No recommended lessons available at the moment.</p>
       </div>
 
-      <div
-        v-else
-        v-for="lesson in recommendedLessons"
-        :key="lesson.lesson_id"
-        class="mb-8"
-      >
-        <v-row class="mb-4 m-0">
-          <v-col cols="12" md="8" class="border-b-2 pb-4">
-            <div class="font-bold text-body-large-1">{{ lesson.lesson_title }}</div>
-            <div class="text-text-tetiary text-body-base-1">
-              {{ lesson.duration_notes }}
-            </div>
-          </v-col>
-          <v-col
-            cols="12"
-            md="4"
-            class="flex justify-center items-center border-b-2 pb-4"
+      <div v-else class="learning-timeline">
+        <v-timeline align="start" side="end">
+          <v-timeline-item
+            v-for="(lesson, index) in orderedLessons"
+            :key="lesson.lesson_id"
+            :dot-color="getDotColor(index)"
+            fill-dot
+            class="mb-6"
           >
-            <v-tooltip bottom v-for="button in actionButtons(lesson)" :key="button.index">
-              <template v-slot:activator="{ props: activatorProps }">
-                <v-btn
-                  variant="text"
-                  :icon="button.icon"
-                  @click="handleButtonClick(button, lesson)"
-                  v-bind="activatorProps"
-                  :aria-label="button.value"
-                  :class="button.class"
-                  class="btn-hover"
-                ></v-btn>
-              </template>
-              <span>{{ button.value }}</span>
-            </v-tooltip>
-          </v-col>
-        </v-row>
+            <template v-slot:icon>
+              <v-icon size="20" color="white">
+                mdi-numeric-{{ index + 1 }}-circle
+              </v-icon>
+            </template>
+
+            <v-card class="elevation-2 pa-6 pb-6">
+              <div class="d-flex justify-space-between align-center mb-2">
+                <h3 class="lesson-title text-h6 font-weight-medium">
+                  {{ lesson.lesson_title }}
+                </h3>
+                <v-chip
+                  :color="getStatusColor(lesson)"
+                  size="medium"
+                  class="ml-2 text-body-small-bold flex items-center px-8"
+                >
+                  {{ getStatusText(lesson) }}
+                </v-chip>
+              </div>
+
+              <div class="d-flex align-center mb-3">
+                <v-icon size="small" class="mr-1">mdi-calendar-range</v-icon>
+                <span class="text-body-2">
+                  {{ formatDate(lesson.start_date) }} - {{ formatDate(lesson.end_date) }}
+                </span>
+              </div>
+
+              <v-progress-linear
+                :model-value="calculateProgress(lesson)"
+                height="8"
+                rounded
+                color="primary"
+                class="mb-3"
+              ></v-progress-linear>
+
+              <div class="lesson-description text-body-2 text-grey-darken-1 mb-3">
+                {{ lesson.explain }}
+              </div>
+              
+              <div class="lesson-actions">
+                <v-tooltip 
+                  v-for="button in actionButtons(lesson)" 
+                  :key="button.index" 
+                  bottom
+                >
+                  <template v-slot:activator="{ props: activatorProps }">
+                    <v-btn
+                      variant="text"
+                      :icon="button.icon"
+                      @click="handleButtonClick(button, lesson)"
+                      v-bind="activatorProps"
+                      :aria-label="button.value"
+                      :class="button.class"
+                      class="btn-hover mr-2"
+                    ></v-btn>
+                  </template>
+                  <span>{{ button.value }}</span>
+                </v-tooltip>
+              </div>
+            </v-card>
+          </v-timeline-item>
+        </v-timeline>
       </div>
     </v-card>
   </v-dialog>
-
   <FeedbackLesson
     v-if="showFeedbackModal"
     :lessonId="selectedLessonId"
@@ -83,10 +121,9 @@
     @feedback-submitted="handleFeedbackSubmitted"
   />
 </template>
-
 <script lang="ts" setup>
 import { coursesService } from "@/services/courseslistServices";
-
+import { format as dateFnsFormat, parseISO } from 'date-fns';
 import { CourseDetailResponse, GetRecommendedLessonsResponse } from "@/types/Course";
 const props = defineProps<{
   showModal: boolean;
@@ -107,6 +144,7 @@ const error = ref<string | null>(null);
 const showFeedbackModal = ref(false);
 const selectedLessonId = ref<string | undefined>(undefined);
 const recommendedLessons = ref<GetRecommendedLessonsResponse[]>([]);
+const student_goal = ref<string | null>(null);
 const courseName = props.course?.course_name;
 const showError = inject("showError") as (message: string) => void;
 const showSuccess = inject("showSuccess") as (message: string) => void;
@@ -121,7 +159,8 @@ const fetchRecommendedLessons = async () => {
         props.course.course_id
       );
       if (response && "data" in response && response.data) {
-        recommendedLessons.value = response.data;
+        recommendedLessons.value = response.data.lessons;
+        student_goal.value = response.data.student_goal;
       } else {
         showError("Failed to fetch recommended lessons");
       }
@@ -132,6 +171,11 @@ const fetchRecommendedLessons = async () => {
     loading.value = false;
   }
 };
+
+const orderedLessons = computed(() => {
+  // Create a copy of recommendedLessons and sort by the 'order' field
+  return [...recommendedLessons.value].sort((a, b) => a.order - b.order)
+})
 
 const updateFeedbackModal = (value: boolean): void => {
   showFeedbackModal.value = value;
@@ -175,7 +219,42 @@ const actionButtons = (recommendedLesson: GetRecommendedLessonsResponse) => {
     },
   ];
 };
+const getDotColor = (index: number): string => {
+  return index === 0 ? 'primary' : 'grey'
+}
 
+const getStatusColor = (lesson: GetRecommendedLessonsResponse): string => {
+  const today = new Date("2025-06-20")
+  const start = new Date(lesson.start_date)
+  const end = new Date(lesson.end_date)
+  
+  if (today < start) return 'grey'
+  if (today > end) return 'success'
+  return 'primary'
+}
+
+const getStatusText = (lesson: GetRecommendedLessonsResponse): string => {
+  const today = new Date("2025-06-20")
+  const start = new Date(lesson.start_date)
+  const end = new Date(lesson.end_date)
+  
+  if (today < start) return 'Upcoming'
+  if (today > end) return 'Completed'
+  return 'In Progress'
+}
+
+const calculateProgress = (lesson: GetRecommendedLessonsResponse): number => {
+  const today = new Date("2025-06-20")
+  const start = new Date(lesson.start_date)
+  const end = new Date(lesson.end_date)
+  
+  if (today <= start) return 0
+  if (today >= end) return 100
+  
+  const total = end.getTime() - start.getTime()
+  const progress = today.getTime() - start.getTime()
+  return (progress / total) * 100
+}
 const handleButtonClick = (
   button: any,
   recommendedLesson: GetRecommendedLessonsResponse
@@ -193,6 +272,14 @@ const handleButtonClick = (
       break;
     default:
       console.error("Invalid button index:", button.index);
+  }
+};
+
+const formatDate = (dateString: string) => {
+  try {
+    return dateFnsFormat(parseISO(dateString), 'MMM dd, yyyy');
+  } catch (error) {
+    return dateString; // Fallback to original string if parsing fails
   }
 };
 
@@ -279,5 +366,76 @@ onMounted(() => {
 .v-col.border-b-2 {
   padding-bottom: 1rem;
   border-bottom: 1px solid #e0e0e0;
+}
+.timeline-container {
+  position: relative;
+  padding: 20px 0;
+}
+
+.timeline {
+  position: relative;
+  padding-left: 40px;
+}
+
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 20px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background-color: #e0e0e0;
+}
+
+.timeline-item {
+  position: relative;
+  margin-bottom: 20px;
+  padding-left: 40px;
+}
+
+.timeline-marker {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.timeline-content {
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  padding: 15px;
+  position: relative;
+}
+
+.lesson-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.lesson-title {
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
+.lesson-dates {
+  display: flex;
+  align-items: center;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.lesson-description {
+  margin-bottom: 10px;
+}
+
+.lesson-actions {
+  display: flex;
+  justify-content: flex-end;
 }
 </style>
