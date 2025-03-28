@@ -265,7 +265,6 @@ export interface CreateNewLessonRequest {
   title: string;
   description: string;
   courseId: UUID;
-  order: number;
   learningOutcomes?: string[];
   documents?: File[];
   documentDescriptions?: string[];
@@ -275,7 +274,6 @@ export interface UpdateLessonRequest {
   title: string;
   description: string;
   courseId: UUID;
-  order: number;
   learningOutcomes?: string[];
   // documents?: File[];
   // documentDescriptions?: string[];

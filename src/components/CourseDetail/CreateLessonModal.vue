@@ -182,7 +182,6 @@ const lessonData = ref<CreateNewLessonRequest>({
   title: '',
   description: '',
   courseId: props.courseId,
-  order: 0,
   learningOutcomes: [],
   documents: [],
   documentDescriptions: []
@@ -228,7 +227,6 @@ const fetchLesson = async () => {
       
       lessonData.value.title = lesson.title;
       lessonData.value.description = lesson.description || '';
-      lessonData.value.order = lesson.order || 0;
       
       if (lesson.learning_outcomes && lesson.learning_outcomes.length > 0) {
         learningOutcomes.value = lesson.learning_outcomes.map(outcome => ({ value: outcome }));
@@ -261,7 +259,6 @@ const handleSubmit = async () => {
         title: lessonData.value.title,
         description: lessonData.value.description,
         courseId: props.courseId,
-        order: lessonData.value.order,
         learningOutcomes: outcomes
       };
       
@@ -277,7 +274,6 @@ const handleSubmit = async () => {
         title: lessonData.value.title,
         description: lessonData.value.description,
         courseId: props.courseId,
-        order: lessonData.value.order,
         learningOutcomes: outcomes
       };
       
@@ -285,7 +281,7 @@ const handleSubmit = async () => {
         { showError, showSuccess },
         newLessonData
       );
-      
+      console.log("response", response);
       // If there are files to upload, add them using addDocuments
       if (files.value.length > 0 && response && response.data && response.data as LessonResponse ) {
         const lessonId = response.data.lessonId;

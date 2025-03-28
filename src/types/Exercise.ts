@@ -10,47 +10,58 @@ export interface QuizQuestion {
 }
 export interface QuizExercise {
   id: UUID;
-  status: 'new' | 'on going' | 'completed';
+  status: 'new' | 'in Progress' | 'completed';
   name: string;
   quizList: QuizQuestion[];
   difficulty: 'easy' | 'medium' | 'hard';
   score?: number;
 }
-export interface QuizList {
+export interface QuizListResponse {
   id: UUID;
   name: string;
-  status: 'new' | 'on going' | 'completed';
-  difficulty: 'easy' | 'medium' | 'hard';
+  description: string;
+  status: 'new' | 'in Progress' | 'completed';
   score?: number;
+  max_score: number;
+  time_limit?: number;
+  duration?: number;
 }
 
 export interface ModuleQuizResponse {
   module_id: UUID;
   title: string;
   objectives: string[];
-  quizzes: QuizList[];
+  quizzes: QuizListResponse[];
 }
+
 export interface QuizQuestionResponse {
   id: UUID;
-  question: string;
+  question_text: string;
+  question_type: string;
   image?: string;
   options: string[];
-  correct_answer: string;
+  correct_answer: string[];
+  difficulty: 'easy' | 'medium' | 'hard';
+  points: number;
   explanation: string;
-  user_choice?: string;
+  user_choice?: string|string[];
 }
 
 export interface QuizExerciseResponse {
   id: UUID;
   name: string;
-  status: string;
-  difficulty: string;
-  score: number;
+  description: string;
+  status: 'new' | 'on going' | 'completed';
+  score?: number;
+  max_score: number;
+  time_limit?: number;
+  duration?: number;
   questions: QuizQuestionResponse[];
 }
+
 export interface QuizAnswerRequest {
   quizId: UUID
-  answers: (number | null)[];
+  answers: (string | "")[];
 }
 export interface QuizQuestionResult {
   questionId: string;
