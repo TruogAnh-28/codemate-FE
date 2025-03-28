@@ -111,13 +111,13 @@
               >
                 <span class="text-h6 font-weight-bold white--text">{{ index + 1 }}</span>
               </v-avatar>
-              <v-chip
+              <!-- <v-chip
                 size="small"
                 :color="getDifficultyColor(quiz.difficulty)"
                 class="ml-auto"
               >
                 {{ quiz.difficulty }}
-              </v-chip>
+              </v-chip> -->
             </div>
           </div>
           
@@ -129,7 +129,7 @@
               <v-chip
                 size="x-small"
                 class="ml-2"
-                :color="quiz.status === 'completed' ? 'success' : (quiz.status === 'on going' ? 'warning' : 'grey')"
+                :color="quiz.status === 'completed' ? 'success' : (quiz.status === 'in Progress' ? 'warning' : 'grey')"
               >
                 {{ quiz.status }}
               </v-chip>
@@ -142,7 +142,7 @@
           
           <v-card-actions class="pa-4 pt-0">
             <v-btn
-              v-if="quiz.status === 'completed' || quiz.status === 'on going'"
+              v-if="quiz.status === 'completed' || quiz.status === 'in Progress'"
               color="secondary"
               variant="outlined"
               class="text-none rounded-lg mr-2"
@@ -156,7 +156,7 @@
               class="text-none rounded-lg"
               @click="doQuiz(quiz.id, quiz.status)"
               prepend-icon="mdi-play-circle-outline"
-              :block="!(quiz.status === 'completed' || quiz.status === 'on going')"
+              :block="!(quiz.status === 'completed' || quiz.status === 'in Progress')"
             >
               Start Quiz
             </v-btn>
