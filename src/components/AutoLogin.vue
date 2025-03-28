@@ -9,15 +9,16 @@
 
 <script lang="ts" setup>
 import { ref, onMounted } from "vue";
-import { useRouter } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 import ApiService from "@/common/api.service";
 import { useAuthStore } from "@/stores/auth";
 import { usersService } from "@/services/usersServices";
 import { PUBLIC_ROUTES } from "@/common/api.service";
-
+const authStore = useAuthStore;
 const loading = ref(false);
 const router = useRouter();
-const authStore = useAuthStore();
+const route = useRoute(); // Add useRoute to access current route
+const {setUser, setAvatar, setMs} = authStore.getState();
 const showError = inject("showError") as (message: string) => void;
 const showSuccess = inject("showSuccess") as (message: string) => void;
 
@@ -35,9 +36,25 @@ const getUserInfo = async () => {
     return null;
   }
 };
+  const rolePaths = {
+    student: ["/dashboard", "/courselist", "/courselist/course/", "/progress-tracking", "/lessonRecommend/", "/profile"],
+    professor: ["/professor-dashboard", "/professor-courselist", "/professor-courselist/courses/", "/professor-feedback", "/professor-progress", "/professor-code", "/professor-schedule", "/courses/", "/profile"],
+    admin: ["/admin-dashboard", "/feedback-management", "/user-management", "/course-management", "/add-course", "/add-user", "/feedback-statistics", "/system-usage-statistics", "/profile"],
+  };
+const isRouteValidForRole = (role: string, path: string): boolean => {
+  return rolePaths[role as keyof typeof rolePaths]?.some(pattern => path.startsWith(pattern)) || false;
+};
 
 const redirectUser = (userRole: string) => {
   const redirectUrl = sessionStorage.getItem("redirectUrl");
+  const currentPath = route.path;
+
+  // If current route is valid for the role, stay there
+  if (!PUBLIC_ROUTES.includes(currentPath) && isRouteValidForRole(userRole, currentPath)) {
+    return; // No redirect needed
+  }
+
+  // Otherwise, redirect to stored URL or default dashboard
   if (redirectUrl && !PUBLIC_ROUTES.includes(redirectUrl)) {
     sessionStorage.removeItem("redirectUrl");
     router.push(redirectUrl);
@@ -47,7 +64,7 @@ const redirectUser = (userRole: string) => {
         student: "/dashboard",
         professor: "/professor-dashboard",
         admin: "/admin-dashboard",
-      }[userRole] || "/";
+      }[userRole] || "/login";
     router.push(redirectPath);
   }
 };
@@ -59,24 +76,24 @@ const autoLogin = async () => {
     const refreshToken = ApiService.getRefreshToken();
 
     if (!accessToken && !refreshToken) {
-      loading.value = false;
+      if (!PUBLIC_ROUTES.includes(route.path)) {
+        router.push("/login");
+      }
       return;
     }
 
     if (accessToken && !ApiService.checkTokenExpiration()) {
       const userInfo = await getUserInfo();
       if (userInfo) {
-        authStore.setUser({
+        setUser({
           role: userInfo.role,
           email: userInfo.email,
           name: userInfo.name,
           rememberMe: localStorage.getItem("rememberMe") || "false",
         });
-        authStore.setAvatar(userInfo.avatar);
-        authStore.setMs(userInfo.ms);
-        authStore.isAuthenticated = true;
+        setAvatar(userInfo.avatar);
+        setMs(userInfo.ms);
         redirectUser(userInfo.role);
-        loading.value = false;
         return;
       }
     }
@@ -86,26 +103,24 @@ const autoLogin = async () => {
       if (refreshed) {
         const userInfo = await getUserInfo();
         if (userInfo) {
-          authStore.setUser({
+          setUser({
             role: userInfo.role,
             email: userInfo.email,
             name: userInfo.name,
             rememberMe: localStorage.getItem("rememberMe") || "false",
           });
-          authStore.isAuthenticated = true;
           redirectUser(userInfo.role);
-          loading.value = false;
           return;
         }
       } else {
         ApiService.clearAuthData();
-        if (!PUBLIC_ROUTES.includes(router.currentRoute.value.path)) {
-          router.push("/login"); // Redirect to login instead of "/"
+        if (!PUBLIC_ROUTES.includes(route.path)) {
+          router.push("/login");
         }
       }
     } else {
       ApiService.clearAuthData();
-      if (!PUBLIC_ROUTES.includes(router.currentRoute.value.path)) {
+      if (!PUBLIC_ROUTES.includes(route.path)) {
         router.push("/login");
       }
     }
@@ -113,7 +128,7 @@ const autoLogin = async () => {
     console.error("Auto-login failed:", error);
     showError("Authentication failed. Please log in again.");
     ApiService.clearAuthData();
-    if (!PUBLIC_ROUTES.includes(router.currentRoute.value.path)) {
+    if (!PUBLIC_ROUTES.includes(route.path)) {
       router.push("/login");
     }
   } finally {

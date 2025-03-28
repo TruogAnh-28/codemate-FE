@@ -182,9 +182,9 @@ const lessonData = ref<CreateNewLessonRequest>({
   title: '',
   description: '',
   courseId: props.courseId,
-  order: 0,
   learningOutcomes: [],
   documents: [],
+  order: 0,
   documentDescriptions: []
 });
 
@@ -228,7 +228,6 @@ const fetchLesson = async () => {
       
       lessonData.value.title = lesson.title;
       lessonData.value.description = lesson.description || '';
-      lessonData.value.order = lesson.order || 0;
       
       if (lesson.learning_outcomes && lesson.learning_outcomes.length > 0) {
         learningOutcomes.value = lesson.learning_outcomes.map(outcome => ({ value: outcome }));
@@ -261,7 +260,7 @@ const handleSubmit = async () => {
         title: lessonData.value.title,
         description: lessonData.value.description,
         courseId: props.courseId,
-        order: lessonData.value.order,
+        order: 0, // Replace 0 with the appropriate order value
         learningOutcomes: outcomes
       };
       

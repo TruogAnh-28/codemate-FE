@@ -99,16 +99,16 @@
 <script lang="ts" setup>
 import { useAuthStore } from "@/stores/auth";
 
-const authStore = useAuthStore();
+const authStore = useAuthStore;
 const router = useRouter();
 
-const userInfo = authStore.user;
+const { logout, user } = authStore.getState();
+const userInfo = user;
 const showSuccess = inject("showSuccess") as (message: string) => void;
 import { nextTick } from "vue";
 
 const handleLogout = async () => {
-  const authStore = useAuthStore();
-  authStore.logout();
+  logout();
   await nextTick();
   router.push("/login");
   showSuccess("Logged out successfully");

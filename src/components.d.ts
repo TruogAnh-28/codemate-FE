@@ -74,6 +74,7 @@ declare module 'vue' {
     RecentActivityCard: typeof import('./components/Dashboard/RecentActivityCard.vue')['default']
     RecentCourses: typeof import('./components/CourseList/RecentCourses.vue')['default']
     RecommendationCard: typeof import('./components/CourseDetail/RecommendationCard.vue')['default']
+    RecommendLessonAnalyst: typeof import('./components/Modal/RecommendLessonAnalyst.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     ShowDocumentsModal: typeof import('./components/CourseDetail/ShowDocumentsModal.vue')['default']

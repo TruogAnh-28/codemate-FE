@@ -1,7 +1,6 @@
 import ApiService from "@/common/api.service";
 import { IResponseData } from "@/modals/apis/response";
-import { LearningPathGenerateRequest, LearningPathGenerateResponse, SuggestGoalsResponse, GenerateQuizRequest, GenerateQuizResponse } from "@/types/AI_generate";
-
+import { LearningPathGenerateRequest, LearningPathGenerateResponse, SuggestGoalsResponse, GenerateQuizRequest, GenerateQuizResponse, RecommendLessonMonitor } from "@/types/AI_generate";
 
 export interface AuthConfig {
   showError: (message: string) => void;
@@ -41,4 +40,15 @@ export const aiGenerateServices = {
     );
   },
 
+  async getMonitorRecommendLesson(
+    { showError, showSuccess }: AuthConfig,
+    course_id: string,
+    recommend_lesson_id: string
+  ) {
+    return await ApiService.get<IResponseData<RecommendLessonMonitor>>(
+      `ai/monitor-study-progress/course/${course_id}/recommend_lesson/${recommend_lesson_id}`,
+      "",
+      { showError, showSuccess }
+    );
+  }
 }

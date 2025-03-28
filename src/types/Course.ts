@@ -143,7 +143,10 @@ export interface DocumentOriginalResponse {
   type: DocumentType
   document_url: string
 }
-
+export interface _GetRecommendedLessonsResponse {
+  student_goal: string
+  lessons: GetRecommendedLessonsResponse[]
+}
 
 export interface GetRecommendedLessonsResponse {
   id: string
@@ -158,6 +161,7 @@ export interface GetRecommendedLessonsResponse {
   bookmark: boolean
   modules: any
   lesson_title: string
+  order: number
 }
 
 //---------------------------------Professor---------------------------------
@@ -265,17 +269,16 @@ export interface CreateNewLessonRequest {
   title: string;
   description: string;
   courseId: UUID;
-  order: number;
   learningOutcomes?: string[];
   documents?: File[];
   documentDescriptions?: string[];
+  order: number;
 }
 export interface UpdateLessonRequest {
   lesson_id: UUID;
   title: string;
   description: string;
   courseId: UUID;
-  order: number;
   learningOutcomes?: string[];
   // documents?: File[];
   // documentDescriptions?: string[];

@@ -135,13 +135,21 @@
       </v-col>
     </v-row>
 
-    <DialogLearningType
-      :module="selectedModule"
-      :dialog="showDialog"
-      :lessonId="lessonId"
-      @update:dialog="showDialog = $event"
-    />
+      <DialogLearningType
+        :module="selectedModule"
+        :dialog="showDialog"
+        :lesson-id="lessonId"
+        @update:dialog="showDialog = $event"
+      />
   </v-container>
+
+  <RecommendLessonAnalyst
+    :recommend_lesson_id="lessonId"
+    @close="handleModalClose"
+    @proceed="handleModalClose"
+    @review="handleModalClose"
+    @repeat="handleModalClose"
+  />
 
   <router-view />
 </template>
@@ -151,25 +159,46 @@ import { lessonsService } from "@/services/recommendLesson";
 import { Lesson, Module } from "@/types/Lesson";
 import { renderStatusLabel } from "@/utils/functions/render";
 import { useBreadcrumbsStore } from "@/stores/breadcrumbs";
+import { aiGenerateServices } from "@/services/aiGenerateServices";
+import { useCourseStore } from "@/stores/courseStore";
+import { RecommendLessonMonitor } from "@/types/AI_generate";
+import { ref, computed, onMounted, defineProps } from "vue";
 
-interface RouteParams {
+// Define props explicitly
+const props = defineProps<{
   lessonId: string;
-}
+}>();
 
 const lesson = ref<Lesson | null>(null);
 const showDialog = ref(false);
 const selectedModule = ref<Module>({} as Module);
 const showError = inject("showError") as (message: string) => void;
 const showSuccess = inject("showSuccess") as (message: string) => void;
-
-const route = useRoute();
-const { lessonId } = route.params as RouteParams;
-const courseName = computed(() => {
-  const name = route.query.courseName;
-  return typeof name === "string" ? name : "";
+const monitorData = ref<RecommendLessonMonitor>({
+  can_proceed: false,
+  needs_repeat: false,
+  needs_review_prior: false,
+  issues_analysis: {
+    significant_issues: [],
+    total_issues_count: 0,
+    increasing_issues: [],
+    most_frequent_type: "",
+  },
+  recommendations: [],
 });
 
+const courseStore = useCourseStore.getState();
 const breadcrumbsStore = useBreadcrumbsStore();
+
+// State management
+const isModalClosed = ref(false);
+const hasMonitorResults = ref(false);
+const loading = ref(true);
+const error = ref<string | null>(null);
+
+const shouldShowLessonContent = computed(() => {
+  return lesson.value && isModalClosed.value && hasMonitorResults.value;
+});
 
 function openDialog(module: Module) {
   selectedModule.value = module;
@@ -205,25 +234,101 @@ const parsedLearningOutcomes = (learning_outcomes: string[]) => {
     console.error("Error processing learning outcomes:", e);
     return [];
   }
+  // const firstOutcome = learning_outcomes[0];
+  // if (
+  //   typeof firstOutcome === "string" &&
+  //   firstOutcome.startsWith("{") &&
+  //   firstOutcome.endsWith("}")
+  // ) {
+  //   try {
+  //     return learning_outcomes.map((outcome) => JSON.parse(outcome)).flat();
+  //   } catch (e) {
+  //     console.error("Error parsing learning outcomes as JSON:", e);
+  //     return learning_outcomes;
+  //   }
+  // }
+  // return learning_outcomes;
 };
 
 const fetchRecommendedLesson = async () => {
-  const respone = await lessonsService.fetchRecommendedLesson(
-    { showError, showSuccess },
-    lessonId
-  );
-  if (respone && "data" in respone && respone.data) {
-    lesson.value = respone.data as Lesson;
-    if (lesson.value) {
-      breadcrumbsStore.setBreadcrumbs([
-        { title: courseName.value, disabled: true },
-        { title: lesson.value.name, disabled: true },
-      ]);
+  try {
+    const response = await lessonsService.fetchRecommendedLesson(
+      { showError, showSuccess },
+      props.lessonId // Use props.lessonId instead of route.params
+    );
+    if (response && "data" in response && response.data) {
+      lesson.value = response.data as Lesson;
+      if (lesson.value) {
+        breadcrumbsStore.setBreadcrumbs([
+          {
+            title: courseStore.courseDetails
+              ? "name" in courseStore.courseDetails
+                ? courseStore.courseDetails.name
+                : courseStore.courseDetails.course_name
+              : "Unknown Course",
+            disabled: true,
+          },
+          { title: lesson.value.name, disabled: true },
+        ]);
+      }
+    } else {
+      throw new Error("No lesson data received from the server.");
     }
+  } catch (err) {
+    error.value =
+      err instanceof Error ? err.message : "Failed to load lesson data.";
   }
 };
 
-onMounted(fetchRecommendedLesson);
+console.log(props.lessonId);
+const fetchMonitor = async () => {
+  loading.value = true;
+  error.value = null;
+  try {
+    if (courseStore.courseDetails === null) {
+      throw new Error("Course details not available.");
+    }
+    let courseId =
+      "id" in courseStore.courseDetails
+        ? courseStore.courseDetails.id
+        : courseStore.courseDetails?.course_id;
+
+    const response = await aiGenerateServices.getMonitorRecommendLesson(
+      { showError, showSuccess },
+      courseId,
+      props.lessonId
+    );
+    if (response && "data" in response && response.data) {
+      monitorData.value = response.data as RecommendLessonMonitor;
+      hasMonitorResults.value = true;
+    } else {
+      throw new Error("No monitor data received from the server.");
+    }
+  } catch (err) {
+    error.value =
+      err instanceof Error ? err.message : "Failed to load monitor data.";
+  } finally {
+    loading.value = false;
+  }
+};
+
+const handleModalClose = () => {
+  isModalClosed.value = true;
+};
+
+const retryFetch = () => {
+  loading.value = true;
+  error.value = null;
+  Promise.all([fetchRecommendedLesson(), fetchMonitor()]).finally(() => {
+    loading.value = false;
+  });
+};
+
+onMounted(async () => {
+  loading.value = true;
+  await Promise.all([fetchRecommendedLesson(), fetchMonitor()]);
+  loading.value = false;
+});
 </script>
 
 <style scoped>

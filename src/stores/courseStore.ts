@@ -1,28 +1,45 @@
-import { defineStore } from "pinia";
+import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
 import { CourseDetailResponse, CoursesListResponse } from "@/types/Course";
 
-export const useCourseStore = defineStore("course", {
-  state: () => ({
-    courseDetails: null as CoursesListResponse | CourseDetailResponse | null,
-  }),
+// Định nghĩa kiểu dữ liệu
+interface CourseStore {
+  courseDetails: CoursesListResponse | CourseDetailResponse | null;
+  getCourseDetails: () => CoursesListResponse | CourseDetailResponse | null;
+  setCourseDetails: (course: CoursesListResponse | CourseDetailResponse) => void;
+  loadCourseDetails: () => void;
+}
 
-  actions: {
-    setCourseDetails(course: CoursesListResponse | CourseDetailResponse) {
-      this.courseDetails = course;
-      localStorage.setItem("courseDetails", JSON.stringify(course));
-    },
+// Tạo store với Zustand
+export const useCourseStore = create<CourseStore, [["zustand/persist", unknown]]>(
+  persist(
+    (set, get) => ({
+      courseDetails: null,
 
-    loadCourseDetails() {
-      const savedCourseDetails = localStorage.getItem("courseDetails");
-      if (savedCourseDetails) {
-        const courseDetails = JSON.parse(savedCourseDetails);
-        this.setCourseDetails(courseDetails);
+      // Getter
+      getCourseDetails: () => get().courseDetails,
+
+      // Action để cập nhật thông tin course
+      setCourseDetails: (course: CoursesListResponse | CourseDetailResponse) => {
+        set({ courseDetails: course });
+      },
+
+      // Tải thông tin khóa học từ localStorage
+      loadCourseDetails: () => {
+        const savedCourseDetails = localStorage.getItem('courseDetails');
+        if (savedCourseDetails) {
+          try {
+            const parsedCourseDetails = JSON.parse(savedCourseDetails);
+            set({ courseDetails: parsedCourseDetails });
+          } catch (e) {
+            set({ courseDetails: null });
+          }
+        }
       }
-    },
-  },
-
-  getters: {
-    getCourseDetails: (state) => state.courseDetails,
-  },
-});
-
+    }),
+    {
+      name: 'course-storage', // Tên lưu trữ trong localStorage
+      storage: createJSONStorage(() => localStorage), // Sử dụng createJSONStorage để lưu trữ JSON
+    }
+  )
+);

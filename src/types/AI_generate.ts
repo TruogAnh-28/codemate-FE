@@ -68,4 +68,33 @@ export interface QuizQuestion {
   difficulty: 'easy' | 'medium' | 'hard';
   explanation: string;
   points: number;
+
+}
+export interface RecommendLessonMonitor {
+  can_proceed: boolean;
+  needs_repeat: boolean;
+  needs_review_prior: boolean;
+  issues_analysis: IssuesAnalysis;
+  recommendations: Recommendation[];
+}
+
+export interface IssuesAnalysis {
+  significant_issues: SignificantIssue[];
+  total_issues_count: number;
+  increasing_issues: string[];
+  most_frequent_type: string;
+}
+
+export interface SignificantIssue {
+  type: string;
+  frequency: number;
+  description: string;
+  severity: string;
+  impact_on_goals: string;
+}
+
+export interface Recommendation {
+  action: string;
+  reason: string;
+  details: string;
 }

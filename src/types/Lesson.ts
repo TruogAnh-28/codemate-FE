@@ -20,6 +20,9 @@ export interface Lesson {
     recommend_content: string;
     explain: string;
     modules: Module[];
+    start_date?: string;
+    end_date?: string;
+    duration_notes?: string;
   }
 export interface Module {
     module_id: string;

@@ -1,13 +1,13 @@
 import ApiService from "@/common/api.service";
 import {
-  GetRecentCourseResponse,
+  GetRecentCorseRespounse,
   RecentActivitiesResponse,
   AddActivityRequest,
 } from "@/types/Dashboard";
 import { AuthConfig } from "./authenServices";
 export const dashboardService = {
   async fetchRecentCourse({ showError, showSuccess }: AuthConfig) {
-    return await ApiService.get<GetRecentCourseResponse>(
+    return await ApiService.get<GetRecentCorseRespounse>(
       "dashboard/student-recent-course",
       "",
       { showError, showSuccess }

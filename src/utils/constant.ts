@@ -4,6 +4,8 @@ import exercises from "@/assets/exercises.png";
 import EducationalIcon from "@/assets/EducationalIcon.png";
 import TrainingIcon from "@/assets/TrainingIcon.png";
 import IndividualIcon from "@/assets/IndividualIcon.png";
+import { GetListFeedbackResponse } from "@/types/Feedback";
+import { UserLoginResponse } from "@/types/User";
 
 export const EMAIL_PATTERN = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
 
@@ -223,3 +225,81 @@ export const barChartOptions = {
     },
   },
 };
+
+export const mockFeedbacks: GetListFeedbackResponse[] = [
+  {
+    id: "f1",
+    type: "course",
+    title: "Course Content Quality",
+    category: "Content",
+    description: "The course material was very engaging!",
+    rate: 5,
+    status: "resolved",
+    created_at: "2025-01-15T10:00:00Z",
+    resolved_at: "2025-01-16T12:00:00Z",
+    student_id: "s1",
+  },
+  {
+    id: "f2",
+    type: "system",
+    title: "Login Issue",
+    category: "Technical",
+    description: "Had trouble logging in today.",
+    rate: 2,
+    status: "pending",
+    created_at: "2025-02-01T14:30:00Z",
+    resolved_at: "",
+    student_id: "s2",
+  },
+  {
+    id: "f3",
+    type: "course",
+    title: "Assignment Clarity",
+    category: "Content",
+    description: "Assignments need clearer instructions.",
+    rate: 3,
+    status: "resolved",
+    created_at: "2025-02-20T09:15:00Z",
+    resolved_at: "2025-02-21T11:00:00Z",
+    student_id: "s3",
+  },
+  {
+    id: "f4",
+    type: "system",
+    title: "Page Load Speed",
+    category: "Performance",
+    description: "Pages load too slowly.",
+    rate: 4,
+    status: "pending",
+    created_at: "2025-03-10T16:45:00Z",
+    resolved_at: "",
+    student_id: "s4",
+  },
+  {
+    id: "f5",
+    type: "course",
+    title: "Video Quality",
+    category: "Content",
+    description: "Videos are pixelated.",
+    rate: 1,
+    status: "resolved",
+    created_at: "2025-03-25T13:20:00Z",
+    resolved_at: "2025-03-26T15:00:00Z",
+    student_id: "s5",
+  },
+];
+
+export const mockUserLogins: UserLoginResponse[] = [
+  // January 2025
+  { id: "l1", user_id: "u1", user_role: "student", login_timestamp: "2025-01-05T08:00:00Z" },
+  { id: "l2", user_id: "u2", user_role: "teacher", login_timestamp: "2025-01-10T14:00:00Z" },
+  { id: "l3", user_id: "u3", user_role: "admin", login_timestamp: "2025-01-15T09:30:00Z" },
+  // February 2025
+  { id: "l4", user_id: "u4", user_role: "student", login_timestamp: "2025-02-01T10:00:00Z" },
+  { id: "l5", user_id: "u5", user_role: "student", login_timestamp: "2025-02-20T15:45:00Z" },
+  // March 2025
+  { id: "l6", user_id: "u6", user_role: "teacher", login_timestamp: "2025-03-05T11:00:00Z" },
+  { id: "l7", user_id: "u7", user_role: "student", login_timestamp: "2025-03-15T13:00:00Z" },
+  { id: "l8", user_id: "u8", user_role: "admin", login_timestamp: "2025-03-20T16:30:00Z" },
+  { id: "l9", user_id: "u9", user_role: "student", login_timestamp: "2025-03-25T09:15:00Z" },
+];

@@ -320,6 +320,7 @@ const handleDrop = (event: DragEvent) => {
                 elevation="2"
                 prepend-icon="mdi-check-circle"
                 style="max-width: 180px"
+                @click="submitSingleUser"
               >
                 Create User
               </v-btn>
