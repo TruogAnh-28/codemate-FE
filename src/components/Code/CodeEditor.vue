@@ -12,6 +12,8 @@
         width="150"
       ></v-select>
       <v-spacer></v-spacer>
+
+      <v-btn variant="tonal" color="warning" class="mr-2" @click="giveHints" :loading="isGettingHints">Give Hints</v-btn>
       <v-btn variant="tonal" color="info" class="mr-2" @click="explainCode" :loading="isExplaining">Explain Code</v-btn>
       <v-btn variant="tonal" color="success" class="mr-2" @click="runCode" :loading="isLoading">Run</v-btn>
       <v-btn variant="tonal" color="primary" @click="submitCode" :loading="isLoading">Submit</v-btn>
@@ -100,15 +102,15 @@ const cmLanguages: Record<LanguageKey, any> = {
 const createLineExplanationTooltip = () => {
   return hoverTooltip((view, pos) => {
     if (lineExplanations.value.length === 0) return null;
-    
+
     // Get line number at position
     const line = view.state.doc.lineAt(pos);
     const lineNumber = line.number;
-    
+
     // Find explanation for this line
     const explanation = lineExplanations.value.find(exp => exp.line === lineNumber);
     if (!explanation) return null;
-    
+
     return {
       pos: line.from,
       end: line.to,
@@ -151,14 +153,14 @@ const darkTheme = EditorView.theme({
 // Initialize editor
 const initEditor = (): void => {
   if (!editorContainer.value) return;
-  
+
   // Clean up previous instance if it exists
   if (editor) {
     editor.destroy();
   }
-  
+
   const languageSupport = cmLanguages[selectedLanguage.value];
-  
+
   const startState = EditorState.create({
     doc: code.value,
     extensions: [
@@ -177,37 +179,90 @@ const initEditor = (): void => {
       })
     ]
   });
-  
+
   editor = new EditorView({
     state: startState,
     parent: editorContainer.value
   });
 };
 
+const giveHints = async (): Promise<void> => {
+  try {
+    isGettingHints.value = true;
+    // Prepare the payload.
+    const payload = {
+      problem_statement: PROBLEM_DESCRIPTION,
+      code_context: code.value
+    };
+
+    // Call the coding assistant API.
+    const response = await axios.post(
+      "http://localhost:8080/api/v1/coding-assistant/hint",
+      payload,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "accept": "application/json"
+        }
+      }
+    );
+
+    // Process the API response.
+    if (response.data.isSuccess) {
+      const hintsData = response.data.data;
+
+      // Display the global hint as a notification.
+      showSuccess(hintsData.global_hint);
+
+      // Map the API's line_hints to the LineHint type.
+      const hints: LineHint[] = hintsData.line_hints.map((item: any) => ({
+        line: item.line,
+        hint: item.hint
+      }));
+
+      // Insert the hints into the code.
+      const codeWithHints = insertHintsIntoCode(code.value, hints, selectedLanguage.value);
+      code.value = codeWithHints;
+
+      // Reinitialize the editor to update the code display.
+      nextTick(() => {
+        initEditor();
+      });
+    } else {
+      showError(response.data.message || "Failed to fetch hints");
+    }
+  } catch (error) {
+    console.error("Error fetching hints from the API:", error);
+    showError("Error fetching hints from the coding assistant API");
+  } finally {
+    isGettingHints.value = false;
+  }
+};
+
 // Get code explanations using the llmCodeServices
 const explainCode = async (): Promise<void> => {
   try {
     isExplaining.value = true;
-    
+
     // Clear previous explanations
     lineExplanations.value = [];
-    
+
     // Prepare request payload
     const codeAnalysisRequest: CodeAnalysisRequest = {
       code: code.value,
       language: selectedLanguage.value
     };
-    
+
     // Call the service to get explanations
     const response = await llmCodeServices.getCodeExplanation(
       { showError, showSuccess },
       codeAnalysisRequest
     );
-    
+
     // Process the response
     if (response.data && Array.isArray(response.data)) {
       lineExplanations.value = response.data;
-      
+
       // Reinitialize editor to apply new tooltips
       nextTick(() => {
         initEditor();
@@ -225,26 +280,26 @@ const runCode = async (): Promise<void> => {
   try {
     isLoading.value = true;
     emit('update:loading', true);
-    
+
     // Prepare stdin
     const stdin = prepareStdin(
-      selectedLanguage.value, 
-      props.testInput.nums, 
+      selectedLanguage.value,
+      props.testInput.nums,
       props.testInput.target
     );
-    
+
     try {
       // Create submission
       const token = await createSubmission(
-        code.value, 
-        LANGUAGE_MAP[selectedLanguage.value], 
+        code.value,
+        LANGUAGE_MAP[selectedLanguage.value],
         stdin,
         '[0,1]'
       );
-      
+
       // Poll for results
       const result = await pollSubmission(token);
-      
+
       // Format and emit results
       let resultText = '';
       if (result.status.id === 3) { // Accepted
@@ -261,7 +316,7 @@ const runCode = async (): Promise<void> => {
           resultText += `Compiler output: ${result.compile_output}\n`;
         }
       }
-      
+
       emit('run-result', resultText);
     } catch (apiError: any) {
       // Handle API errors
@@ -269,7 +324,7 @@ const runCode = async (): Promise<void> => {
         // Server returned an error with status code
         const errorData = apiError.response.data;
         let detailedError = `Error (${apiError.response.status}): `;
-        
+
         if (errorData && typeof errorData === 'object') {
           if (errorData.error) {
             detailedError += errorData.error;
@@ -283,7 +338,7 @@ const runCode = async (): Promise<void> => {
         } else {
           detailedError += 'Unknown error format';
         }
-        
+
         emit('run-result', detailedError);
       } else if (apiError.request) {
         // Request was sent but no response received
@@ -306,26 +361,26 @@ const submitCode = async (): Promise<void> => {
   try {
     isLoading.value = true;
     emit('update:loading', true);
-    
+
     // Prepare stdin
     const stdin = prepareStdin(
-      selectedLanguage.value, 
-      props.testInput.nums, 
+      selectedLanguage.value,
+      props.testInput.nums,
       props.testInput.target
     );
-    
+
     try {
       // Create submission
       const token = await createSubmission(
-        code.value, 
-        LANGUAGE_MAP[selectedLanguage.value], 
+        code.value,
+        LANGUAGE_MAP[selectedLanguage.value],
         stdin,
         '[0,1]'
       );
-      
+
       // Poll for results
       const result = await pollSubmission(token);
-      
+
       // Format and emit results
       let resultText = '';
       if (result.status.id === 3 && result.stdout && result.stdout.trim() === '[0,1]') {
@@ -354,7 +409,7 @@ ${result.stderr ? 'Error: ' + result.stderr + '\n' : ''}
 ${result.compile_output ? 'Compiler output: ' + result.compile_output + '\n' : ''}
         `;
       }
-      
+
       emit('submit-result', resultText);
     } catch (apiError: any) {
       // Handle API errors
@@ -362,7 +417,7 @@ ${result.compile_output ? 'Compiler output: ' + result.compile_output + '\n' : '
         // Server returned an error with status code
         const errorData = apiError.response.data;
         let detailedError = `Error (${apiError.response.status}): `;
-        
+
         if (errorData && typeof errorData === 'object') {
           if (errorData.error) {
             detailedError += errorData.error;
@@ -376,7 +431,7 @@ ${result.compile_output ? 'Compiler output: ' + result.compile_output + '\n' : '
         } else {
           detailedError += 'Unknown error format';
         }
-        
+
         emit('submit-result', detailedError);
       } else if (apiError.request) {
         // Request was sent but no response received
@@ -414,7 +469,7 @@ watch(selectedLanguage, (newLang) => {
   nextTick(() => {
     initEditor();
   });
-  
+
   // Clear explanations when language changes
   lineExplanations.value = [];
 });
@@ -422,7 +477,7 @@ watch(selectedLanguage, (newLang) => {
 // Watch for external code changes
 watch(code, (newCode) => {
   if (!editor) return;
-  
+
   const currentValue = editor.state.doc.toString();
   if (newCode !== currentValue) {
     editor.dispatch({
