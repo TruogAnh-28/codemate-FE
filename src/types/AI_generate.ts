@@ -45,8 +45,15 @@ export interface LearningPathGenerateModule {
   last_accessed: string
 }
 
+export interface DifficultyDistribution {
+  easy?: number;
+  medium?: number;
+  hard?: number;
+}
+
 export interface GenerateQuizRequest {
   module_id: string;
+  difficulty_distribution?: DifficultyDistribution;
 }
 
 export interface GenerateQuizResponse {

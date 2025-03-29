@@ -66,6 +66,8 @@ declare module 'vue' {
     QuestionDetails: typeof import('./components/Exercise/QuestionDetails.vue')['default']
     QuestionItem: typeof import('./components/Exercise/QuestionItem.vue')['default']
     QuestionsSection: typeof import('./components/Exercise/QuestionsSection.vue')['default']
+    QuizGenerationModal: typeof import('./components/Modal/QuizGenerationModal.vue')['default']
+    ReadingMaterial: typeof import('./components/ReadingMaterial/ReadingMaterial.vue')['default']
     RecentActivityCard: typeof import('./components/Dashboard/RecentActivityCard.vue')['default']
     RecentCourses: typeof import('./components/CourseList/RecentCourses.vue')['default']
     RecommendationCard: typeof import('./components/CourseDetail/RecommendationCard.vue')['default']

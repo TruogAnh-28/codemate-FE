@@ -74,7 +74,7 @@
         </v-row>
       </v-card-text>
     </v-card>
-
+    <ReadingMaterial :module-id="moduleId" />
     <!-- Quizzes Section -->
     <div class="mb-4 d-flex align-center">
       <v-icon color="primary" size="large" class="mr-2">mdi-help-circle-outline</v-icon>
@@ -86,8 +86,15 @@
         :loading="isLoading"
         :disabled="isLoading"
       >
-    {{ isLoading ? 'Generating...' : 'Generate New Quiz' }}
-  </v-btn>
+        {{ isLoading ? 'Generating...' : 'Generate New Quiz' }}
+      </v-btn>
+      <QuizGenerationModal 
+      ref="quizGenerationModalRef"
+      :module-id="moduleId"
+      :lesson-id="lessonId"
+      @quiz-generated="handleQuizGenerated"
+    />
+
     </div>
     
     <v-row>
@@ -172,7 +179,7 @@ import { moduleService } from "@/services/module";
 import { ModuleQuizResponse, ClearAnswerResponse } from "@/types/Exercise";
 import { useBreadcrumbsStore } from "@/stores/breadcrumbs";
 import { Breadcrumbs } from "@/types/Breadcrumbs";
-import { aiGenerateServices } from "@/services/aiGenerateServices";
+import ReadingMaterial from "@/components/ReadingMaterial/ReadingMaterial.vue";
 interface RouteParams {
   moduleId: string,
   lessonId: string
@@ -201,7 +208,10 @@ if (routeState.value.breadcrumbs) {
 }
 
 const breadcrumbs = computed(() => breadcrumbsStore.breadcrumbs);
-
+const quizGenerationModalRef = ref(null);
+async function generateQuiz() {
+  openQuizGenerationModal();
+}
 async function doQuiz(quizId: string, status: string): Promise<void> {
   const path = `/lessonRecommend/${lessonId}/module/${moduleId}/Quiz/${quizId}`;
   if (status === "completed") {
@@ -209,7 +219,26 @@ async function doQuiz(quizId: string, status: string): Promise<void> {
   }
   router.push(path);
 }
-
+async function handleQuizGenerated() {
+  // Set loading state
+  isLoading.value = true;
+  
+  try {
+    // Refresh the module quizzes
+    await fetchModuleQuizzes();
+  } catch (error) {
+    console.error('Failed to refresh quizzes:', error);
+    showError('Failed to update quiz list');
+  } finally {
+    // Reset loading state
+    isLoading.value = false;
+  }
+}
+function openQuizGenerationModal() {
+  if (quizGenerationModalRef.value) {
+    (quizGenerationModalRef.value as any).openDialog();
+  }
+}
 function viewAgain(quizId: string) {
   const path = `/lessonRecommend/${lessonId}/module/${moduleId}/Quiz/${quizId}`;
   router.push(path);
@@ -247,34 +276,6 @@ onMounted(() => {
 });
 
 
-async function generateQuiz() {
-  try {
-    isLoading.value = true;
-    
-    // Use the aiGenerateServices to generate a new quiz
-    const response = await aiGenerateServices.generateQuiz(
-      { showError, showSuccess },
-      { module_id: moduleId }
-    );
-    
-    // Check if the response is successful and contains data
-    if (response && "data" in response && response.data) {
-      showSuccess("Quiz generated successfully!");
-      
-      // Refresh the module quizzes to include the newly generated quiz
-      await fetchModuleQuizzes();
-      
-      // Optionally, you can redirect to the newly created quiz
-      // const newQuizId = response.data.quiz_id;
-      // router.push(`/lessonRecommend/${lessonId}/module/${moduleId}/Quiz/${newQuizId}`);
-    }
-  } catch (error) {
-    console.error("Error generating quiz:", error);
-    showError("Failed to generate quiz. Please try again.");
-  } finally {
-    isLoading.value = false;
-  }
-}
 </script>
 
 <style scoped>
