@@ -18,11 +18,10 @@ export const moduleService = {
 
   async fetchQuizDetails(
     { showError, showSuccess }: AuthConfig,
-    moduleId: string,
     quizId: string
   ) {
     return await ApiService.get<QuizExerciseResponse>(
-      `modules/${moduleId}/quizzes/${quizId}`,
+      `modules/quizzes/${quizId}`,
       "",
       { showError, showSuccess }
     );
@@ -30,12 +29,11 @@ export const moduleService = {
 
   async submitQuizAnswers(
     { showError, showSuccess }: AuthConfig,
-    moduleId: string,
     quizId: string,
     request: QuizAnswerRequest
   ) {
     return await ApiService.put<QuizScoreResponse>(
-      `modules/${moduleId}/quizzes/${quizId}/submit`,
+      `modules/quizzes/${quizId}/submit`,
       request,
       { showError, showSuccess }
     );

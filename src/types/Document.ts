@@ -74,7 +74,6 @@ export interface Document {
   export interface SummaryAndReviewResponse {
     keyPoints: string[];
     reviewQuestions: ReviewQuestionResponse[];
-    quizLink: string;
   }
   
   export interface ReviewQuestionResponse {

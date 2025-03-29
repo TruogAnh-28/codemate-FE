@@ -272,7 +272,6 @@ export interface CreateNewLessonRequest {
   learningOutcomes?: string[];
   documents?: File[];
   documentDescriptions?: string[];
-  order: number;
 }
 export interface UpdateLessonRequest {
   lesson_id: UUID;

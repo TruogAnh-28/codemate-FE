@@ -33,15 +33,14 @@ import { indentOnInput, syntaxHighlighting, defaultHighlightStyle, bracketMatchi
 import { closeBrackets, closeBracketsKeymap } from '@codemirror/autocomplete';
 import { lintGutter } from '@codemirror/lint';
 // import { javascript } from '@codemirror/lang-javascript';
+// import { rust } from '@codemirror/lang-rust';
 import { cpp } from '@codemirror/lang-cpp';
 import { python } from '@codemirror/lang-python';
 import { java } from '@codemirror/lang-java';
-// import { rust } from '@codemirror/lang-rust';
 import { LANGUAGES, LANGUAGE_MAP, DEFAULT_CODE } from '@/constants/templateLanguage';
 import { createSubmission, pollSubmission, prepareStdin } from '@/services/Professor/judge0api';
 import { llmCodeServices } from '@/services/llmCodeServices';
 import { TestInput, LineExplanation, CodeAnalysisRequest, LanguageKey } from '@/types/LLM_code';
-// import { SubmissionResult as Judge0SubmissionResult } from '@/types/Judge0API';
 
 // Define types for hints
 interface LineHint {
@@ -243,8 +242,7 @@ const giveHints = async (): Promise<void> => {
       { line: 15, hint: "Remember to return the correct indices" }
     ];
     
-    // In a real implementation you would call your API like:
-    // const response = await yourApiService.getHints({
+    // const response = await ApiService.getHints({
     //   code: code.value,
     //   language: selectedLanguage.value
     // });

@@ -184,7 +184,6 @@ const lessonData = ref<CreateNewLessonRequest>({
   courseId: props.courseId,
   learningOutcomes: [],
   documents: [],
-  order: 0,
   documentDescriptions: []
 });
 
@@ -260,7 +259,6 @@ const handleSubmit = async () => {
         title: lessonData.value.title,
         description: lessonData.value.description,
         courseId: props.courseId,
-        order: 0, // Replace 0 with the appropriate order value
         learningOutcomes: outcomes
       };
       
@@ -276,7 +274,6 @@ const handleSubmit = async () => {
         title: lessonData.value.title,
         description: lessonData.value.description,
         courseId: props.courseId,
-        order: lessonData.value.order,
         learningOutcomes: outcomes
       };
       
@@ -284,7 +281,7 @@ const handleSubmit = async () => {
         { showError, showSuccess },
         newLessonData
       );
-      
+      console.log("response", response);
       // If there are files to upload, add them using addDocuments
       if (files.value.length > 0 && response && response.data && response.data as LessonResponse ) {
         const lessonId = response.data.lessonId;

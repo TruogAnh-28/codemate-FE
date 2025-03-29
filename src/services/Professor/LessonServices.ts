@@ -12,7 +12,6 @@ export const lessonService = {
         formData.append("title", payload.title);
         formData.append("description", payload.description);
         formData.append("course_id", payload.courseId);
-        formData.append("order", payload.order?.toString() || "0");
         if (payload.learningOutcomes) {
             payload.learningOutcomes.forEach(outcome => {
                 if (outcome.trim()) {
