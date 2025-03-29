@@ -1,5 +1,6 @@
 <template>
   <v-container fluid class="py-6">
+    <HorizontalLearningPath v-if="course" :course="course" />
     <v-row>
       <v-col cols="12" md="8">
         <CourseMainContent

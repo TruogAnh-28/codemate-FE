@@ -2,9 +2,9 @@
   <v-col cols="12" md="6" class="text-center">
     <div
       class="text-heading-3 font-weight-bold mb-1 text-error"
-      v-if="course.course_percentage_complete !== ''"
+      v-if="course.percentage_done !== 0"
     >
-      {{ course.course_percentage_complete }}%
+      {{ course.percentage_done }}%
     </div>
     <div class="text-heading-3 font-weight-bold mb-1 text-error" v-else>0%</div>
     <v-chip

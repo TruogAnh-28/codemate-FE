@@ -23,12 +23,12 @@
       />
     </v-dialog>
 
-    <CourseRecommendLessons
+    <!-- <CourseRecommendLessons
       :course="course"
       :show-modal="showRecommendationsModal"
       @update:show-modal="$emit('update:show-recommendations-modal', $event)"
       @close="closeRecommendationsModal"
-    />
+    /> -->
   </div>
 </template>
 

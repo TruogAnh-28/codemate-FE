@@ -50,6 +50,7 @@ declare module 'vue' {
     GetGoalsModal: typeof import('./components/CourseDetail/GetGoalsModal.vue')['default']
     GoogleLoginButton: typeof import('./components/Login/GoogleLoginButton.vue')['default']
     GradeSection: typeof import('./components/Exercise/GradeSection.vue')['default']
+    HorizontalLearningPath: typeof import('./components/CourseDetail/HorizontalLearningPath.vue')['default']
     ImportExcelDialog: typeof import('./components/AdminComponents/ImportExcelDialog.vue')['default']
     LanguageSelect: typeof import('./components/LanguageSelect.vue')['default']
     LearningOutcomes: typeof import('./components/CourseList/LearningOutcomes.vue')['default']

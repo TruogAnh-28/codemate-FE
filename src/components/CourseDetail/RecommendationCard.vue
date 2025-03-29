@@ -12,7 +12,7 @@
         Get personalized course recommendations based on your goals and
         interests.
       </p>
-      <v-tooltip top>
+      <!-- <v-tooltip top>
         <template v-slot:activator="{ props: activatorProps }">
           <v-btn
             color="text-primary"
@@ -25,7 +25,7 @@
           </v-btn>
         </template>
         <span>View Recommended Lessons</span>
-      </v-tooltip>
+      </v-tooltip> -->
       <v-tooltip top>
         <template v-slot:activator="{ props: activatorProps }">
           <v-btn

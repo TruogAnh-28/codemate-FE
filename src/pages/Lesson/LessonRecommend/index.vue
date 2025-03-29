@@ -18,15 +18,51 @@
           </p>
         </div>
         <v-spacer></v-spacer>
-        <v-chip
-          class="px-4 py-2"
-          :color="renderStatusLabel(lesson.status)"
-          prepend-icon="mdi-checkbox-marked-circle"
-          elevation="1"
-        >
-          {{ lesson.status }}
-        </v-chip>
+        <div class="d-flex align-center">
+          <v-chip
+            class="px-4 py-2 mr-4"
+            :color="renderStatusLabel(lesson.status)"
+            prepend-icon="mdi-checkbox-marked-circle"
+            elevation="1"
+          >
+            {{ lesson.status }}
+          </v-chip>
+          <!-- New Analyst Button -->
+          <v-btn
+            color="primary"
+            variant="tonal"
+            class="text-none rounded-lg"
+            prepend-icon="mdi-chart-bar"
+            @click="showAnalystModal = true"
+          >
+            View Analysis
+          </v-btn>
+          <!-- Feedback Button -->
+          <v-btn
+            color="error"
+            variant="tonal"
+            class="text-none rounded-lg ml-4"
+            prepend-icon="mdi-comment-text-outline"
+            @click="showFeedbackModal = true"
+          >
+            Feedback
+          </v-btn>
+        </div>
       </div>
+
+      <!-- Add a part to display start date, end date and duration notes of lesson  -->
+      <v-divider></v-divider>
+      <v-card-text class="px-6 pt-4 pb-6">
+        <div class="d-flex align-center mb-2">
+          <v-icon color="primary" class="mr-2">mdi-calendar-clock</v-icon>
+          <h3 class="text-subtitle-1 font-weight-bold mb-0">Expected Time</h3>
+        </div>
+        <v-sheet rounded="lg" elevation="0" class="pa-4 bg-grey-lighten-4">
+          <p class="text-body-large-bold mb-0">Start Date: <span class="text-secondary">{{ lesson.start_date }}</span></p>
+          <p class="text-body-large-bold mb-0">End Date: <span class="text-secondary">{{ lesson.end_date }}</span></p>
+          <p class="text-body-large-medium mb-0 text-secondary-variant">{{ lesson.duration_notes }}</p>
+        </v-sheet>
+      </v-card-text>
       
       <v-card-text class="px-6 pt-4 pb-6">
         <v-row>
@@ -121,7 +157,8 @@
           </v-card-text>
           
           <v-card-actions class="pa-4 pt-0">
-            <v-btn
+            <v-btn 
+            :to="`/lessonRecommend/${lessonId}/module/${module.module_id}/Quiz`"
               color="primary"
               variant="tonal"
               class="text-none rounded-lg"
@@ -135,23 +172,24 @@
       </v-col>
     </v-row>
 
-      <DialogLearningType
-        :module="selectedModule"
-        :dialog="showDialog"
-        :lesson-id="lessonId"
-        @update:dialog="showDialog = $event"
-      />
-  </v-container>
 
-  <RecommendLessonAnalyst
-    :recommend_lesson_id="lessonId"
-    @close="handleModalClose"
-    @proceed="handleModalClose"
-    @review="handleModalClose"
-    @repeat="handleModalClose"
+    <!-- Modified RecommendLessonAnalyst with v-model -->
+    <RecommendLessonAnalyst
+      :recommend_lesson_id="lessonId"
+      v-model="showAnalystModal"
+      @close="handleModalClose"
+      @proceed="handleModalClose"
+      @review="handleModalClose"
+      @repeat="handleModalClose"
+    />
+    <FeedbackLesson
+    v-if="showFeedbackModal"
+    :lessonId="lessonId"
+    :showModal="showFeedbackModal"
+    @update:showModal="updateFeedbackModal"
+    @feedback-submitted="handleFeedbackSubmitted"
   />
-
-  <router-view />
+  </v-container>
 </template>
 
 <script lang="ts" setup>
@@ -168,6 +206,24 @@ import { ref, computed, onMounted, defineProps } from "vue";
 const props = defineProps<{
   lessonId: string;
 }>();
+const showFeedbackModal = ref(false);
+const updateFeedbackModal = (value: boolean): void => {
+  showFeedbackModal.value = value;
+};
+
+const openFeedbackModal = (lessonId: string): void => {
+  showFeedbackModal.value = true;
+};
+
+const handleFeedbackSubmitted = (feedbackData: {
+  lessonId: string;
+  feedback: string;
+}): void => {
+  console.log(
+    `Feedback received for lesson ${feedbackData.lessonId}:,${feedbackData.feedback}`
+  );
+  showFeedbackModal.value = false;
+};
 
 const lesson = ref<Lesson | null>(null);
 const showDialog = ref(false);
@@ -186,7 +242,11 @@ const monitorData = ref<RecommendLessonMonitor>({
   },
   recommendations: [],
 });
-
+const showAnalystModal = ref(false);
+const handleModalClose = () => {
+  isModalClosed.value = true;
+  showAnalystModal.value = false;
+};
 const courseStore = useCourseStore.getState();
 const breadcrumbsStore = useBreadcrumbsStore();
 
@@ -310,10 +370,6 @@ const fetchMonitor = async () => {
   } finally {
     loading.value = false;
   }
-};
-
-const handleModalClose = () => {
-  isModalClosed.value = true;
 };
 
 const retryFetch = () => {

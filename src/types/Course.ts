@@ -116,7 +116,7 @@ export interface CourseDetailResponse {
   course_last_accessed: DateTimeString
   completed_lessons: number
   time_spent: string
-  assignments_done: number
+  percentage_done: number
 }
 
 export interface LessonOriginalResponse {
