@@ -7,18 +7,17 @@
   >
     <v-card class="pa-0 rounded-xl overflow-hidden shadow-lg">
       <!-- Header with Gradient -->
-      <v-card-title class="header-gradient text-white pa-6">
-        <span class="text-h5 font-weight-bold"
-          >Learning Recommendation Analysis</span
-        >
+      <v-card-title class="header-gradient text-white pa-6 d-flex align-center">
+        <v-icon color="white" class="mr-3" size="28">mdi-school</v-icon>
+        <span class="text-h5 font-weight-bold">Learning Recommendation Analysis</span>
         <v-spacer></v-spacer>
-        <v-btn icon small @click="closeModal" class="text-white">
+        <v-btn icon small @click="closeModal" class="text-black">
           <v-icon>mdi-close</v-icon>
         </v-btn>
       </v-card-title>
 
       <!-- Content -->
-      <v-card-text class="pa-6 max-h-[65vh] overflow-y-auto bg-gray-50">
+      <v-card-text class="pa-0 max-h-[65vh] overflow-y-auto bg-gray-50">
         <!-- Loading State -->
         <div v-if="loading" class="text-center py-10">
           <v-progress-circular
@@ -31,7 +30,7 @@
 
         <!-- Error State -->
         <div v-else-if="error" class="text-center py-10">
-          <v-icon color="red" size="48">mdi-alert-circle</v-icon>
+          <v-icon color="error" size="48">mdi-alert-circle</v-icon>
           <p class="mt-4 text-gray-600">{{ error }}</p>
           <v-btn color="primary" variant="flat" class="mt-4" @click="retryFetch">
             Retry
@@ -39,136 +38,159 @@
         </div>
 
         <!-- Data Available State -->
-        <div v-else class="space-y-6">
-          <!-- Main Recommendation -->
-          <v-alert
-            :type="getAlertType()"
-            variant="tonal"
-            class="rounded-lg shadow-sm"
-            elevation="1"
-          >
-            <template v-slot:text>
-              <span class="font-medium text-base">{{
-                getMainRecommendation()
-              }}</span>
-            </template>
-          </v-alert>
+        <div v-else>
+          <!-- Main Recommendation Banner -->
+          <div class="recommendation-banner px-6 py-8">
+            <div class="d-flex align-center mb-4">
+              <v-icon :color="getStatusColor()" size="36" class="mr-3">{{ getStatusIcon() }}</v-icon>
+              <h2 class="text-h5 font-weight-bold" :class="`text-${getStatusColor()}`">
+                {{ getStatusTitle() }}
+              </h2>
+            </div>
+            <p class="text-body-1 recommendation-text">{{ getMainRecommendation() }}</p>
+            
+            <!-- Action Details -->
+            <div v-if="getRecommendedDetails()" class="recommended-details mt-4 py-4 px-6 rounded-lg">
+              <div class="d-flex align-center mb-2">
+                <v-icon color="secondary" size="20" class="mr-2">mdi-information-outline</v-icon>
+                <span class="font-weight-medium">Recommended Content:</span>
+              </div>
+              <p class="text-body-1 font-weight-medium ml-8">{{ getRecommendedDetails() }}</p>
+            </div>
+          </div>
 
-          <!-- Significant Issues -->
-          <v-expansion-panels
-            variant="accordion"
-            flat
-            class="rounded-lg bg-white shadow-sm"
-          >
-            <v-expansion-panel elevation="0">
-              <v-expansion-panel-title class="py-3 px-4">
-                <span class="font-semibold text-base text-gray-800">
-                  Significant Issues ({{
-                    monitorData.issues_analysis.total_issues_count
-                  }}
-                  total)
-                </span>
-              </v-expansion-panel-title>
-              <v-expansion-panel-text class="px-4 pb-4">
-                <v-table dense class="modern-table">
-                  <thead>
-                    <tr>
-                      <th>Type</th>
-                      <th>Description</th>
-                      <th>Severity</th>
-                      <th>Frequency</th>
-                      <th>Impact on Goals</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr
-                      v-for="(issue, index) in monitorData.issues_analysis
-                        .significant_issues"
-                      :key="index"
-                      class="hover:bg-gray-100 transition-colors"
-                    >
-                      <td>{{ issue.type }}</td>
-                      <td class="text-wrap max-w-xs">
-                        {{ issue.description }}
-                      </td>
-                      <td>
-                        <v-chip
-                          :color="getSeverityColor(issue.severity)"
-                          size="small"
-                          variant="flat"
-                          class="font-medium"
-                        >
-                          {{ issue.severity }}
-                        </v-chip>
-                      </td>
-                      <td>{{ issue.frequency }}</td>
-                      <td class="text-wrap max-w-sm">
-                        {{ issue.impact_on_goals }}
-                      </td>
-                    </tr>
-                  </tbody>
-                </v-table>
-              </v-expansion-panel-text>
-            </v-expansion-panel>
-          </v-expansion-panels>
-
-          <!-- Recommendations -->
-          <v-expansion-panels
-            variant="accordion"
-            flat
-            class="rounded-lg bg-white shadow-sm"
-          >
-            <v-expansion-panel elevation="0">
-              <v-expansion-panel-title class="py-3 px-4">
-                <span class="font-semibold text-base text-gray-800"
-                  >Recommendations</span
-                >
-              </v-expansion-panel-title>
-              <v-expansion-panel-text class="px-4 pb-4">
-                <div class="space-y-4">
-                  <div
-                    v-for="(
-                      recommendation, index
-                    ) in monitorData.recommendations"
-                    :key="index"
-                    class="p-4 bg-gray-50 rounded-lg shadow-inner"
-                  >
-                    <h4 class="font-semibold text-gray-800 mb-2">
-                      Action: {{ recommendation.action }}
-                    </h4>
-                    <p class="text-sm text-gray-600">
-                      <span class="font-medium">Reason:</span>
-                      {{ recommendation.reason }}
-                    </p>
-                    <p class="text-sm text-gray-600 mt-1">
-                      <span class="font-medium">Details:</span>
-                      {{ recommendation.details }}
-                    </p>
-                  </div>
-                </div>
-              </v-expansion-panel-text>
-            </v-expansion-panel>
-          </v-expansion-panels>
-
-          <!-- Increasing Issues -->
-          <div
-            v-if="monitorData.issues_analysis.increasing_issues.length"
-            class="mt-6"
-          >
-            <h3 class="font-semibold text-base text-gray-800 mb-3">
-              Increasing Issues
-            </h3>
-            <v-chip-group column>
+          <!-- Issues Overview -->
+          <div class="px-6 py-4 bg-white">
+            <div class="d-flex justify-space-between align-center mb-4">
+              <h3 class="text-h6 font-weight-bold text-primary-darker">Learning Issues Summary</h3>
+              <v-chip color="error" variant="outlined" class="font-weight-medium">
+                {{ monitorData.issues_analysis.total_issues_count }} total issues
+              </v-chip>
+            </div>
+            
+            <!-- Issue Types Distribution -->
+            <div class="d-flex mb-6 flex-wrap gap-3">
               <v-chip
                 v-for="issue in monitorData.issues_analysis.increasing_issues"
                 :key="issue"
-                color="orange"
-                variant="flat"
-                class="mb-2 mr-2 text-sm font-medium shadow-sm"
+                color="warning"
+                variant="elevated"
+                class="py-2 px-4 text-body-2 font-weight-medium"
+                prepend-icon="mdi-trending-up"
               >
                 {{ issue }}
               </v-chip>
-            </v-chip-group>
+            </div>
+          </div>
+
+          <!-- Significant Issues -->
+          <div class="px-6 py-4 bg-white border-t border-gray-100">
+            <v-expansion-panels
+              variant="accordion"
+              flat
+              class="rounded-lg shadow-sm"
+            >
+              <v-expansion-panel elevation="0" class="border rounded-lg">
+                <v-expansion-panel-title class="py-4 px-4 bg-gray-50">
+                  <div class="d-flex align-center">
+                    <v-icon color="primary" class="mr-3">mdi-alert-circle-outline</v-icon>
+                    <span class="font-weight-bold text-primary">Significant Learning Issues</span>
+                  </div>
+                </v-expansion-panel-title>
+                <v-expansion-panel-text class="px-4 py-4">
+                  <div class="overflow-x-auto">
+                    <v-table dense class="modern-table">
+                      <thead>
+                        <tr>
+                          <th class="text-left">Type</th>
+                          <th class="text-left">Description</th>
+                          <th class="text-center">Severity</th>
+                          <th class="text-center">Frequency</th>
+                          <th class="text-left">Impact on Goals</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr
+                          v-for="(issue, index) in monitorData.issues_analysis.significant_issues"
+                          :key="index"
+                          class="issue-row"
+                        >
+                          <td class="py-3">
+                            <v-chip size="small" color="primary" variant="flat" class="text-capitalize">
+                              {{ formatIssueType(issue.type) }}
+                            </v-chip>
+                          </td>
+                          <td class="text-wrap max-w-xs py-3 font-weight-medium">
+                            {{ issue.description }}
+                          </td>
+                          <td class="text-center py-3">
+                            <v-chip
+                              :color="getSeverityColor(issue.severity)"
+                              size="small"
+                              variant="elevated"
+                              class="font-weight-medium text-white"
+                            >
+                              {{ issue.severity }}
+                            </v-chip>
+                          </td>
+                          <td class="text-center py-3">
+                            <span class="frequency-badge">{{ issue.frequency }}</span>
+                          </td>
+                          <td class="text-wrap max-w-sm py-3 text-body-2">
+                            {{ issue.impact_on_goals }}
+                          </td>
+                        </tr>
+                      </tbody>
+                    </v-table>
+                  </div>
+                </v-expansion-panel-text>
+              </v-expansion-panel>
+            </v-expansion-panels>
+          </div>
+
+          <!-- Recommendations -->
+          <div class="px-6 py-4 bg-white border-t border-gray-100">
+            <v-expansion-panels
+              variant="accordion"
+              flat
+              class="rounded-lg shadow-sm"
+            >
+              <v-expansion-panel elevation="0" class="border rounded-lg">
+                <v-expansion-panel-title class="py-4 px-4 bg-gray-50">
+                  <div class="d-flex align-center">
+                    <v-icon color="secondary" class="mr-3">mdi-lightbulb-outline</v-icon>
+                    <span class="font-weight-bold text-secondary-darker">Detailed Recommendations</span>
+                  </div>
+                </v-expansion-panel-title>
+                <v-expansion-panel-text class="px-4 py-4">
+                  <div class="space-y-4">
+                    <div
+                      v-for="(recommendation, index) in monitorData.recommendations"
+                      :key="index"
+                      class="p-5 rounded-lg recommendation-card"
+                      :class="`recommendation-${recommendation.action}`"
+                    >
+                      <div class="d-flex align-center mb-3">
+                        <v-icon :color="getActionColor(recommendation.action)" size="24" class="mr-3">
+                          {{ getActionIcon(recommendation.action) }}
+                        </v-icon>
+                        <h4 class="text-h6 font-weight-bold" :class="`text-${getActionColor(recommendation.action)}`">
+                          {{ formatAction(recommendation.action) }}
+                        </h4>
+                      </div>
+                      <p class="text-body-1 mb-3 recommendation-reason">
+                        {{ recommendation.reason }}
+                      </p>
+                      <div v-if="recommendation.details" class="mt-3 py-3 px-4 details-box rounded">
+                        <span class="text-body-2 text-secondary-darker font-weight-medium">
+                          {{ recommendation.details }}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </v-expansion-panel-text>
+              </v-expansion-panel>
+            </v-expansion-panels>
           </div>
         </div>
       </v-card-text>
@@ -179,7 +201,7 @@
         <v-btn
           color="grey"
           variant="text"
-          class="font-medium"
+          class="font-weight-medium"
           @click="closeModal"
         >
           Close
@@ -187,8 +209,9 @@
         <v-btn
           v-if="shouldShowActionButton()"
           :color="getActionButtonColor()"
-          variant="flat"
-          class="font-medium px-6"
+          variant="elevated"
+          class="font-weight-medium px-6 text-white"
+          prepend-icon="mdi-play"
           @click="handlePrimaryAction"
         >
           {{ getActionButtonText() }}
@@ -227,19 +250,33 @@ const monitorData = ref<RecommendLessonMonitor>({
 
 const emit = defineEmits(["close", "proceed", "review", "repeat"]);
 const isModalVisible = ref(true);
-const loading = ref(true); // Loading state
-const error = ref<string | null>(null); // Error state
+const loading = ref(true); 
+const error = ref<string | null>(null);
 
 const closeModal = () => {
   isModalVisible.value = false;
   emit("close");
 };
 
-const getAlertType = () => {
+const getStatusColor = () => {
   if (monitorData.value.can_proceed) return "success";
   if (monitorData.value.needs_repeat) return "error";
   if (monitorData.value.needs_review_prior) return "warning";
-  return "info";
+  return "primary";
+};
+
+const getStatusIcon = () => {
+  if (monitorData.value.can_proceed) return "mdi-check-circle";
+  if (monitorData.value.needs_repeat) return "mdi-refresh";
+  if (monitorData.value.needs_review_prior) return "mdi-book-open-page-variant";
+  return "mdi-information";
+};
+
+const getStatusTitle = () => {
+  if (monitorData.value.can_proceed) return "Ready to Proceed";
+  if (monitorData.value.needs_repeat) return "Lesson Review Recommended";
+  if (monitorData.value.needs_review_prior) return "Prior Content Review Needed";
+  return "Learning Analysis";
 };
 
 const getMainRecommendation = () => {
@@ -247,39 +284,89 @@ const getMainRecommendation = () => {
   return recommendation?.reason || "No specific recommendation available";
 };
 
+const getRecommendedDetails = () => {
+  const recommendation = monitorData.value.recommendations.find(r => r.action === "review_prior");
+  return recommendation?.details || "";
+};
+
 const getSeverityColor = (severity: string) => {
   switch (severity.toLowerCase()) {
     case "high":
-      return "red";
+      return "error";
     case "medium":
-      return "yellow";
+      return "warning";
     case "low":
-      return "blue";
+      return "primary";
     default:
       return "grey";
   }
 };
 
+const formatIssueType = (type: string) => {
+  return type.replace(/_/g, " ");
+};
+
+const getActionColor = (action: string) => {
+  switch (action) {
+    case "repeat":
+      return "error";
+    case "review_prior":
+      return "warning";
+    case "proceed":
+      return "success";
+    default:
+      return "primary";
+  }
+};
+
+const getActionIcon = (action: string) => {
+  switch (action) {
+    case "repeat":
+      return "mdi-refresh";
+    case "review_prior":
+      return "mdi-book-open-page-variant";
+    case "proceed":
+      return "mdi-check-circle";
+    default:
+      return "mdi-information";
+  }
+};
+
+const formatAction = (action: string) => {
+  switch (action) {
+    case "repeat":
+      return "Repeat Current Lesson";
+    case "review_prior":
+      return "Review Prior Lessons";
+    case "proceed":
+      return "Proceed to Next Lesson";
+    default:
+      return action.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase());
+  }
+};
+
 const shouldShowActionButton = () => {
-  return !monitorData.value.can_proceed;
+  return true; // Always show action button for better UX
 };
 
 const getActionButtonColor = () => {
-  if (monitorData.value.needs_repeat) return "red";
-  if (monitorData.value.needs_review_prior) return "orange";
-  return "blue";
+  if (monitorData.value.needs_repeat) return "error";
+  if (monitorData.value.needs_review_prior) return "warning";
+  if (monitorData.value.can_proceed) return "success";
+  return "primary";
 };
 
 const getActionButtonText = () => {
   if (monitorData.value.needs_repeat) return "Repeat Lesson";
   if (monitorData.value.needs_review_prior) return "Review Prior Lessons";
+  if (monitorData.value.can_proceed) return "Continue to Next Lesson";
   return "Take Action";
 };
 
 const handlePrimaryAction = () => {
   if (monitorData.value.needs_repeat) emit("repeat");
   else if (monitorData.value.needs_review_prior) emit("review");
-  emit("proceed");
+  else emit("proceed");
   closeModal();
 };
 
@@ -301,7 +388,7 @@ const fetchMonitor = async () => {
       if (response && "data" in response && response.data) {
         monitorData.value = response.data as RecommendLessonMonitor;
       } else {
-        throw new Error("No data received from the server.");
+        throw new Error("Please study the course content before proceeding. We will monitor your progress when your progress achieves over 80 percent!");
       }
     } else {
       throw new Error("Course details not available.");
@@ -315,7 +402,7 @@ const fetchMonitor = async () => {
 };
 
 const retryFetch = () => {
-  fetchMonitor(); // Retry fetching data
+  fetchMonitor();
 };
 
 onMounted(() => {
@@ -325,15 +412,15 @@ onMounted(() => {
 
 <style scoped>
 .learning-recommendation-modal {
-  @apply font-sans;
+  font-family: 'Roboto', sans-serif;
 }
 
 .header-gradient {
-  background: linear-gradient(90deg, #3b82f6, #1e3a8a);
+  background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary-darker)) 100%);
 }
 
 .shadow-lg {
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
 }
 
 .shadow-sm {
@@ -350,7 +437,7 @@ onMounted(() => {
 }
 
 .max-w-xs {
-  max-width: 16rem;
+  max-width: 18rem;
 }
 
 .max-w-sm {
@@ -358,18 +445,113 @@ onMounted(() => {
 }
 
 .modern-table th {
-  @apply text-left text-sm font-semibold text-gray-700 py-3 border-b border-gray-200;
+  color: hsl(var(--primary-darker));
+  font-size: 0.875rem;
+  font-weight: 600;
+  padding: 0.75rem 1rem;
+  background-color: #f9fafb;
+  border-bottom: 2px solid hsl(var(--primary) / 0.1);
 }
 
 .modern-table td {
-  @apply text-sm text-gray-600 py-3 border-b border-gray-100;
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid #f1f5f9;
 }
 
-.hover\:bg-gray-100:hover {
-  background-color: #f9fafb;
-}
-
-.transition-colors {
+.issue-row:hover {
+  background-color: #f8f9ff;
   transition: background-color 0.2s ease;
+}
+
+.recommendation-banner {
+  background-color: #f8f9ff;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.recommendation-text {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: #374151;
+  max-width: 90%;
+}
+
+.recommended-details {
+  background-color: rgba(3, 218, 198, 0.08);
+  border-left: 4px solid hsl(var(--secondary));
+}
+
+.frequency-badge {
+  display: inline-block;
+  min-width: 28px;
+  height: 28px;
+  line-height: 28px;
+  text-align: center;
+  border-radius: 50%;
+  background-color: hsl(var(--primary) / 0.1);
+  color: hsl(var(--primary));
+  font-weight: 600;
+}
+
+.recommendation-card {
+  background-color: #fcfcfc;
+  border: 1px solid #e5e7eb;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.recommendation-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.recommendation-repeat {
+  border-left: 4px solid hsl(var(--error));
+  background-color: hsl(var(--error) / 0.05);
+}
+
+.recommendation-review_prior {
+  border-left: 4px solid hsl(var(--warning));
+  background-color: hsl(var(--warning) / 0.05);
+}
+
+.recommendation-reason {
+  color: #4b5563;
+  line-height: 1.6;
+}
+
+.details-box {
+  background-color: hsl(var(--secondary) / 0.08);
+  border: 1px dashed hsl(var(--secondary-variant));
+}
+
+.gap-3 {
+  gap: 0.75rem;
+}
+
+.text-primary {
+  color: hsl(var(--primary)) !important;
+}
+
+.text-primary-darker {
+  color: hsl(var(--primary-darker)) !important;
+}
+
+.text-secondary {
+  color: hsl(var(--secondary)) !important;
+}
+
+.text-secondary-darker {
+  color: hsl(var(--secondary-darker)) !important;
+}
+
+.text-error {
+  color: hsl(var(--error)) !important;
+}
+
+.text-warning {
+  color: hsl(var(--warning)) !important;
+}
+
+.text-success {
+  color: hsl(var(--success)) !important;
 }
 </style>

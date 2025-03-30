@@ -43,6 +43,6 @@ export interface ReviewQuestion {
   question: string;
   answer: string;
   maxscore: number;
-  score: any;
-  inputUser: any;
+  score: number;
+  inputUser: string;
 }

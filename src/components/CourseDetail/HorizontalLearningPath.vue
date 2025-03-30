@@ -285,11 +285,6 @@ const formatDate = (dateString: string) => {
   }
 };
 
-const truncateText = (text: string, maxLength: number) => {
-  if (text.length <= maxLength) return text;
-  return text.substring(0, maxLength) + "...";
-};
-
 const getStatusColor = (lesson: GetRecommendedLessonsResponse): string => {
   const today = new Date("2025-06-20");
   const start = new Date(lesson.start_date);
