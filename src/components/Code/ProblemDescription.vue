@@ -3,9 +3,10 @@
     <v-tabs v-model="descriptionTab" bg-color="grey-darken-4">
       <v-tab value="description">Description</v-tab>
       <v-tab value="submission">Submission</v-tab>
+      <v-tab value="coding-assistant">Coding assistant</v-tab>
     </v-tabs>
-    
-    <v-card-text class="problem-description pa-4 flex-grow-1 overflow-y-auto">
+
+    <v-card-text v-if="descriptionTab === 'description'" class="problem-description pa-4 flex-grow-1 overflow-y-auto">
       <h2>Two sum</h2>
       <div class="problem-tags mb-4">
         <v-chip size="small" color="grey" class="mr-2">Easy</v-chip>
@@ -14,7 +15,7 @@
       </div>
 
       <p>{{ problemDescription }}</p>
-      
+
       <div v-for="(example, index) in examples" :key="index" class="examples mt-4">
         <h3>{{ example.title }}</h3>
         <v-sheet color="grey-darken-3" class="pa-2 rounded">
@@ -31,6 +32,40 @@
         </ul>
       </div>
     </v-card-text>
+
+    <v-card-text v-else class="chat-container pa-4 flex-grow-1 d-flex flex-column">
+      <div class="chat-messages flex-grow-1 overflow-y-auto mb-4">
+        <div v-for="(message, index) in messages" :key="index" class="chat-line">
+          <span class="sender" :class="message.role">{{ message.role === 'user' ? 'You' : 'Codemate Assistant' }}</span>
+        <div
+          class="message-content"
+          v-html="renderMarkdown(message.content)"
+          v-if="message.role === 'assistant'"
+        ></div>
+        <span
+          class="message-content"
+          v-else
+        >{{ message.content }}</span>
+        </div>
+      </div>
+
+      <div class="chat-input d-flex align-center">
+        <v-text-field
+          v-model="inputMessage"
+          placeholder="Ask Copilot..."
+          class="flex-grow-1 mr-2"
+          variant="solo"
+          density="comfortable"
+          hide-details
+          color="grey-lighten-2"
+          bg-color="grey-darken-3"
+          :style="{ color: '#fff' }"
+          @keydown.enter="sendMessage"
+        />
+        <v-btn @click="sendMessage" color="primary" variant="flat">Send</v-btn>
+      </div>
+    </v-card-text>
+
   </v-sheet>
 </template>
 
@@ -38,12 +73,28 @@
 import { ref, watch } from 'vue';
 import { PROBLEM_DESCRIPTION, PROBLEM_EXAMPLES, PROBLEM_CONSTRAINTS } from '@/constants/templateProblem';
 
+import MarkdownIt from 'markdown-it';
+import hljs from 'highlight.js';
+import 'highlight.js/styles/github-dark.css';
+
+const md = new MarkdownIt({
+  html: false,
+  linkify: true,
+  typographer: true,
+  highlight(code, lang) {
+    if (lang && hljs.getLanguage(lang)) {
+      return `<pre class="hljs"><code>${hljs.highlight(code, { language: lang }).value}</code></pre>`;
+    }
+    return `<pre class="hljs"><code>${md.utils.escapeHtml(code)}</code></pre>`;
+  }
+});
+
 interface ProblemExample {
   title: string;
   input: {
     nums: string;
     target: string;
-   
+
   };
   output: string;
   explanation?: string;
@@ -70,10 +121,115 @@ const constraints = ref<string[]>(PROBLEM_CONSTRAINTS);
 watch(descriptionTab, (newValue) => {
   emit('update:tab', newValue);
 });
+
+interface ChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
+const messages = ref<ChatMessage[]>([
+  { role: 'assistant', content: 'Hi! How can I help you solve this problem?' },
+  { role: 'user', content: 'Can you explain the two sum algorithm?' },
+  { role: 'assistant', content: '## Description Sure! The idea is to use a hash map to track the numbers you’ve seen and their indices...' }
+]);
+
+messages.value.push({
+  role: 'assistant',
+  content: `
+Sure! Here's how **Two Sum** works:
+
+\`\`\`ts
+const map = new Map();
+for (let i = 0; i < nums.length; i++) {
+  const complement = target - nums[i];
+  if (map.has(complement)) {
+    return [map.get(complement), i];
+  }
+  map.set(nums[i], i);
+}
+\`\`\`
+
+This solution runs in **O(n)** time using a hash map.
+`
+});
+
+
+const inputMessage = ref('');
+
+function renderMarkdown(text: string) {
+  return md.render(text);
+}
+
+function sendMessage() {
+  const content = inputMessage.value.trim();
+  if (!content) return;
+
+  // Push user's message
+  messages.value.push({ role: 'user', content });
+
+  // Mock AI reply (add delay if you want)
+  setTimeout(() => {
+    messages.value.push({
+      role: 'assistant',
+      content: `This is a mock reply to: "${content}"`
+    });
+  }, 500);
+
+  inputMessage.value = '';
+}
 </script>
 
 <style scoped>
 .problem-description {
   overflow-y: auto;
 }
+
+.chat-container {
+  background-color: #1e1e1e;
+  color: #d4d4d4;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+}
+
+.chat-line {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid #333; /* Separator line */
+}
+
+.chat-line:last-child {
+  border-bottom: none; /* No line after the last message */
+}
+
+.sender {
+  font-size: 0.75rem;
+  font-weight: bold;
+  color: #888;
+  margin-bottom: 2px;
+}
+
+.sender.user {
+  color: #4fc3f7; /* Blue for user */
+}
+
+.sender.assistant {
+  color: #81c784; /* Green for assistant */
+}
+
+.message-content pre {
+  background-color: #2d2d2d;
+  padding: 12px;
+  border-radius: 6px;
+  overflow-x: auto;
+  margin-top: 8px;
+}
+
+.message-content code {
+  font-family: 'Fira Code', 'JetBrains Mono', monospace;
+  font-size: 0.9rem;
+  color: #ccc;
+}
+
 </style>
+
