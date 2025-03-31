@@ -1,5 +1,5 @@
 <template>
-  <v-sheet class="fill-height d-flex flex-column">
+  <v-sheet class="d-flex flex-column fill-height">
     <v-tabs v-model="descriptionTab" bg-color="grey-darken-4">
       <v-tab value="description">Description</v-tab>
       <v-tab value="submission">Submission</v-tab>
@@ -33,14 +33,14 @@
       </div>
     </v-card-text>
 
-    <v-card-text v-else class="chat-container pa-4 flex-grow-1 d-flex flex-column">
+    <v-card-text v-else class="chat-container d-flex flex-column flex-grow-1 pa-0">
 
-    <div class="chat-messages flex-grow-1 overflow-y-auto mb-4">
+    <div class="chat-messages-container flex-grow-1 overflow-y-auto px-4 py-2">
       <!-- Existing messages -->
       <div v-for="(message, index) in messages" :key="index" class="chat-line">
-        <span class="sender" :class="message.role">
+        <div class="sender" :class="message.role">
           {{ message.role === 'user' ? 'You' : 'Codemate Assistant' }}
-        </span>
+        </div>
 
         <div
           class="message-content"
@@ -232,18 +232,31 @@ This solution runs in **O(n)** time using a hash map.
   background-color: #1e1e1e;
   color: #d4d4d4;
   font-family: "JetBrains Mono", "Fira Code", monospace;
+  height: 100%;
+}
+
+.chat-messages-container {
+  flex-grow: 1;
+  overflow-y: auto;
+  min-height: 0;
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-messages {
+  display: flex;
+  flex-direction: column;
 }
 
 .chat-line {
-  display: flex;
-  flex-direction: column;
   padding-bottom: 12px;
   margin-bottom: 12px;
-  border-bottom: 1px solid #333; /* Separator line */
+  border-bottom: 1px solid #333;
 }
 
 .chat-line:last-child {
-  border-bottom: none; /* No line after the last message */
+  border-bottom: none;
 }
 
 .sender {
