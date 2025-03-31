@@ -34,39 +34,44 @@
     </v-card-text>
 
     <v-card-text v-else class="chat-container pa-4 flex-grow-1 d-flex flex-column">
-      <div class="chat-messages flex-grow-1 overflow-y-auto mb-4">
-        <div v-for="(message, index) in messages" :key="index" class="chat-line">
-          <span class="sender" :class="message.role">{{ message.role === 'user' ? 'You' : 'Codemate Assistant' }}</span>
 
-          <div
-            class="message-content"
-            v-html="renderMarkdown(message.content)"
-            v-if="message.role === 'assistant'"
-          ></div>
+    <div class="chat-messages flex-grow-1 overflow-y-auto mb-4">
+      <!-- Existing messages -->
+      <div v-for="(message, index) in messages" :key="index" class="chat-line">
+        <span class="sender" :class="message.role">
+          {{ message.role === 'user' ? 'You' : 'Codemate Assistant' }}
+        </span>
 
-          <!-- Render streaming (only after all messages) -->
-          <div
-            class="message-content"
-            v-html="renderMarkdown(streamingBuffer)"
-            v-if="index === messages.length && streamingBuffer"
-          ></div>
+        <div
+          class="message-content"
+          v-if="message.role === 'assistant'"
+          v-html="renderMarkdown(message.content)"
+        ></div>
 
-          <!-- Thinking indicator -->
-          <div
-            class="message-content"
-            v-if="index === messages.length && isThinking"
-          >
-            Codemate Assistant is thinking<span class="dot">.</span><span class="dot">.</span><span class="dot">.</span>
-          </div>
+        <span
+          class="message-content"
+          v-else
+        >{{ message.content }}</span>
+      </div>
 
-          <!-- User message fallback -->
-          <span
-            class="message-content"
-            v-else-if="message.role === 'user'"
-          >{{ message.content }}</span>
+      <!-- Streaming buffer (AI is typing) -->
+      <div v-if="streamingBuffer" class="chat-line">
+        <span class="sender assistant">Codemate Assistant</span>
+        <div
+          class="message-content"
+          v-html="renderMarkdown(streamingBuffer)"
+        ></div>
+      </div>
 
+      <!-- Thinking indicator -->
+      <div v-if="isThinking" class="chat-line">
+        <span class="sender assistant">Codemate Assistant</span>
+        <div class="message-content">
+          Thinking<span class="dot">.</span><span class="dot">.</span><span class="dot">.</span>
         </div>
       </div>
+    </div>
+
 
     <div class="chat-input d-flex align-center pa-2 rounded-lg">
       <v-text-field
