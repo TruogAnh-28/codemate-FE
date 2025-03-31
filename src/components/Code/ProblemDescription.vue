@@ -305,5 +305,24 @@ This solution runs in **O(n)** time using a hash map.
   100% { opacity: 0; }
 }
 
+.chat-messages-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.chat-messages-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.chat-messages-container::-webkit-scrollbar-thumb {
+  background-color: #555;
+  border-radius: 4px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+  transition: background-color 0.3s;
+}
+
+.chat-messages-container::-webkit-scrollbar-thumb:hover {
+  background-color: #888;
+}
 </style>
 
