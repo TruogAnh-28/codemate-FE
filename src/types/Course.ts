@@ -159,9 +159,19 @@ export interface GetRecommendedLessonsResponse {
   end_date: string
   duration_notes: string
   bookmark: boolean
-  modules: any
+  modules: Module[]
   lesson_title: string
   order: number
+  time_spent?: string
+}
+
+export interface Module {
+  id: string
+  recommend_lesson_id: string
+  title: string
+  objectives: string[]
+  last_accessed: string
+  progress: number
 }
 
 //---------------------------------Professor---------------------------------

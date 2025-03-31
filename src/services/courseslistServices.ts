@@ -46,7 +46,7 @@ export const coursesService = {
     { showError, showSuccess }: AuthConfig,
     course_id: string
   ) {
-    return await ApiService.get<CourseDetailResponse>(
+    return await ApiService.get<IResponseData<CourseDetailResponse>>(
       `courses/${course_id}`,
       "",
       { showError, showSuccess }
@@ -84,11 +84,14 @@ export const coursesService = {
   },
   async getRecommendedLessons(
     { showError, showSuccess }: AuthConfig,
-    course_id: string
+    course_id: string,
+    expand?: string 
   ) {
-    return await ApiService.get<IResponseData<_GetRecommendedLessonsResponse>>(
-      `courses/${course_id}/learning-path/recommended-lessons`,
-      "",
+    const resource = `courses/${course_id}/learning-path/recommended-lessons`;
+    const params = expand ? { expand } : undefined;
+    return await ApiService.query<IResponseData<_GetRecommendedLessonsResponse>>(
+      resource,
+      params,
       { showError, showSuccess }
     );
   },
