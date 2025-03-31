@@ -37,33 +37,63 @@
       <div class="chat-messages flex-grow-1 overflow-y-auto mb-4">
         <div v-for="(message, index) in messages" :key="index" class="chat-line">
           <span class="sender" :class="message.role">{{ message.role === 'user' ? 'You' : 'Codemate Assistant' }}</span>
-        <div
-          class="message-content"
-          v-html="renderMarkdown(message.content)"
-          v-if="message.role === 'assistant'"
-        ></div>
-        <span
-          class="message-content"
-          v-else
-        >{{ message.content }}</span>
+
+          <div
+            class="message-content"
+            v-html="renderMarkdown(message.content)"
+            v-if="message.role === 'assistant'"
+          ></div>
+
+          <!-- Render streaming (only after all messages) -->
+          <div
+            class="message-content"
+            v-html="renderMarkdown(streamingBuffer)"
+            v-if="index === messages.length && streamingBuffer"
+          ></div>
+
+          <!-- Thinking indicator -->
+          <div
+            class="message-content"
+            v-if="index === messages.length && isThinking"
+          >
+            Codemate Assistant is thinking<span class="dot">.</span><span class="dot">.</span><span class="dot">.</span>
+          </div>
+
+          <!-- User message fallback -->
+          <span
+            class="message-content"
+            v-else-if="message.role === 'user'"
+          >{{ message.content }}</span>
+
         </div>
       </div>
 
-      <div class="chat-input d-flex align-center">
-        <v-text-field
-          v-model="inputMessage"
-          placeholder="Ask Copilot..."
-          class="flex-grow-1 mr-2"
-          variant="solo"
-          density="comfortable"
-          hide-details
-          color="grey-lighten-2"
-          bg-color="grey-darken-3"
-          :style="{ color: '#fff' }"
-          @keydown.enter="sendMessage"
-        />
-        <v-btn @click="sendMessage" color="primary" variant="flat">Send</v-btn>
-      </div>
+    <div class="chat-input d-flex align-center pa-2 rounded-lg">
+      <v-text-field
+        v-model="inputMessage"
+        placeholder="Ask Copilot..."
+        variant="solo"
+        density="comfortable"
+        hide-details
+        bg-color="grey-darken-3"
+        color="grey-lighten-2"
+        class="flex-grow-1"
+        rounded
+        :style="{ color: '#fff' }"
+        @keydown.enter="sendMessage"
+      />
+
+      <v-btn
+        @click="sendMessage"
+        icon
+        color="primary"
+        variant="flat"
+        class="ml-2"
+      >
+        <v-icon>mdi-send</v-icon>
+      </v-btn>
+    </div>
+
     </v-card-text>
 
   </v-sheet>
@@ -133,9 +163,31 @@ const messages = ref<ChatMessage[]>([
   { role: 'assistant', content: '## Description Sure! The idea is to use a hash map to track the numbers you’ve seen and their indices...' }
 ]);
 
-messages.value.push({
-  role: 'assistant',
-  content: `
+const inputMessage = ref('');
+
+function renderMarkdown(text: string) {
+  return md.render(text);
+}
+
+const isThinking = ref(false);
+const streamingBuffer = ref('');
+
+async function sendMessage() {
+  const content = inputMessage.value.trim();
+  if (!content) return;
+
+  // Add user's message
+  messages.value.push({ role: 'user', content });
+  inputMessage.value = '';
+
+  // Show thinking indicator
+  isThinking.value = true;
+  await new Promise((resolve) => setTimeout(resolve, 800)); // Simulate "thinking..."
+
+  isThinking.value = false;
+  streamingBuffer.value = '';
+
+  const fullResponse = `
 Sure! Here's how **Two Sum** works:
 
 \`\`\`ts
@@ -150,33 +202,20 @@ for (let i = 0; i < nums.length; i++) {
 \`\`\`
 
 This solution runs in **O(n)** time using a hash map.
-`
-});
+`;
 
+  // Stream response character by character
+  let current = '';
+  for (let i = 0; i < fullResponse.length; i++) {
+    await new Promise((resolve) => setTimeout(resolve, 15));
+    current += fullResponse[i];
+    streamingBuffer.value = current;
+  }
 
-const inputMessage = ref('');
-
-function renderMarkdown(text: string) {
-  return md.render(text);
+  messages.value.push({ role: 'assistant', content: current });
+  streamingBuffer.value = '';
 }
 
-function sendMessage() {
-  const content = inputMessage.value.trim();
-  if (!content) return;
-
-  // Push user's message
-  messages.value.push({ role: 'user', content });
-
-  // Mock AI reply (add delay if you want)
-  setTimeout(() => {
-    messages.value.push({
-      role: 'assistant',
-      content: `This is a mock reply to: "${content}"`
-    });
-  }, 500);
-
-  inputMessage.value = '';
-}
 </script>
 
 <style scoped>
@@ -229,6 +268,23 @@ function sendMessage() {
   font-family: 'Fira Code', 'JetBrains Mono', monospace;
   font-size: 0.9rem;
   color: #ccc;
+}
+
+.dot {
+  animation: blink 1s infinite;
+}
+
+.dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes blink {
+  0%, 20% { opacity: 0; }
+  50% { opacity: 1; }
+  100% { opacity: 0; }
 }
 
 </style>
