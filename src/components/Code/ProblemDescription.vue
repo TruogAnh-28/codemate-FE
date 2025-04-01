@@ -1,5 +1,5 @@
 <template>
-  <v-sheet class="d-flex flex-column fill-height">
+  <v-sheet class="d-flex flex-column" style="height: 100vh; overflow: hidden;">
     <v-tabs v-model="descriptionTab" bg-color="grey-darken-4">
       <v-tab value="description">Description</v-tab>
       <v-tab value="submission">Submission</v-tab>
@@ -81,7 +81,7 @@
     <div class="chat-input d-flex align-center pa-2 rounded-lg">
       <v-text-field
         v-model="inputMessage"
-        placeholder="Ask Copilot..."
+        placeholder="Ask Codemate assistant..."
         variant="solo"
         density="comfortable"
         hide-details
@@ -112,6 +112,11 @@
 <script setup lang="ts">
 import { ref, watch, nextTick } from 'vue';
 import { PROBLEM_DESCRIPTION, PROBLEM_EXAMPLES, PROBLEM_CONSTRAINTS } from '@/constants/templateProblem';
+import { streamFromApi } from '@/common/api.service.ts';
+import { useRoute } from 'vue-router';
+
+const route = useRoute();
+const exerciseId = computed(() => route.params.exerciseId as string);
 
 import MarkdownIt from 'markdown-it';
 import hljs from 'highlight.js';
@@ -186,49 +191,51 @@ async function sendMessage() {
   const content = inputMessage.value.trim();
   if (!content) return;
 
-  // Add user's message
+  // Add user's message and clear input
   messages.value.push({ role: 'user', content });
   inputMessage.value = '';
   scrollToBottom();
 
   // Show thinking indicator
   isThinking.value = true;
-  await new Promise((resolve) => setTimeout(resolve, 800)); // Simulate "thinking..."
-
-  isThinking.value = false;
   streamingBuffer.value = '';
 
-  const fullResponse = `
-Sure! Here's how **Two Sum** works:
+  // Extract the exerciseId from the route parameters
+  const exerciseId = route.params.exerciseId;
+  const url = `exercises/code/${exerciseId}/conversation:invokeAssistant`;
 
-\`\`\`ts
-const map = new Map();
-for (let i = 0; i < nums.length; i++) {
-  const complement = target - nums[i];
-  if (map.has(complement)) {
-    return [map.get(complement), i];
-  }
-  map.set(nums[i], i);
-}
-\`\`\`
-
-This solution runs in **O(n)** time using a hash map.
-`;
-
-  // Stream response character by character
-  let current = '';
-  for (let i = 0; i < fullResponse.length; i++) {
-    await new Promise((resolve) => setTimeout(resolve, 15));
-    current += fullResponse[i];
-    streamingBuffer.value = current;
+  try {
+    // Call the streamFromApi function. This will handle chunked responses.
+    await streamFromApi(
+      url,
+      (chunk: string) => {
+        streamingBuffer.value += chunk;
+        scrollToBottom();
+      },
+      {
+        method: "POST",
+        body: {
+          content: content,
+          user_solution: "" // Pass along any existing user solution if needed.
+        }
+      }
+    );
+    // After the stream is complete, add the full response as an assistant message.
+    messages.value.push({ role: 'assistant', content: streamingBuffer.value });
+  } catch (error) {
+    // Handle any errors from the API call.
+    messages.value.push({
+      role: 'assistant',
+      content: "An error occurred while fetching the response. Please try again."
+    });
+    console.error("Error invoking API:", error);
+  } finally {
+    // Clear indicators regardless of success or failure.
+    isThinking.value = false;
+    streamingBuffer.value = '';
     scrollToBottom();
   }
-
-  messages.value.push({ role: 'assistant', content: current });
-  streamingBuffer.value = '';
-  scrollToBottom();
 }
-
 const chatBottom = ref<null | HTMLElement>(null);
 
 const chatContainer = ref<null | HTMLElement>(null);
@@ -254,6 +261,8 @@ function scrollToBottom() {
   color: #d4d4d4;
   font-family: "JetBrains Mono", "Fira Code", monospace;
   height: 100%;
+  max-height: 100%;
+  overflow: hidden;
 }
 
 .chat-messages-container {
