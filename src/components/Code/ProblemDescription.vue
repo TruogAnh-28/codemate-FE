@@ -35,7 +35,10 @@
 
     <v-card-text v-else class="chat-container d-flex flex-column flex-grow-1 pa-0">
 
-    <div class="chat-messages-container flex-grow-1 overflow-y-auto px-4 py-2">
+    <div
+      class="chat-messages-container flex-grow-1 overflow-y-auto px-4 py-2"
+      ref="chatContainer"
+    >
       <!-- Existing messages -->
       <div v-for="(message, index) in messages" :key="index" class="chat-line">
         <div class="sender" :class="message.role">
@@ -70,6 +73,8 @@
           Thinking<span class="dot">.</span><span class="dot">.</span><span class="dot">.</span>
         </div>
       </div>
+
+      <div ref="chatBottom"></div>
     </div>
 
 
@@ -105,7 +110,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, watch, nextTick } from 'vue';
 import { PROBLEM_DESCRIPTION, PROBLEM_EXAMPLES, PROBLEM_CONSTRAINTS } from '@/constants/templateProblem';
 
 import MarkdownIt from 'markdown-it';
@@ -184,6 +189,7 @@ async function sendMessage() {
   // Add user's message
   messages.value.push({ role: 'user', content });
   inputMessage.value = '';
+  scrollToBottom();
 
   // Show thinking indicator
   isThinking.value = true;
@@ -215,10 +221,25 @@ This solution runs in **O(n)** time using a hash map.
     await new Promise((resolve) => setTimeout(resolve, 15));
     current += fullResponse[i];
     streamingBuffer.value = current;
+    scrollToBottom();
   }
 
   messages.value.push({ role: 'assistant', content: current });
   streamingBuffer.value = '';
+  scrollToBottom();
+}
+
+const chatBottom = ref<null | HTMLElement>(null);
+
+const chatContainer = ref<null | HTMLElement>(null);
+
+function scrollToBottom() {
+  nextTick(() => {
+    const container = chatContainer.value;
+    if (container) {
+      container.scrollTop = container.scrollHeight;
+    }
+  });
 }
 
 </script>
@@ -236,12 +257,12 @@ This solution runs in **O(n)** time using a hash map.
 }
 
 .chat-messages-container {
+  display: flex;
+  flex-direction: column;
   flex-grow: 1;
   overflow-y: auto;
   min-height: 0;
   max-height: 100%;
-  display: flex;
-  flex-direction: column;
 }
 
 .chat-messages {
