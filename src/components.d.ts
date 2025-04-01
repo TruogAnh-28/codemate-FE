@@ -9,6 +9,8 @@ declare module 'vue' {
   export interface GlobalComponents {
     AboutUs: typeof import('./components/LandingPage/Layout/AboutUs.vue')['default']
     ActivityItem: typeof import('./components/Dashboard/ActivityItem.vue')['default']
+    AIAssessmentButton: typeof import('./components/ProgressTracking/AIAssessmentButton.vue')['default']
+    AIAssessmentModal: typeof import('./components/ProgressTracking/AIAssessmentModal.vue')['default']
     Appbar: typeof import('./components/Appbar.vue')['default']
     AppFooter: typeof import('./components/AppFooter.vue')['default']
     AutoLogin: typeof import('./components/AutoLogin.vue')['default']

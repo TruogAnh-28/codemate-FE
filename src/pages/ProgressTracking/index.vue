@@ -3,7 +3,10 @@
     <!-- Loading Indicator -->
     <v-row v-if="loading">
       <v-col cols="12" class="text-center">
-        <v-progress-circular indeterminate color="primary"></v-progress-circular>
+        <v-progress-circular
+          indeterminate
+          color="primary"
+        ></v-progress-circular>
         <p class="mt-2">Loading course data...</p>
       </v-col>
     </v-row>
@@ -55,9 +58,15 @@
           <v-card class="objective-card">
             <v-card-item>
               <div class="d-flex align-center mb-4">
-                <v-icon color="primary" size="large" class="mr-4">mdi-target</v-icon>
+                <v-icon color="primary" size="large" class="mr-4"
+                  >mdi-target</v-icon
+                >
                 <div class="text-h6">
-                  Your Goal for <span class="text-body-large-medium text-primary">{{ courseData.course_name }}</span> Course
+                  Your Goal for
+                  <span class="text-body-large-medium text-primary">{{
+                    courseData.course_name
+                  }}</span>
+                  Course
                 </div>
               </div>
               <v-card-text class="text-body-1">
@@ -67,94 +76,14 @@
           </v-card>
         </v-col>
       </v-row>
-<!-- 
-      <v-row class="mb-6">
-        <v-col cols="12" md="3">
-          <v-card class="info-card" elevation="2" hover>
-            <v-card-item>
-              <div class="d-flex align-center">
-                <v-icon color="primary" size="large" class="mr-4">mdi-calendar</v-icon>
-                <div>
-                  <div class="text-caption text-medium-emphasis">Start Date</div>
-                  <div class="text-subtitle-1 font-weight-bold">
-                    {{ formatDate(courseData.course_start_date) }}
-                  </div>
-                </div>
-              </div>
-            </v-card-item>
-          </v-card>
-        </v-col>
 
-        <v-col cols="12" md="3">
-          <v-card class="info-card" elevation="2" hover>
-            <v-card-item>
-              <div class="d-flex align-center">
-                <v-icon color="primary" size="large" class="mr-4">mdi-calendar-end</v-icon>
-                <div>
-                  <div class="text-caption text-medium-emphasis">End Date</div>
-                  <div class="text-subtitle-1 font-weight-bold">
-                    {{ formatDate(courseData.course_end_date) }}
-                  </div>
-                </div>
-              </div>
-            </v-card-item>
-          </v-card>
-        </v-col>
-
-        <v-col cols="12" md="3">
-          <v-card class="info-card" elevation="2" hover>
-            <v-card-item>
-              <div class="d-flex align-center">
-                <v-icon color="primary" size="large" class="mr-4">mdi-school</v-icon>
-                <div>
-                  <div class="text-caption text-medium-emphasis">Semester</div>
-                  <div class="text-subtitle-1 font-weight-bold">
-                    {{ courseData.course_nSemester }}
-                  </div>
-                </div>
-              </div>
-            </v-card-item>
-          </v-card>
-        </v-col>
-
-        <v-col cols="12" md="3">
-          <v-card class="info-card" elevation="2" hover>
-            <v-card-item>
-              <div class="d-flex align-center">
-                <v-icon color="primary" size="large" class="mr-4">mdi-trophy-variant</v-icon>
-                <div>
-                  <div class="text-caption text-medium-emphasis">Progress</div>
-                  <div class="text-subtitle-1 font-weight-bold">
-                    {{ courseData.percentage_done || 0 }}%
-                  </div>
-                </div>
-              </div>
-            </v-card-item>
-          </v-card>
-        </v-col>
-      </v-row> -->
-<!-- 
-      <v-row class="mb-6">
-        <v-col cols="12">
-          <v-card>
-            <v-card-title class="text-h6">Learning Outcomes</v-card-title>
-            <v-card-text>
-              <v-list>
-                <v-list-item
-                  v-for="(outcome, index) in courseData.course_learning_outcomes"
-                  :key="index"
-                  class="mb-2"
-                >
-                  <template v-slot:prepend>
-                    <v-icon color="primary" class="mr-2">mdi-check-circle</v-icon>
-                  </template>
-                  {{ outcome }}
-                </v-list-item>
-              </v-list>
-            </v-card-text>
-          </v-card>
-        </v-col>
-      </v-row> -->
+      <!-- AI Assessment Button -->
+<!-- AI Assessment Button -->
+<v-row class="mb-4">
+  <v-col cols="12" class="d-flex justify-center">
+    <AIAssessmentButton :fetch-assessment="fetchAIAssessment" />
+  </v-col>
+</v-row>
 
       <v-row>
         <v-col cols="12" md="6">
@@ -169,7 +98,9 @@
                 :options="lineChartOptions"
                 :series="lineChartSeries"
               ></apexchart>
-              <p v-else class="text-center text-medium-emphasis">No progress data available yet.</p>
+              <p v-else class="text-center text-medium-emphasis">
+                No progress data available yet.
+              </p>
             </v-card-text>
           </v-card>
         </v-col>
@@ -190,35 +121,38 @@
           </v-card>
         </v-col>
         <v-col cols="12">
-           <!-- Pass lessons data if the component needs it -->
-           <OverallProgress :lessons="learningPathData.lessons || []" />
+          <!-- Pass lessons data if the component needs it -->
+          <OverallProgress :lessons="learningPathData.lessons || []" />
         </v-col>
       </v-row>
-
     </template>
 
     <!-- Error Message -->
-     <v-row v-if="error">
+    <v-row v-if="error">
       <v-col cols="12">
         <v-alert type="error" prominent border="start">
           Failed to load course data: {{ error }}
         </v-alert>
       </v-col>
     </v-row>
-
   </v-container>
 </template>
 
 <script setup lang="ts">
 import { coursesService } from "@/services/courseslistServices";
-import { _GetRecommendedLessonsResponse, CourseDetailResponse } from "@/types/Course";
+import {
+  _GetRecommendedLessonsResponse,
+  CourseDetailResponse,
+} from "@/types/Course";
+import { progressTrackingServices } from "@/services/ProgressTracking";
+import { ProgressTrackingStudent } from "@/types/ProgressTracking";
 
 // --- State Variables ---
 const courseData = ref<CourseDetailResponse | null>(null);
 const learningPathData = ref<_GetRecommendedLessonsResponse | null>(null);
 const loading = ref<boolean>(true);
 const error = ref<string | null>(null);
-
+const AIassessment = ref<ProgressTrackingStudent | null>(null);
 // --- Mock Data for Performance Metrics Bar Chart (ApexCharts format) ---
 const barChartSeries = ref([
   {
@@ -229,158 +163,157 @@ const barChartSeries = ref([
 
 const barChartOptions = reactive({
   chart: {
-    type: 'bar',
+    type: "bar",
     height: 300,
     toolbar: {
-      show: false
-    }
+      show: false,
+    },
   },
   plotOptions: {
     bar: {
       horizontal: false,
-      columnWidth: '40%', // Adjust bar width
-      endingShape: 'rounded' // Optional: rounded bars
+      columnWidth: "40%", // Adjust bar width
+      endingShape: "rounded", // Optional: rounded bars
     },
   },
-  colors: ['#4CAF50'], // Match previous color
+  colors: ["#4CAF50"], // Match previous color
   dataLabels: {
     enabled: false,
   },
   stroke: {
-      show: true,
-      width: 2,
-      colors: ['transparent']
+    show: true,
+    width: 2,
+    colors: ["transparent"],
   },
   xaxis: {
     categories: ["Lesson 1", "Lesson 2", "Lesson 3"],
     title: {
-      text: 'Lesson'
-    }
+      text: "Lesson",
+    },
   },
   yaxis: {
     title: {
-      text: 'Number of Requests'
+      text: "Number of Requests",
     },
     labels: {
       formatter: function (val: number) {
         return val.toFixed(0) + " times"; // Format y-axis labels
-      }
+      },
     },
     min: 0,
-    tickAmount: 5 // Adjust based on expected max value
+    tickAmount: 5, // Adjust based on expected max value
   },
   fill: {
-    opacity: 1
+    opacity: 1,
   },
   tooltip: {
     y: {
       formatter: function (val: number) {
         return val + " requests";
-      }
-    }
+      },
+    },
   },
   grid: {
-    borderColor: '#f1f1f1',
-  }
+    borderColor: "#f1f1f1",
+  },
 });
 
 // --- Line Chart State (Populated from API) ---
 const lineChartSeries = ref<ApexAxisChartSeries>([]); // ApexCharts series format
-const lineChartOptions = reactive<ApexCharts.ApexOptions>({ // Use ApexCharts types
+const lineChartOptions = reactive<ApexCharts.ApexOptions>({
+  // Use ApexCharts types
   chart: {
     height: 300,
-    type: 'line',
+    type: "line",
     zoom: {
-      enabled: false
+      enabled: false,
     },
     toolbar: {
-      show: true // Show toolbar for zoom, pan, export etc.
-    }
+      show: true, // Show toolbar for zoom, pan, export etc.
+    },
   },
   dataLabels: {
     enabled: true, // Show data points values
-     formatter: (val) => `${Math.round(Number(val))}%`
+    formatter: (val) => `${Math.round(Number(val))}%`,
   },
   stroke: {
-    curve: 'smooth', // Smoother line
-    width: 3
+    curve: "smooth", // Smoother line
+    width: 3,
   },
   title: {
-    text: 'Lesson Progress',
-    align: 'left'
+    text: "Lesson Progress",
+    align: "left",
   },
   grid: {
     row: {
-      colors: ['#f3f3f3', 'transparent'], // alternating row colors
-      opacity: 0.5
+      colors: ["#f3f3f3", "transparent"], // alternating row colors
+      opacity: 0.5,
     },
   },
   xaxis: {
     categories: [], // Will be populated from API data
     title: {
-        text: 'Lessons (in order)'
+      text: "Lessons (in order)",
     },
     labels: {
-        trim: true, // Attempts basic trimming (often not enough)
-        hideOverlappingLabels: true, // Hides labels that would overlap
-        rotate: -45, // Option: Rotate labels if needed
-        rotateAlways: false, // Only rotate if they overlap (requires hideOverlappingLabels: false)
-        maxHeight: 80, // Allow more vertical space if rotating/wrapping
-        style: {
-            fontSize: '11px' // Slightly smaller font
-        },
-        // formatter: function(value: string | undefined) {
-        //   if (!value) return '';
-        //   const maxLength = 25; // Adjust max length as needed
-        //   if (value.length > maxLength) {
-        //     return value.substring(0, maxLength - 3) + '...';
-        //   }
-        //   return value;
-        // },
+      trim: true, // Attempts basic trimming (often not enough)
+      hideOverlappingLabels: true, // Hides labels that would overlap
+      rotate: -45, // Option: Rotate labels if needed
+      rotateAlways: false, // Only rotate if they overlap (requires hideOverlappingLabels: false)
+      maxHeight: 80, // Allow more vertical space if rotating/wrapping
+      style: {
+        fontSize: "11px", // Slightly smaller font
+      },
     },
     // Tooltip shows full category name by default, but ensure it's enabled
     tooltip: {
       enabled: true,
-    }
+    },
   },
   yaxis: {
     title: {
-      text: 'Progress (%)'
+      text: "Progress (%)",
     },
     min: 0,
     max: 100,
     labels: {
-         formatter: (val) => `${val}%`
-    }
+      formatter: (val) => `${val}%`,
+    },
   },
-   tooltip: {
+  tooltip: {
     y: {
-       formatter: (val) => `${Math.round(Number(val))}%`
-    }
+      formatter: (val) => `${Math.round(Number(val))}%`,
+    },
   },
   markers: {
-      size: 5 // Make points more visible
-  }
+    size: 5, // Make points more visible
+  },
 });
 
-const showError = inject('showError') as (message: string) => void;
-const showSuccess = inject('showSuccess') as (message: string) => void;
+const showError = inject("showError") as (message: string) => void;
+const showSuccess = inject("showSuccess") as (message: string) => void;
 // --- API Fetching Logic ---
 const fetchCourseData = async () => {
   try {
-    const response = await coursesService.fetchCourseDetail({showError, showSuccess}, "03c056cf-75b6-404b-a6fb-c201789ad526"); 
+    const response = await coursesService.fetchCourseDetail(
+      { showError, showSuccess },
+      "03c056cf-75b6-404b-a6fb-c201789ad526"
+    );
     courseData.value = response.data; // Assuming response.data is the course data
     return response.data; // Return course data for further processing if needed
-  }
-  catch (error) {
+  } catch (error) {
     console.error("Error fetching course data:", error);
     showError("Failed to load course data");
   }
 };
 
-const fetchLearningPathData = async ()=> {
+const fetchLearningPathData = async () => {
   try {
-    const response = await coursesService.getRecommendedLessons({showError, showSuccess}, "03c056cf-75b6-404b-a6fb-c201789ad526", "modules"); 
+    const response = await coursesService.getRecommendedLessons(
+      { showError, showSuccess },
+      "03c056cf-75b6-404b-a6fb-c201789ad526",
+      "modules"
+    );
     learningPathData.value = response.data; // Assuming response.data is the learning path data
     return response.data; // Return learning path data for further processing if needed
   } catch (error) {
@@ -397,39 +330,42 @@ onMounted(async () => {
     // Fetch data in parallel
     const [courseResult, learningPathResult] = await Promise.all([
       fetchCourseData(),
-      fetchLearningPathData()
+      fetchLearningPathData(),
+
     ]);
 
-    if(!courseResult || !learningPathResult) {
+    if (!courseResult || !learningPathResult) {
       throw new Error("Failed to fetch course or learning path data");
     }
 
     courseData.value = courseResult;
     learningPathData.value = learningPathResult;
-
     // Process learning path data for the line chart
     if (learningPathData.value && learningPathData.value.lessons.length > 0) {
       // Sort lessons by the 'order' field
-      const sortedLessons = [...learningPathData.value.lessons].sort((a, b) => a.order - b.order);
+      const sortedLessons = [...learningPathData.value.lessons].sort(
+        (a, b) => a.order - b.order
+      );
 
-      const labels = sortedLessons.map(lesson => lesson.lesson_title);
-      const progressData = sortedLessons.map(lesson => lesson.progress);
+      const labels = sortedLessons.map((lesson) => lesson.lesson_title);
+      const progressData = sortedLessons.map((lesson) => lesson.progress);
 
       // Update ApexCharts options and series
       lineChartOptions.xaxis = {
-          ...lineChartOptions.xaxis, // Keep existing xaxis settings
-          categories: labels // Update categories
+        ...lineChartOptions.xaxis, // Keep existing xaxis settings
+        categories: labels, // Update categories
       };
-      lineChartSeries.value = [{
-        name: 'Progress',
-        data: progressData
-      }];
+      lineChartSeries.value = [
+        {
+          name: "Progress",
+          data: progressData,
+        },
+      ];
     } else {
-        // Handle case with no lessons or progress data
-        lineChartSeries.value = []; // Clear series if no data
-        lineChartOptions.xaxis = { ...lineChartOptions.xaxis, categories: [] }; // Clear categories
+      // Handle case with no lessons or progress data
+      lineChartSeries.value = []; // Clear series if no data
+      lineChartOptions.xaxis = { ...lineChartOptions.xaxis, categories: [] }; // Clear categories
     }
-
   } catch (err: any) {
     console.error("Failed to load data:", err);
     error.value = err.message || "An unknown error occurred";
@@ -440,11 +376,11 @@ onMounted(async () => {
 
 // --- Computed Properties & Methods ---
 const getStatusColor = (status: string): string => {
-  const normalizedStatus = status?.toLowerCase() || 'unknown';
+  const normalizedStatus = status?.toLowerCase() || "unknown";
   const statusColors: { [key: string]: string } = {
     "in progress": "success", // Match API response "in Progress" -> "in progress"
-    "completed": "info",
-    "new": "primary"
+    completed: "info",
+    new: "primary",
   };
   return statusColors[normalizedStatus] || "grey";
 };
@@ -463,6 +399,30 @@ const formatDate = (dateString: string | null | undefined): string => {
   }
 };
 
+const fetchAIAssessment = async () => {
+  try {
+    const response = await progressTrackingServices.getProgressTrackingStudent(
+      { showError, showSuccess },
+      {
+        courseId: "03c056cf-75b6-404b-a6fb-c201789ad526",
+        student_goal: learningPathData.value?.student_goal || "",
+        lessons: learningPathData.value?.lessons || [],
+      }
+    );
+    console.log("AI Assessment request body:", {
+      courseId: "03c056cf-75b6-404b-a6fb-c201789ad526",
+      student_goal: learningPathData.value?.student_goal || "",
+      lessons: learningPathData.value?.lessons || [],
+    });
+    console.log("AI Assessment Data:", response.data);
+    AIassessment.value = response.data; // Still update the ref for future reference
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching AI assessment data:", error);
+    showError("Failed to load AI assessment data");
+    return null;
+  }
+};
 </script>
 
 <style scoped>
@@ -519,9 +479,9 @@ const formatDate = (dateString: string | null | undefined): string => {
 
 /* Ensure ApexCharts renders correctly */
 .chart-card .v-card-text {
-    min-height: 320px; /* Give chart space to render */
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  min-height: 320px; /* Give chart space to render */
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 </style>
