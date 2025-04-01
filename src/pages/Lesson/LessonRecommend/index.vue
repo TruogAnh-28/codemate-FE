@@ -6,11 +6,13 @@
       :items="breadcrumbsStore.breadcrumbs"
       divider="/"
     ></v-breadcrumbs>
-    
+
     <!-- Main Header Card -->
     <v-card class="border-card mb-6 overflow-hidden" elevation="3">
       <div class="card-header pa-6 d-flex align-center">
-        <v-icon color="primary" size="x-large" class="mr-4">mdi-book-education-outline</v-icon>
+        <v-icon color="primary" size="x-large" class="mr-4"
+          >mdi-book-education-outline</v-icon
+        >
         <div>
           <h2 class="text-h5 font-weight-bold">{{ lesson.name }}</h2>
           <p class="text-subtitle-2 text-medium-emphasis mb-0">
@@ -58,54 +60,91 @@
           <h3 class="text-subtitle-1 font-weight-bold mb-0">Expected Time</h3>
         </div>
         <v-sheet rounded="lg" elevation="0" class="pa-4 bg-grey-lighten-4">
-          <p class="text-body-large-bold mb-0">Start Date: <span class="text-secondary">{{ lesson.start_date }}</span></p>
-          <p class="text-body-large-bold mb-0">End Date: <span class="text-secondary">{{ lesson.end_date }}</span></p>
-          <p class="text-body-large-medium mb-0 text-secondary-variant">{{ lesson.duration_notes }}</p>
+          <p class="text-body-large-bold mb-0">
+            Start Date:
+            <span class="text-secondary">{{ lesson.start_date }}</span>
+          </p>
+          <p class="text-body-large-bold mb-0">
+            End Date: <span class="text-secondary">{{ lesson.end_date }}</span>
+          </p>
+          <p class="text-body-large-medium mb-0 text-secondary-variant">
+            {{ lesson.duration_notes }}
+          </p>
         </v-sheet>
       </v-card-text>
-      
+
       <v-card-text class="px-6 pt-4 pb-6">
         <v-row>
           <v-col cols="6">
             <!-- Recommend Section -->
             <div class="mb-6">
               <div class="d-flex align-center mb-2">
-                <v-icon color="primary" class="mr-2">mdi-lightbulb-outline</v-icon>
+                <v-icon color="primary" class="mr-2"
+                  >mdi-lightbulb-outline</v-icon
+                >
                 <h3 class="text-subtitle-1 font-weight-bold mb-0">Recommend</h3>
               </div>
-              <v-sheet rounded="lg" elevation="0" class="pa-4 bg-grey-lighten-4 border-left-primary">
+              <v-sheet
+                rounded="lg"
+                elevation="0"
+                class="pa-4 bg-grey-lighten-4 border-left-primary"
+              >
                 <p class="text-body-1 mb-0">{{ lesson.recommend_content }}</p>
               </v-sheet>
             </div>
-            
+
             <!-- Explain Section -->
             <div>
               <div class="d-flex align-center mb-2">
-                <v-icon color="primary" class="mr-2">mdi-information-outline</v-icon>
+                <v-icon color="primary" class="mr-2"
+                  >mdi-information-outline</v-icon
+                >
                 <h3 class="text-subtitle-1 font-weight-bold mb-0">Explain</h3>
               </div>
-              <v-sheet rounded="lg" elevation="0" class="pa-4 bg-grey-lighten-4">
+              <v-sheet
+                rounded="lg"
+                elevation="0"
+                class="pa-4 bg-grey-lighten-4"
+              >
                 <p class="text-body-1 mb-0">{{ lesson.explain }}</p>
               </v-sheet>
             </div>
           </v-col>
-          
+
           <!-- Learning Outcomes Section - Improved to show all content -->
           <v-col cols="6">
             <div class="d-flex align-center mb-2">
-              <v-icon color="error" class="mr-2">mdi-certificate-outline</v-icon>
-              <h3 class="text-subtitle-1 font-weight-bold mb-0 text-error">Learning Outcomes</h3>
+              <v-icon color="error" class="mr-2"
+                >mdi-certificate-outline</v-icon
+              >
+              <h3 class="text-subtitle-1 font-weight-bold mb-0 text-error">
+                Learning Outcomes
+              </h3>
             </div>
-            <v-sheet rounded="lg" elevation="1" class="pa-4 bg-error-lighten-5 border-left-error learning-outcomes-sheet">
+            <v-sheet
+              rounded="lg"
+              elevation="1"
+              class="pa-4 bg-error-lighten-5 border-left-error learning-outcomes-sheet"
+            >
               <v-list density="compact" class="bg-transparent pa-0">
                 <v-list-item
-                  v-for="(outcome, index) in parsedLearningOutcomes(lesson.learning_outcomes)"
+                  v-for="(outcome, index) in parsedLearningOutcomes(
+                    lesson.learning_outcomes
+                  )"
                   :key="index"
                   prepend-icon="mdi-check-circle"
                   class="px-0 py-1"
-                  :class="{'mb-2': index !== parsedLearningOutcomes(lesson.learning_outcomes).length - 1}"
+                  :class="{
+                    'mb-2':
+                      index !==
+                      parsedLearningOutcomes(lesson.learning_outcomes).length -
+                        1,
+                  }"
                 >
-                  <v-list-item-title class="text-body-1 learning-outcome-text">{{ outcome }}</v-list-item-title>
+                  <v-list-item-title
+                    class="text-body-1 learning-outcome-text"
+                    >{{ outcome }}</v-list-item-title
+                  >
                 </v-list-item>
               </v-list>
             </v-sheet>
@@ -116,10 +155,12 @@
 
     <!-- Modules Section -->
     <div class="mb-4 d-flex align-center">
-      <v-icon color="primary" size="large" class="mr-2">mdi-view-grid-outline</v-icon>
+      <v-icon color="primary" size="large" class="mr-2"
+        >mdi-view-grid-outline</v-icon
+      >
       <h2 class="text-h5 font-weight-bold mb-0">Modules</h2>
     </div>
-    
+
     <v-row>
       <v-col
         cols="12"
@@ -140,25 +181,35 @@
                 class="mr-3"
                 size="42"
               >
-                <span class="text-h6 font-weight-bold white--text">{{ index + 1 }}</span>
+                <span class="text-h6 font-weight-bold white--text">{{
+                  index + 1
+                }}</span>
               </v-avatar>
-              <v-chip size="small" label color="primary" variant="outlined" class="ml-auto">
+              <v-chip
+                size="small"
+                label
+                color="primary"
+                variant="outlined"
+                class="ml-auto"
+              >
                 Module
               </v-chip>
             </div>
           </div>
-          
+
           <v-card-text class="pa-4">
-            <h3 class="text-subtitle-1 font-weight-medium mb-2">{{ module.title }}</h3>
+            <h3 class="text-subtitle-1 font-weight-medium mb-2">
+              {{ module.title }}
+            </h3>
             <div class="d-flex align-center text-caption text-medium-emphasis">
               <v-icon size="small" class="mr-1">mdi-clock-outline</v-icon>
               <span>Estimated time: 30min</span>
             </div>
           </v-card-text>
-          
+
           <v-card-actions class="pa-4 pt-0">
-            <v-btn 
-            :to="`/lessonRecommend/${lessonId}/module/${module.module_id}/Quiz`"
+            <v-btn
+              :to="`/lessonRecommend/${lessonId}/module/${module.module_id}/Quiz`"
               color="primary"
               variant="tonal"
               class="text-none rounded-lg"
@@ -172,7 +223,6 @@
       </v-col>
     </v-row>
 
-
     <!-- Modified RecommendLessonAnalyst with v-model -->
     <RecommendLessonAnalyst
       :recommend_lesson_id="lessonId"
@@ -183,12 +233,12 @@
       @repeat="handleModalClose"
     />
     <FeedbackLesson
-    v-if="showFeedbackModal"
-    :lessonId="lessonId"
-    :showModal="showFeedbackModal"
-    @update:showModal="updateFeedbackModal"
-    @feedback-submitted="handleFeedbackSubmitted"
-  />
+      v-if="showFeedbackModal"
+      :lessonId="lessonId"
+      :showModal="showFeedbackModal"
+      @update:showModal="updateFeedbackModal"
+      @feedback-submitted="handleFeedbackSubmitted"
+    />
   </v-container>
 </template>
 
@@ -197,11 +247,8 @@ import { lessonsService } from "@/services/recommendLesson";
 import { Lesson, Module } from "@/types/Lesson";
 import { renderStatusLabel } from "@/utils/functions/render";
 import { useBreadcrumbsStore } from "@/stores/breadcrumbs";
-import { aiGenerateServices } from "@/services/aiGenerateServices";
 import { useCourseStore } from "@/stores/courseStore";
-import { RecommendLessonMonitor } from "@/types/AI_generate";
-import { ref, computed, onMounted, defineProps } from "vue";
-
+import { useTimeSpentStore } from "@/stores/timeSpentStore";
 // Define props explicitly
 const props = defineProps<{
   lessonId: string;
@@ -209,10 +256,6 @@ const props = defineProps<{
 const showFeedbackModal = ref(false);
 const updateFeedbackModal = (value: boolean): void => {
   showFeedbackModal.value = value;
-};
-
-const openFeedbackModal = (lessonId: string): void => {
-  showFeedbackModal.value = true;
 };
 
 const handleFeedbackSubmitted = (feedbackData: {
@@ -230,18 +273,6 @@ const showDialog = ref(false);
 const selectedModule = ref<Module>({} as Module);
 const showError = inject("showError") as (message: string) => void;
 const showSuccess = inject("showSuccess") as (message: string) => void;
-const monitorData = ref<RecommendLessonMonitor>({
-  can_proceed: false,
-  needs_repeat: false,
-  needs_review_prior: false,
-  issues_analysis: {
-    significant_issues: [],
-    total_issues_count: 0,
-    increasing_issues: [],
-    most_frequent_type: "",
-  },
-  recommendations: [],
-});
 const showAnalystModal = ref(false);
 const handleModalClose = () => {
   isModalClosed.value = true;
@@ -252,13 +283,8 @@ const breadcrumbsStore = useBreadcrumbsStore();
 
 // State management
 const isModalClosed = ref(false);
-const hasMonitorResults = ref(false);
 const loading = ref(true);
 const error = ref<string | null>(null);
-
-const shouldShowLessonContent = computed(() => {
-  return lesson.value && isModalClosed.value && hasMonitorResults.value;
-});
 
 function openDialog(module: Module) {
   selectedModule.value = module;
@@ -270,20 +296,25 @@ const parsedLearningOutcomes = (learning_outcomes: string[]) => {
     // Return the array directly if they're already strings
     if (learning_outcomes && Array.isArray(learning_outcomes)) {
       // Only try to parse if an item appears to be a JSON string
-      const outcomes = learning_outcomes.map(outcome => {
-        if (typeof outcome === 'string' && (outcome.startsWith('{') || outcome.startsWith('['))) {
-          try {
-            return JSON.parse(outcome);
-          } catch {
-            return outcome;
+      const outcomes = learning_outcomes
+        .map((outcome) => {
+          if (
+            typeof outcome === "string" &&
+            (outcome.startsWith("{") || outcome.startsWith("["))
+          ) {
+            try {
+              return JSON.parse(outcome);
+            } catch {
+              return outcome;
+            }
           }
-        }
-        return outcome;
-      }).flat();
-      
+          return outcome;
+        })
+        .flat();
+
       // Ensure we're returning an array of strings
-      return outcomes.map(outcome => {
-        if (typeof outcome === 'object' && outcome !== null) {
+      return outcomes.map((outcome) => {
+        if (typeof outcome === "object" && outcome !== null) {
           return JSON.stringify(outcome);
         }
         return String(outcome);
@@ -339,50 +370,26 @@ const fetchRecommendedLesson = async () => {
       err instanceof Error ? err.message : "Failed to load lesson data.";
   }
 };
+const timeSpentStore = useTimeSpentStore();
 
-console.log(props.lessonId);
-const fetchMonitor = async () => {
-  loading.value = true;
-  error.value = null;
-  try {
-    if (courseStore.courseDetails === null) {
-      throw new Error("Course details not available.");
-    }
-    let courseId =
-      "id" in courseStore.courseDetails
-        ? courseStore.courseDetails.id
-        : courseStore.courseDetails?.course_id;
+onMounted(() => {
+  timeSpentStore.startTracking();
+});
 
-    const response = await aiGenerateServices.getMonitorRecommendLesson(
-      { showError, showSuccess },
-      courseId,
-      props.lessonId
-    );
-    if (response && "data" in response && response.data) {
-      monitorData.value = response.data as RecommendLessonMonitor;
-      hasMonitorResults.value = true;
-    } else {
-      throw new Error("No monitor data received from the server.");
-    }
-  } catch (err) {
-    error.value =
-      err instanceof Error ? err.message : "Failed to load monitor data.";
-  } finally {
-    loading.value = false;
-  }
-};
+onBeforeUnmount(async () => {
+  timeSpentStore.stopTracking();
+  await timeSpentStore.updateTimeSpent(
+    { showError, showSuccess },
+    props.lessonId
+  );
+  console.log("Time spent:", timeSpentStore.timeSpentInSeconds, "seconds");
+  console.log("Formatted time:", timeSpentStore.formattedTimeSpent);
+});
 
-const retryFetch = () => {
-  loading.value = true;
-  error.value = null;
-  Promise.all([fetchRecommendedLesson(), fetchMonitor()]).finally(() => {
-    loading.value = false;
-  });
-};
 
 onMounted(async () => {
   loading.value = true;
-  await Promise.all([fetchRecommendedLesson(), fetchMonitor()]);
+  await fetchRecommendedLesson();
   loading.value = false;
 });
 </script>
@@ -400,7 +407,11 @@ onMounted(async () => {
 }
 
 .card-header {
-  background: linear-gradient(to right, rgba(var(--v-theme-primary), 0.05), transparent);
+  background: linear-gradient(
+    to right,
+    rgba(var(--v-theme-primary), 0.05),
+    transparent
+  );
   border-bottom: 1px solid rgba(var(--v-theme-primary), 0.05);
 }
 
@@ -410,7 +421,11 @@ onMounted(async () => {
 }
 
 .module-header {
-  background: linear-gradient(to right, rgba(var(--v-theme-primary), 0.05), transparent);
+  background: linear-gradient(
+    to right,
+    rgba(var(--v-theme-primary), 0.05),
+    transparent
+  );
 }
 
 .primary-1 {

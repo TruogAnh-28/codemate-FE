@@ -105,7 +105,7 @@ export const navigationGuard: NavigationGuardWithThis<any> = async (to, from, ne
         "/dashboard",
         "/courselist",
         "/courselist/course/",
-        "/progress-tracking",
+        "/progress-tracking/",
         "/lessonRecommend/",
         "/profile",
       ];

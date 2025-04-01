@@ -1,13 +1,31 @@
 <template>
   <div class="timeline-scroll-wrapper">
     <div v-if="orderedLessons.length > 0" class="horizontal-learning-path mb-6">
-      <h2 class="text-h5 font-weight-bold mb-4">
-        Learning Path for
-        <span class="text-secondary-variant">{{ course?.course_name }}</span>
-      </h2>
-      <span v-if="student_goal" class="text-body-2">
-        Goal: <span class="text-secondary">{{ student_goal }}</span>
-      </span>
+      <div class="flex flex-col mb-4">
+        <div class="flex flex-row justify-between items-center mb-2">
+          
+          <h2 class="text-h5 font-weight-bold mb-4">
+            Learning Path for
+            <span class="text-secondary-variant">{{
+              course?.course_name
+            }}</span>
+          </h2>
+          <div>
+            <v-btn
+              v-if="orderedLessons.length > 0 && course?.course_id"
+              class="ml-2"
+              color="primary"
+              variant="outlined"
+              @click="navigateToProgressTracking(course.course_id)"
+            >
+              View Your Progress
+            </v-btn>
+          </div>
+        </div>
+        <span v-if="student_goal" class="text-body-2">
+          Goal: <span class="text-secondary">{{ student_goal }}</span>
+        </span>
+      </div>
       <div class="timeline-container">
         <div class="timeline-scroll-container">
           <div class="timeline-line"></div>
@@ -39,11 +57,11 @@
               <v-card class="timeline-card elevation-2">
                 <div class="position-relative">
                   <v-icon
-                    v-if="lesson.bookmark"
                     color="amber"
                     class="bookmark-star"
-                    icon="mdi-star"
+                    :icon="lesson.bookmark ? 'mdi-star' : 'mdi-star-outline'"
                     size="20"
+                    @click.stop="toggleBookmark(lesson.id)"
                   ></v-icon>
                 </div>
 
@@ -174,6 +192,7 @@
   right: 0;
   margin: 6px;
   z-index: 2;
+  cursor: pointer;
 }
 
 .first-item,
@@ -240,11 +259,51 @@ const fetchRecommendedLessons = async () => {
   }
 };
 
+const toggleBookmark = async (lessonId: string) => {
+  try {
+    // Find the lesson and toggle its bookmark status in the UI first for immediate feedback
+    const lessonIndex = recommendedLessons.value.findIndex(lesson => lesson.id === lessonId);
+    if (lessonIndex !== -1) {
+      // Create a new array with the updated lesson
+      const updatedLessons = [...recommendedLessons.value];
+      updatedLessons[lessonIndex] = {
+        ...updatedLessons[lessonIndex],
+        bookmark: !updatedLessons[lessonIndex].bookmark
+      };
+      recommendedLessons.value = updatedLessons;
+    }
+    
+    // Call the API to update the bookmark status
+    const response = await coursesService.bookmarkRecommendedLessons(
+      { showError, showSuccess },
+      lessonId
+    );
+    
+    if (response && "data" in response && response.data) {
+      showSuccess("Bookmark updated successfully");
+    } else {
+      // If the API call fails, revert the change
+      fetchRecommendedLessons();
+      error.value = "Failed to update bookmark";
+    }
+  } catch (err) {
+    // If there's an error, revert the change by refetching
+    fetchRecommendedLessons();
+    error.value = "Failed to update bookmark";
+  }
+};
+
 const navigateToRecommendLessonDetail = (lessonId: string) => {
   router.push({
-        path: `/lessonRecommend/${lessonId}`,
-      });
+    path: `/lessonRecommend/${lessonId}`,
+  });
 };
+
+const navigateToProgressTracking = (courseId: string) => {
+  router.push({
+    path: `/progress-tracking/${courseId}`,
+  })
+}
 
 const updateMaxScroll = () => {
   const container = document.querySelector(".timeline-scroll-container");

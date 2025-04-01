@@ -146,13 +146,17 @@ import {
 } from "@/types/Course";
 import { progressTrackingServices } from "@/services/ProgressTracking";
 import { ProgressTrackingStudent } from "@/types/ProgressTracking";
-
+interface RouteParam {
+  courseId: string;
+}
 // --- State Variables ---
 const courseData = ref<CourseDetailResponse | null>(null);
 const learningPathData = ref<_GetRecommendedLessonsResponse | null>(null);
 const loading = ref<boolean>(true);
 const error = ref<string | null>(null);
 const AIassessment = ref<ProgressTrackingStudent | null>(null);
+const route = useRoute();
+const { courseId } = route.params as RouteParam;
 // --- Mock Data for Performance Metrics Bar Chart (ApexCharts format) ---
 const barChartSeries = ref([
   {
@@ -297,7 +301,7 @@ const fetchCourseData = async () => {
   try {
     const response = await coursesService.fetchCourseDetail(
       { showError, showSuccess },
-      "03c056cf-75b6-404b-a6fb-c201789ad526"
+      courseId
     );
     courseData.value = response.data; // Assuming response.data is the course data
     return response.data; // Return course data for further processing if needed
@@ -311,7 +315,7 @@ const fetchLearningPathData = async () => {
   try {
     const response = await coursesService.getRecommendedLessons(
       { showError, showSuccess },
-      "03c056cf-75b6-404b-a6fb-c201789ad526",
+      courseId,
       "modules"
     );
     learningPathData.value = response.data; // Assuming response.data is the learning path data
@@ -404,13 +408,13 @@ const fetchAIAssessment = async () => {
     const response = await progressTrackingServices.getProgressTrackingStudent(
       { showError, showSuccess },
       {
-        courseId: "03c056cf-75b6-404b-a6fb-c201789ad526",
+        courseId: courseId,
         student_goal: learningPathData.value?.student_goal || "",
         lessons: learningPathData.value?.lessons || [],
       }
     );
     console.log("AI Assessment request body:", {
-      courseId: "03c056cf-75b6-404b-a6fb-c201789ad526",
+      courseId: courseId,
       student_goal: learningPathData.value?.student_goal || "",
       lessons: learningPathData.value?.lessons || [],
     });

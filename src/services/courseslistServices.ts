@@ -118,4 +118,18 @@ export const coursesService = {
       { showError, showSuccess }
     );
   },
+  async bookmarkRecommendedLessons(
+    { showError, showSuccess }: AuthConfig,
+    lesson_id: string
+  ) {
+    return await ApiService.get<IResponseData<{
+      id: string,
+      lesson_id: string,
+      bookmark: boolean,
+  }>>(
+      `recommend_lessons/${lesson_id}/bookmark`,
+      undefined,
+      { showError, showSuccess }
+    );
+  }
 };

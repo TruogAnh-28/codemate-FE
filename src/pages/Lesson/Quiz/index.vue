@@ -228,6 +228,7 @@ import { ModuleQuizResponse, ClearAnswerResponse } from "@/types/Exercise";
 import { useBreadcrumbsStore } from "@/stores/breadcrumbs";
 import { Breadcrumbs } from "@/types/Breadcrumbs";
 import ReadingMaterial from "@/components/ReadingMaterial/ReadingMaterial.vue";
+import { useTimeSpentStore } from "@/stores/timeSpentStore";
 interface RouteParams {
   moduleId: string;
   lessonId: string;
@@ -293,18 +294,18 @@ function viewAgain(quizId: string) {
   router.push(path);
 }
 
-function getDifficultyColor(difficulty: string) {
-  switch (difficulty) {
-    case "easy":
-      return "success";
-    case "medium":
-      return "warning";
-    case "hard":
-      return "error";
-    default:
-      return "grey";
-  }
-}
+// function getDifficultyColor(difficulty: string) {
+//   switch (difficulty) {
+//     case "easy":
+//       return "success";
+//     case "medium":
+//       return "warning";
+//     case "hard":
+//       return "error";
+//     default:
+//       return "grey";
+//   }
+// }
 
 const showError = inject("showError") as (message: string) => void;
 const showSuccess = inject("showSuccess") as (message: string) => void;
@@ -330,6 +331,22 @@ const clearQuizAnswers = async (quizId: string) => {
 
 onMounted(() => {
   fetchModuleQuizzes();
+});
+
+const timeSpentStore = useTimeSpentStore();
+
+onMounted(() => {
+  timeSpentStore.startTracking();
+});
+
+onBeforeUnmount(async () => {
+  timeSpentStore.stopTracking();
+  await timeSpentStore.updateTimeSpent(
+    { showError, showSuccess },
+    lessonId
+  );
+  console.log("Time spent:", timeSpentStore.timeSpentInSeconds, "seconds");
+  console.log("Formatted time:", timeSpentStore.formattedTimeSpent);
 });
 </script>
 

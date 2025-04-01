@@ -57,7 +57,7 @@ const StudentRoutes = [
     }],
   },
   {
-    path: "/progress-tracking",
+    path: "/progress-tracking/:courseId",
     component: () => import("@/layouts/default.vue"),
     children: [{
       path: "",
@@ -126,13 +126,13 @@ const StudentRoutes = [
           props: true,
           meta: { requiresAuth: true, role: "student" },
         },
-        {
-          path: "Module/:moduleId/Document",
-          name: "LessonRecommendDocument",
-          component: () => import("@/pages/Lesson/Document/index.vue"),
-          props: true,
-          meta: { requiresAuth: true, role: "student" },
-        },
+        // {
+        //   path: "Module/:moduleId/Document",
+        //   name: "LessonRecommendDocument",
+        //   component: () => import("@/pages/Lesson/Document/index.vue"),
+        //   props: true,
+        //   meta: { requiresAuth: true, role: "student" },
+        // },
       ],
     }],
   },

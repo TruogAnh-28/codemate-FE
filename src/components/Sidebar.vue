@@ -166,12 +166,12 @@ const studentItems: NavigationItem[] = [
     value: "course",
     to: "/courselist",
   },
-  {
-    icon: "mdi-chart-pie",
-    title: "My Progress",
-    value: "progress-tracking",
-    to: "/progress-tracking",
-  },
+  // {
+  //   icon: "mdi-chart-pie",
+  //   title: "My Progress",
+  //   value: "progress-tracking",
+  //   to: "/progress-tracking",
+  // },
   // { icon: "mdi-calendar", title: "Schedule", value: "schedule", to: "/schedule" },
 ];
 
