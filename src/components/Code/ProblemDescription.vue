@@ -172,11 +172,7 @@ interface ChatMessage {
   content: string;
 }
 
-const messages = ref<ChatMessage[]>([
-  { role: 'assistant', content: 'Hi! How can I help you solve this problem?' },
-  { role: 'user', content: 'Can you explain the two sum algorithm?' },
-  { role: 'assistant', content: '## Description Sure! The idea is to use a hash map to track the numbers you’ve seen and their indices...' }
-]);
+const messages = ref<ChatMessage[]>([]);
 
 const inputMessage = ref('');
 

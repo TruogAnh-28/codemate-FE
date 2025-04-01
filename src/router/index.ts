@@ -57,6 +57,8 @@ const StudentRoutes = [
       meta: { requiresAuth: true, role: "student" },
     }],
   },
+
+
   {
     path: "/progress-tracking",
     component: () => import("@/layouts/default.vue"),
@@ -77,6 +79,7 @@ const StudentRoutes = [
       meta: { requiresAuth: true, role: "student" },
     }],
   },
+
   {
     path: "/courselist/course/:id",
     component: () => import("@/layouts/default.vue"),
@@ -88,6 +91,12 @@ const StudentRoutes = [
       meta: { requiresAuth: true, role: "student" },
     }],
   },
+  {
+    path: "/code/exercise-code/:codeExerciseId?",
+    name: "PracticeCoding",
+    component: () => import("@/pages/Code/index.vue")
+  },
+
   {
     path: "/lessonRecommend/:lessonId",
     component: () => import("@/layouts/default.vue"),
@@ -315,8 +324,8 @@ const ProfessorRoutes = [
   {
     path: "/courses/:courseId/exercise-code/:exerciseId?",
     name: "ExerciseCode",
-    component: () => import("@/pages/Code/index.vue"),
-    meta: { requiresAuth: true, role: "student" },
+    component: () => import("@/pages/ExerciseCode/index.vue"),
+    meta: { requiresAuth: true, role: "professor" },
   },
 ];
 
