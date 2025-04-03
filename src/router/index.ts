@@ -338,24 +338,6 @@ const router = createRouter({
   ],
 });
 
-
-const showError = (msg: string) => alert(msg);
-
-const getUserInfo = async () => {
-  try {
-    const response = await usersService.getProfile({
-      showError,
-      showSuccess: (msg: string) => alert(msg)
-    });
-    if (response && "data" in response) {
-      return response.data ?? undefined;
-    }
-  } catch (error) {
-    showError("Failed to get user info.");
-  }
-  return undefined;
-};
-
 router.beforeEach(navigationGuard);
 
 router.onError((err, to) => {

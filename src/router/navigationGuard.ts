@@ -96,13 +96,15 @@ export const navigationGuard: NavigationGuardWithThis<any> = async (to, from, ne
 
     const rolePaths = {
       student: "/dashboard",
-      teacher: "/courselist",
-      admin: "/progress-tracking",
+      professor: "/professor-dashboard",
+      admin: "/admin-dashboard",
     };
 
     if (!isToPublic) {
       const allowedPathPatterns = [
         "/dashboard",
+        "/admin-dashboard",
+        "/professor-dashboard",
         "/courselist",
         "/courselist/course/",
         "/progress-tracking/",
