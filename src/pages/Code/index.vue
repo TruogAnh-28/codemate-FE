@@ -1,10 +1,10 @@
 <template>
-  <v-container fluid class="pa-0 fill-height overflow-hidden h-screen">
+  <v-container fluid class="pa-0" style="height: 100vh; overflow: hidden;">
     <v-row no-gutters class="fill-height">
       <!-- Problem Description Panel -->
-      <v-col cols="3" class="border-right">
-        <ProblemDescription 
-          :initial-tab="descriptionTab" 
+      <v-col cols="3" class="border-right fill-height">
+        <ProblemDescription
+          :initial-tab="descriptionTab"
           @update:tab="descriptionTab = $event"
         />
       </v-col>
@@ -12,31 +12,31 @@
       <!-- Code Editor Panel -->
       <v-col cols="9">
         <div class="d-flex flex-column fill-height">
-          <!-- <CodeEditor 
-            :test-input="testInput" 
-            @run-result="handleRunResult" 
+          <!-- <CodeEditor
+            :test-input="testInput"
+            @run-result="handleRunResult"
             @submit-result="handleSubmitResult"
             @update:loading="isLoading = $event"
             :style="codeEditorStyle"
           /> -->
-          <!-- <CodeEditor 
+          <!-- <CodeEditor
             v-model="code"
             :language="selectedLanguage"
             :style="codeEditorStyle"
           /> -->
-          <CodeEditor 
-            modelValue="// Your code here\n" 
-            onUpdate:modelValue=fn 
+          <CodeEditor
+            modelValue="// Your code here\n"
+            onUpdate:modelValue=fn
             language="javascript"
-            @run-result="handleRunResult" 
+            @run-result="handleRunResult"
             @submit-result="handleSubmitResult"
             @update:loading="isLoading = $event"
             :testInput="{ nums: [2, 7, 11, 15], target: 9 }"
             :style="codeEditorStyle"
           />
-          <Testcase 
-            :initial-tab="testTab" 
-            :result="testResult" 
+          <Testcase
+            :initial-tab="testTab"
+            :result="testResult"
             @update:tab="testTab = $event"
             @update:input="testInput = $event"
             @toggle="handleTestcaseToggle"

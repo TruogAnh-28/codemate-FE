@@ -57,6 +57,8 @@ const StudentRoutes = [
       meta: { requiresAuth: true, role: "student" },
     }],
   },
+
+
   {
     path: "/progress-tracking",
     component: () => import("@/layouts/default.vue"),
@@ -77,6 +79,7 @@ const StudentRoutes = [
       meta: { requiresAuth: true, role: "student" },
     }],
   },
+
   {
     path: "/courselist/course/:id",
     component: () => import("@/layouts/default.vue"),
@@ -88,6 +91,13 @@ const StudentRoutes = [
       meta: { requiresAuth: true, role: "student" },
     }],
   },
+  {
+    path: "/exercise-code/:exerciseId?",
+    name: "PracticeCoding",
+    component: () => import("@/pages/Code/index.vue"),
+    meta: { requiresAuth: true, role: "student" },
+  },
+
   {
     path: "/lessonRecommend/:lessonId",
     component: () => import("@/layouts/default.vue"),
@@ -109,6 +119,13 @@ const StudentRoutes = [
           path: "Module/:moduleId/Quiz",
           name: "LessonRecommendQuiz",
           component: () => import("@/pages/Lesson/Quiz/index.vue"),
+          props: true,
+          meta: { requiresAuth: true, role: "student" },
+        },
+        {
+          path: "Module/:moduleId/Quiz/:quizId",
+          name: "LessonRecommendDoQuiz",
+          component: () => import("@/pages/Lesson/DoQuiz/index.vue"),
           props: true,
           meta: { requiresAuth: true, role: "student" },
         },
@@ -275,9 +292,13 @@ const ProfessorRoutes = [
   },
   {
     path: "/professor-code",
-    name: "ProfessorCode",
-    component: () => import("@/pages/Code/index.vue"),
-    meta: { requiresAuth: true, role: "professor" },
+    component: () => import("@/layouts/default.vue"),
+    children: [{
+      path: "",
+      name: "ProfessorCode",
+      component: () => import("@/pages/Code/index.vue"),
+      meta: { requiresAuth: false, role: "professor" },
+    }],
   },
   {
     path: "/professor-schedule",
@@ -324,11 +345,11 @@ const ProfileRoute = {
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    ...LoginRoute, 
+    ...LoginRoute,
     ...StudentRoutes,
-    ...AdminRoutes, 
-    ...ProfessorRoutes, 
-    ProfileRoute,  
+    ...AdminRoutes,
+    ...ProfessorRoutes,
+    ProfileRoute,
 
     ...setupLayouts([...autoRoutes]),
   ],
@@ -353,108 +374,108 @@ const getUserInfo = async () => {
 };
 
 router.beforeEach(async (to, from, next) => {
-  const authStore = useAuthStore();
-  const accessToken = ApiService.getToken();
-  const refreshToken = ApiService.getRefreshToken();
-  const isToPublic = PUBLIC_ROUTES.includes(to.path);
-  const isFromPublic = PUBLIC_ROUTES.includes(from.path);
-
-  if (isToPublic && isFromPublic && !((to.path === "/") && (from.path === "/"))) {
-
-    return next();
-  }
-
-  else if ((!isToPublic && isFromPublic) || (isToPublic && isFromPublic && ((to.path === "/") && (from.path === "/")))) {
-
-    if (!authStore.isAuthenticated) {
-      authStore.checkAuth();
-    }
-
-    if (!accessToken || !authStore.isAuthenticated) {
-      sessionStorage.setItem("redirectUrl", to.fullPath);
-      return next("/login");
-    }
-    if ((to.meta.role && to.meta.role !== authStore.userRole) || (!to.meta.role && authStore.userRole)) {
-
-      const rolePaths = {
-        student: "/dashboard",
-        professor: "/professor-dashboard",
-        admin: "/admin-dashboard",
-      };
-      return next(rolePaths[authStore.userRole as keyof typeof rolePaths] || "/");
-    }
-    const redirectUrl = sessionStorage.getItem("redirectUrl");
-    if (redirectUrl) {
-      sessionStorage.removeItem("redirectUrl");
-      return next(redirectUrl);
-    }
-    return next();
-  }
-
-  else if (isToPublic && !isFromPublic) {
-    if (accessToken || authStore.isAuthenticated) {
-      return next(from.path);
-    } else {
-      return next();
-    }
-  }
-
-  else if (!isToPublic && !isFromPublic) {
-    if (!accessToken && !refreshToken) {
-      sessionStorage.setItem("redirectUrl", to.fullPath);
-      return next("/login");
-    }
-    if (accessToken) {
-      if (ApiService.checkTokenExpiration()) {
-        try {
-          const refreshed = await ApiService.refreshToken();
-          if (refreshed) {
-            return next();
-          } else {
-            authStore.logout();
-            sessionStorage.setItem("redirectUrl", to.fullPath);
-            showError("Your session has expired. Please log in again.");
-            return next("/login");
-          }
-        } catch (error) {
-          console.error("Error during token refresh:", error);
-          authStore.logout();
-          sessionStorage.setItem("redirectUrl", to.fullPath);
-          showError("Your session has expired. Please log in again.");
-          return next("/login");
-        }
-      } else {
-        if (!authStore.isAuthenticated) {
-          try {
-            const userInfo = await getUserInfo();
-            if (userInfo) {
-              authStore.setUser({
-                role: userInfo.role,
-                email: userInfo.email,
-                name: userInfo.name,
-                rememberMe: localStorage.getItem("rememberMe") === "true" ? "true" : "false",
-              });
-            }
-          } catch (error) {
-            console.error("Error getting user info:", error);
-            authStore.logout();
-            sessionStorage.setItem("redirectUrl", to.fullPath);
-            return next("/login");
-          }
-        }
-        if (to.meta.role && to.meta.role !== authStore.userRole) {
-          const rolePaths = {
-            student: "/dashboard",
-            professor: "/professor-dashboard",
-            admin: "/admin-dashboard",
-          };
-          return next(rolePaths[authStore.userRole as keyof typeof rolePaths] || "/");
-        }
-        return next();
-      }
-    }
-  }
-
+//  const authStore = useAuthStore();
+//  const accessToken = ApiService.getToken();
+//  const refreshToken = ApiService.getRefreshToken();
+//  const isToPublic = PUBLIC_ROUTES.includes(to.path);
+//  const isFromPublic = PUBLIC_ROUTES.includes(from.path);
+//
+//  if (isToPublic && isFromPublic && !((to.path === "/") && (from.path === "/"))) {
+//
+//    return next();
+//  }
+//
+//  else if ((!isToPublic && isFromPublic) || (isToPublic && isFromPublic && ((to.path === "/") && (from.path === "/")))) {
+//
+//    if (!authStore.isAuthenticated) {
+//      authStore.checkAuth();
+//    }  ➜  press h + enter to show help
+//
+//    if (!accessToken || !authStore.isAuthenticated) {
+//      sessionStorage.setItem("redirectUrl", to.fullPath);
+//      return next("/login");
+//    }
+//    if ((to.meta.role && to.meta.role !== authStore.userRole) || (!to.meta.role && authStore.userRole)) {
+//
+//      const rolePaths = {
+//        student: "/dashboard",
+//        professor: "/professor-dashboard",
+//        admin: "/admin-dashboard",
+//      };
+//      return next(rolePaths[authStore.userRole as keyof typeof rolePaths] || "/");
+//    }
+//    const redirectUrl = sessionStorage.getItem("redirectUrl");
+//    if (redirectUrl) {
+//      sessionStorage.removeItem("redirectUrl");
+//      return next(redirectUrl);
+//    }
+//    return next();
+//  }
+//
+//  else if (isToPublic && !isFromPublic) {
+//    if (accessToken || authStore.isAuthenticated) {
+//      return next(from.path);
+//    } else {
+//      return next();
+//    }
+//  }
+//
+//  else if (!isToPublic && !isFromPublic) {
+//    if (!accessToken && !refreshToken) {
+//      sessionStorage.setItem("redirectUrl", to.fullPath);
+//      return next("/login");
+//    }
+//    if (accessToken) {
+//      if (ApiService.checkTokenExpiration()) {
+//        try {
+//          const refreshed = await ApiService.refreshToken();
+//          if (refreshed) {
+//            return next();
+//          } else {
+//            authStore.logout();
+//            sessionStorage.setItem("redirectUrl", to.fullPath);
+//            showError("Your session has expired. Please log in again.");
+//            return next("/login");
+//          }
+//        } catch (error) {
+//          console.error("Error during token refresh:", error);
+//          authStore.logout();
+//          sessionStorage.setItem("redirectUrl", to.fullPath);
+//          showError("Your session has expired. Please log in again.");
+//          return next("/login");
+//        }
+//      } else {
+//        if (!authStore.isAuthenticated) {
+//          try {
+//            const userInfo = await getUserInfo();
+//            if (userInfo) {
+//              authStore.setUser({
+//                role: userInfo.role,
+//                email: userInfo.email,
+//                name: userInfo.name,
+//                rememberMe: localStorage.getItem("rememberMe") === "true" ? "true" : "false",
+//              });
+//            }
+//          } catch (error) {
+//            console.error("Error getting user info:", error);
+//            authStore.logou  ➜  press h + enter to show helpt();
+//            sessionStorage.setItem("redirectUrl", to.fullPath);
+//            return next("/login");
+//          }
+//        }
+//        if (to.meta.role && to.meta.role !== authStore.userRole) {
+//          const rolePaths = {
+//            student: "/dashboard",
+//            professor: "/professor-dashboard",
+//            admin: "/admin-dashboard",
+//          };
+//          return next(rolePaths[authStore.userRole as keyof typeof rolePaths] || "/");
+//        }
+//        return next();
+//      }
+//    }
+//  }
+//
   return next();
 });
 
