@@ -7,14 +7,14 @@
     </v-tabs>
 
     <v-card-text v-if="descriptionTab === 'description'" class="problem-description pa-4 flex-grow-1 overflow-y-auto">
-      <h2>Two sum</h2>
+<!--      <h2>Two sum</h2>
       <div class="problem-tags mb-4">
         <v-chip size="small" color="grey" class="mr-2">Easy</v-chip>
         <v-chip size="small" color="grey" class="mr-2">Array</v-chip>
         <v-chip size="small" color="grey">Hash table</v-chip>
-      </div>
+      </div> -->
 
-      <p>{{ problemDescription }}</p>
+      <div v-html="problemDescription"></div>
 
       <div v-for="(example, index) in examples" :key="index" class="examples mt-4">
         <h3>{{ example.title }}</h3>
@@ -114,6 +114,10 @@ import { ref, watch, nextTick } from 'vue';
 import { PROBLEM_DESCRIPTION, PROBLEM_EXAMPLES, PROBLEM_CONSTRAINTS } from '@/constants/templateProblem';
 import { streamFromApi } from '@/common/api.service.ts';
 import { useRoute } from 'vue-router';
+import { llmCodeServices } from '@/services/llmCodeServices';
+import type { ChatMessage } from '@/types/chat';
+
+import axios from 'axios';
 
 const route = useRoute();
 const exerciseId = computed(() => route.params.exerciseId as string);
@@ -158,21 +162,30 @@ const emit = defineEmits<{
 }>();
 
 const descriptionTab = ref<string>(props.initialTab);
-const problemDescription = ref<string>(PROBLEM_DESCRIPTION);
-const examples = ref<ProblemExample[]>(PROBLEM_EXAMPLES);
-const constraints = ref<string[]>(PROBLEM_CONSTRAINTS);
+// const problemDescription = ref<string>(PROBLEM_DESCRIPTION);
+// const examples = ref<ProblemExample[]>(PROBLEM_EXAMPLES);
+// const constraints = ref<string[]>(PROBLEM_CONSTRAINTS);
 
 // Watch for tab changes and emit event
-watch(descriptionTab, (newValue) => {
-  emit('update:tab', newValue);
-});
-
-interface ChatMessage {
-  role: 'user' | 'assistant';
-  content: string;
-}
+// watch(descriptionTab, (newValue) => {
+//   emit('update:tab', newValue);
+// });
 
 const messages = ref<ChatMessage[]>([]);
+
+watch(descriptionTab, async (newValue) => {
+  emit('update:tab', newValue);
+  if (newValue === 'coding-assistant' && messages.value.length === 0) {
+    try {
+      const res = await llmCodeServices.getMessageHistory({ showError: true, showSuccess: false }, exerciseId.value);
+      console.log(res);
+      messages.value = res.data;
+      nextTick(scrollToBottom);
+    } catch (err) {
+      console.error("Failed to load chat history:", err);
+    }
+  }
+});
 
 const inputMessage = ref('');
 
@@ -244,6 +257,39 @@ function scrollToBottom() {
     }
   });
 }
+
+interface ExerciseCodeResponseForStudent {
+  question: string;
+  difficulty: string;
+  tags: string[];
+  examples: ProblemExample[];
+  constraints: string[];
+}
+
+const difficulty = ref('');
+const tags = ref<string[]>([]);
+const problemDescription = ref('');
+const examples = ref<ProblemExample[]>([]);
+const constraints = ref<string[]>([]);
+
+onMounted(async () => {
+  try {
+    const response = await axios.get<ExerciseCodeResponseForStudent>(
+      `exercises/${exerciseId.value}/code`
+    );
+
+    let responseBody = response.data;
+    const questionObject = responseBody.data["questions"][0];
+
+    problemDescription.value = questionObject.question;
+    difficulty.value = questionObject.difficulty;
+    tags.value = questionObject.tags;
+    examples.value = questionObject.examples;
+    constraints.value = questionObject.constraints;
+  } catch (err) {
+    console.error('Failed to load exercise', err);
+  }
+});
 
 </script>
 

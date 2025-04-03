@@ -92,9 +92,10 @@ const StudentRoutes = [
     }],
   },
   {
-    path: "/code/exercise-code/:codeExerciseId?",
+    path: "/exercise-code/:exerciseId?",
     name: "PracticeCoding",
-    component: () => import("@/pages/Code/index.vue")
+    component: () => import("@/pages/Code/index.vue"),
+    meta: { requiresAuth: true, role: "student" },
   },
 
   {
