@@ -199,26 +199,26 @@ const AdminRoutes = [
       meta: { requiresAuth: true, role: "admin" },
     }],
   },
-  {
-    path: "/feedback-statistics",
-    component: () => import("@/layouts/default.vue"),
-    children: [{
-      path: "",
-      name: "FeedbackStatistics",
-      component: () => import("@/pages/FeedbackManagement/FeedbackStatistics.vue"),
-      meta: { requiresAuth: true, role: "admin" },
-    }],
-  },
-  {
-    path: "/system-usage-statistics",
-    component: () => import("@/layouts/default.vue"),
-    children: [{
-      path: "",
-      name: "SystemUsageStatistics",
-      component: () => import("@/pages/SystemUsageManagement/index.vue"),
-      meta: { requiresAuth: true, role: "admin" },
-    }],
-  }
+  // {
+  //   path: "/feedback-statistics",
+  //   component: () => import("@/layouts/default.vue"),
+  //   children: [{
+  //     path: "",
+  //     name: "FeedbackStatistics",
+  //     component: () => import("@/pages/FeedbackManagement/FeedbackStatistics.vue"),
+  //     meta: { requiresAuth: true, role: "admin" },
+  //   }],
+  // },
+  // {
+  //   path: "/system-usage-statistics",
+  //   component: () => import("@/layouts/default.vue"),
+  //   children: [{
+  //     path: "",
+  //     name: "SystemUsageStatistics",
+  //     component: () => import("@/pages/SystemUsageManagement/index.vue"),
+  //     meta: { requiresAuth: true, role: "admin" },
+  //   }],
+  // }
 ];
 
 const ProfessorRoutes = [

@@ -62,6 +62,7 @@ export interface CoursesAdminListResponse {
   nCredit: number;
   nSemester: number;
   class_name: string;
+  professor_id: string;
 }
 
 export interface CoursesAdminListPaginatedResponse {
@@ -173,6 +174,19 @@ export interface Module {
   last_accessed: string
   progress: number
 }
+
+export interface UpdateCourseRequest {
+  name?: string;
+  professor_id?: string;
+  start_date?: string;  
+  end_date?: string; 
+  status?: string;
+  n_credit?: number;
+  n_semester?: number;
+  courseID?: string;
+  class_name?: string;
+}
+
 
 //---------------------------------Professor---------------------------------
 export interface PutLearningOutcomesCoursesResponse {

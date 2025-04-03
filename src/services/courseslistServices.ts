@@ -10,7 +10,8 @@ import {
   CreateCourseResponse,
   CoursesAdminListPaginatedResponse,
   GetAvailableCourses,
-  _GetRecommendedLessonsResponse
+  _GetRecommendedLessonsResponse,
+  UpdateCourseRequest,
 } from "@/types/Course";
 import { AuthConfig } from "./authenServices";
 import { IResponseData } from "@/modals/apis/response";
@@ -25,9 +26,12 @@ export interface PaginationParams {
   end_date?: string;
 }
 
-
 export const coursesService = {
-  async fetchCoursesList({ showError, showSuccess, ...params }: AuthConfig & PaginationParams) {
+  async fetchCoursesList({
+    showError,
+    showSuccess,
+    ...params
+  }: AuthConfig & PaginationParams) {
     return await ApiService.query<CoursesListPaginatedResponse>(
       "courses/student",
       params,
@@ -35,12 +39,14 @@ export const coursesService = {
     );
   },
 
-  async fetchAdminCoursesList({ showError, showSuccess, ...params }: AuthConfig & PaginationParams) {
-    return await ApiService.query<IResponseData<CoursesAdminListPaginatedResponse>>(
-      "courses/admin",
-      params,
-      { showError, showSuccess }
-    );
+  async fetchAdminCoursesList({
+    showError,
+    showSuccess,
+    ...params
+  }: AuthConfig & PaginationParams) {
+    return await ApiService.query<
+      IResponseData<CoursesAdminListPaginatedResponse>
+    >("courses/admin", params, { showError, showSuccess });
   },
   async fetchCourseDetail(
     { showError, showSuccess }: AuthConfig,
@@ -56,7 +62,7 @@ export const coursesService = {
     { showError, showSuccess }: AuthConfig,
     course_id: string
   ) {
-    return await ApiService.get<ProfessorInformation>(
+    return await ApiService.get<IResponseData<ProfessorInformation[]>>(
       `courses/${course_id}/professor`,
       "",
       { showError, showSuccess }
@@ -85,15 +91,13 @@ export const coursesService = {
   async getRecommendedLessons(
     { showError, showSuccess }: AuthConfig,
     course_id: string,
-    expand?: string 
+    expand?: string
   ) {
     const resource = `courses/${course_id}/learning-path/recommended-lessons`;
     const params = expand ? { expand } : undefined;
-    return await ApiService.query<IResponseData<_GetRecommendedLessonsResponse>>(
-      resource,
-      params,
-      { showError, showSuccess }
-    );
+    return await ApiService.query<
+      IResponseData<_GetRecommendedLessonsResponse>
+    >(resource, params, { showError, showSuccess });
   },
   async createCourse(
     { showError, showSuccess }: AuthConfig,
@@ -122,14 +126,39 @@ export const coursesService = {
     { showError, showSuccess }: AuthConfig,
     lesson_id: string
   ) {
-    return await ApiService.get<IResponseData<{
-      id: string,
-      lesson_id: string,
-      bookmark: boolean,
-  }>>(
-      `recommend_lessons/${lesson_id}/bookmark`,
-      undefined,
+    return await ApiService.get<
+      IResponseData<{
+        id: string;
+        lesson_id: string;
+        bookmark: boolean;
+      }>
+    >(`recommend_lessons/${lesson_id}/bookmark`, undefined, {
+      showError,
+      showSuccess,
+    });
+  },
+  async updateCourseForAdmin(
+    { showError, showSuccess }: AuthConfig,
+    course_id: string,
+    course: Partial<UpdateCourseRequest>
+  ) {
+    return await ApiService.update(
+      "courses/admin", // Resource
+      course_id, // Slug (course_id)
+      course, // Data to send in the request body
+      {
+        showError,
+        showSuccess,
+      }
+    );
+  },
+  async deleteCourse(
+    { showError, showSuccess }: AuthConfig,
+    course_id: string
+  ) {
+    return await ApiService.delete<IResponseData<null>>(
+      `courses/${course_id}/`,
       { showError, showSuccess }
     );
-  }
+  },
 };
