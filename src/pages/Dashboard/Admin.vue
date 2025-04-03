@@ -62,48 +62,6 @@
         </v-col>
       </v-row>
 
-     <!-- Web Vitals Section -->
-     <v-row class="mb-10">
-        <v-col v-for="metric in webVitalsMetrics" :key="metric.name" cols="12" md="4">
-          <v-card
-            class="elevation-2 rounded-xl transition-all duration-300 hover:elevation-6"
-            :style="{ 'background-color': 'var(--surface)' }"
-          >
-            <v-card-text class="pa-6 text-center">
-              <div
-                :class="getMetricColor(metric.value, metric.name as MetricType)"
-                class="text-xl font-semibold mb-2"
-              >
-                {{ metric.name }}
-              </div>
-              <div class="text-text-black text-sm mb-4">
-                {{ metric.fullName }}
-              </div>
-              <v-progress-circular
-                v-if="metric.value === null"
-                indeterminate
-                color="primary"
-                size="24"
-              ></v-progress-circular>
-              <div v-else class="text-xl font-bold text-text-primary mb-2">
-                {{ formatValue(metric.value) }}
-              </div>
-              <v-chip
-                :color="getChipColor(metric.value, metric.name as MetricType)"
-                size="small"
-                variant="flat"
-                class="mb-4"
-              >
-                {{ getStatusText(metric.value, metric.name as MetricType) }}
-              </v-chip>
-              <div class="text-sm text-black">
-                <p><strong>Explanation:</strong> {{ getExplanation(metric.name as MetricType) }}</p>
-              </div>
-            </v-card-text>
-          </v-card>
-        </v-col>
-      </v-row>
-
       <!-- Charts Section -->
       <v-row>
         <!-- Feedback Charts Column -->
@@ -183,9 +141,8 @@ import { coursesService } from "@/services/courseslistServices";
 import { feedbackServices } from "@/services/feedbackServices";
 import totalCourses from "@/assets/adminDashboard/totalCourses.vue";
 import totalUsers from "@/assets/adminDashboard/totalUsers.vue";
-import totalFeedbacksIcon from "@/assets/adminDashboard/totalCourses.vue"; // Placeholder, create this
-import ratingIcon from "@/assets/adminDashboard/totalUsers.vue"; // Placeholder, create this
-import { onFCP, onLCP, onINP } from "web-vitals";
+import totalFeedbacksIcon from "@/assets/adminDashboard/totalCourses.vue"; 
+import ratingIcon from "@/assets/adminDashboard/totalUsers.vue"; 
 import { Bar, Pie } from "vue-chartjs";
 import { Line as LineChart } from "vue-chartjs";
 import {
@@ -203,7 +160,6 @@ import {
 import ChartDataLabels from "chartjs-plugin-datalabels";
 import { GetListFeedbackResponse } from "@/types/Feedback";
 import { UserLoginResponse } from "@/types/User";
-import { mockFeedbacks, mockUserLogins } from "@/utils/constant";
 
 ChartJS.register(
   CategoryScale,
@@ -218,20 +174,15 @@ ChartJS.register(
   ChartDataLabels
 );
 
-type MetricType = "FCP" | "LCP" | "INP";
-
 // Reactive Variables
 const totalUsers_ = ref<number>(0);
 const totalCourses_ = ref<number>(0);
-const feedbacks = ref<GetListFeedbackResponse[]>(mockFeedbacks);
-const fcp = ref<number | null>(null);
-const lcp = ref<number | null>(null);
-const inp = ref<number | null>(null);
+const feedbacks = ref<GetListFeedbackResponse[]>([]);
 const selectedYear = ref(new Date().getFullYear());
 const selectedRole = ref<string | null>("All");
-const userLogins = ref<UserLoginResponse[]>(mockUserLogins);
+const userLogins = ref<UserLoginResponse[]>([]);
 const availableYears = ref<number[]>([]);
-const availableRoles = ref<string[]>(["All", "student", "admin", "teacher"]);
+const availableRoles = ref<string[]>(["All", "Student", "Admin", "Professor"]);
 const showError = inject("showError") as (message: string) => void;
 const showSuccess = inject("showSuccess") as (message: string) => void;
 
@@ -260,15 +211,6 @@ const fetchUserLogins = async () => {
   }
 };
 
-const getExplanation = (metricType: MetricType): string => {
-  const explanations = {
-    FCP: "First Contentful Paint measures the time until the first content is rendered.",
-    LCP: "Largest Contentful Paint tracks when the main content becomes visible.",
-    INP: "Interaction to Next Paint assesses responsiveness to user interactions.",
-  };
-  return explanations[metricType];
-};
-
 const updateAvailableYears = () => {
   const years = new Set<number>();
   userLogins.value.forEach((login) => years.add(new Date(login.login_timestamp).getFullYear()));
@@ -281,12 +223,6 @@ const averageRating = computed(() =>
     ? (feedbacks.value.reduce((sum, f) => sum + f.rate, 0) / feedbacks.value.length).toFixed(1)
     : "N/A"
 );
-
-const webVitalsMetrics = computed(() => [
-  { name: "FCP", fullName: "First Contentful Paint", value: fcp.value, color: "primary" },
-  { name: "LCP", fullName: "Largest Contentful Paint", value: lcp.value, color: "secondary" },
-  { name: "INP", fullName: "Interaction to Next Paint", value: inp.value, color: "success" },
-]);
 
 const barChartData = computed(() => ({
   labels: ["Course", "System"],
@@ -333,11 +269,12 @@ const chartData = ref<{ labels: string[]; datasets: any }>({
 });
 
 const updateChartData = () => {
+  const lowercaseRole = selectedRole.value?.toLowerCase() || "all";
   const monthlyLogins = Array(12).fill(0);
   const filteredLogins =
     selectedRole.value === "All"
       ? userLogins.value
-      : userLogins.value.filter((login) => login.user_role === selectedRole.value);
+      : userLogins.value.filter((login) => login.user_role === lowercaseRole);
 
   filteredLogins.forEach((login) => {
     const date = new Date(login.login_timestamp);
@@ -360,34 +297,6 @@ const updateChartData = () => {
       },
     ],
   };
-};
-
-// Web Vitals Helpers
-const formatValue = (value: number | null): string =>
-  value === null ? "-" : `${(value / 1000).toFixed(2)}s`;
-
-const getThresholds = (metricType: MetricType) => ({
-  FCP: { good: 1800, needsImprovement: 3000 },
-  LCP: { good: 2500, needsImprovement: 4000 },
-  INP: { good: 200, needsImprovement: 500 },
-}[metricType]);
-
-const getMetricColor = (value: number | null, metricType: MetricType): string => {
-  if (value === null) return "text-gray-500";
-  const { good, needsImprovement } = getThresholds(metricType);
-  return value <= good ? "text-green-600" : value <= needsImprovement ? "text-yellow-600" : "text-red-600";
-};
-
-const getChipColor = (value: number | null, metricType: MetricType): string => {
-  if (value === null) return "grey";
-  const { good, needsImprovement } = getThresholds(metricType);
-  return value <= good ? "success" : value <= needsImprovement ? "warning" : "error";
-};
-
-const getStatusText = (value: number | null, metricType: MetricType): string => {
-  if (value === null) return "Measuring...";
-  const { good, needsImprovement } = getThresholds(metricType);
-  return value <= good ? "Good" : value <= needsImprovement ? "Needs Improvement" : "Poor";
 };
 
 // Chart Options
@@ -467,11 +376,10 @@ const chartOptions = {
 // Lifecycle
 onMounted(async () => {
   fetch_totalUsers();
-  userLogins.value = mockUserLogins; // Explicitly set (optional, already default)
-  updateChartData(); // Add this line
-  onFCP((metric) => (fcp.value = metric.value));
-  onLCP((metric) => (lcp.value = metric.value));
-  onINP((metric) => (inp.value = metric.value));
+  fetch_totalCourses();
+  fetchFeedbackData();
+  fetchUserLogins(); 
+  updateChartData();
 });
 </script>
 

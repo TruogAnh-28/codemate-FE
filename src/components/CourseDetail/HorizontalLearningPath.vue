@@ -3,7 +3,6 @@
     <div v-if="orderedLessons.length > 0" class="horizontal-learning-path mb-6">
       <div class="flex flex-col mb-4">
         <div class="flex flex-row justify-between items-center mb-2">
-          
           <h2 class="text-h5 font-weight-bold mb-4">
             Learning Path for
             <span class="text-secondary-variant">{{
@@ -79,7 +78,12 @@
                   <div>
                     <h3
                       class="text-align-center cursor-pointer"
-                      @click="navigateToRecommendLessonDetail(lesson.id)"
+                      @click="
+                        navigateToRecommendLessonDetail(
+                          lesson.id,
+                          lesson.lesson_title
+                        )
+                      "
                     >
                       {{ lesson.lesson_title }}
                     </h3>
@@ -209,6 +213,8 @@ import {
   GetRecommendedLessonsResponse,
 } from "@/types/Course";
 import { coursesService } from "@/services/courseslistServices";
+import { dashboardService } from "@/services/dashboardService";
+import { reloadManager } from "@/modals/manager/reload";
 
 const props = defineProps<{
   course: CourseDetailResponse | null;
@@ -262,23 +268,25 @@ const fetchRecommendedLessons = async () => {
 const toggleBookmark = async (lessonId: string) => {
   try {
     // Find the lesson and toggle its bookmark status in the UI first for immediate feedback
-    const lessonIndex = recommendedLessons.value.findIndex(lesson => lesson.id === lessonId);
+    const lessonIndex = recommendedLessons.value.findIndex(
+      (lesson) => lesson.id === lessonId
+    );
     if (lessonIndex !== -1) {
       // Create a new array with the updated lesson
       const updatedLessons = [...recommendedLessons.value];
       updatedLessons[lessonIndex] = {
         ...updatedLessons[lessonIndex],
-        bookmark: !updatedLessons[lessonIndex].bookmark
+        bookmark: !updatedLessons[lessonIndex].bookmark,
       };
       recommendedLessons.value = updatedLessons;
     }
-    
+
     // Call the API to update the bookmark status
     const response = await coursesService.bookmarkRecommendedLessons(
       { showError, showSuccess },
       lessonId
     );
-    
+
     if (response && "data" in response && response.data) {
       showSuccess("Bookmark updated successfully");
     } else {
@@ -293,7 +301,27 @@ const toggleBookmark = async (lessonId: string) => {
   }
 };
 
-const navigateToRecommendLessonDetail = (lessonId: string) => {
+const navigateToRecommendLessonDetail = async (
+  lessonId: string,
+  lesson_title: string
+) => {
+  const addActivity = async (lesson_title: string) => {
+    try {
+      const add_feedback = await dashboardService.addActivity(
+        { showError, showSuccess },
+        {
+          type: "access_recommend_lesson",
+          description: "Accessed Recommend Lesson: " + lesson_title,
+        }
+      );
+      if (add_feedback) {
+        await reloadManager.trigger("activities");
+      }
+    } catch (error) {
+      showError("Failed to add activity");
+    }
+  };
+  await addActivity(lesson_title);
   router.push({
     path: `/lessonRecommend/${lessonId}`,
   });
@@ -302,8 +330,8 @@ const navigateToRecommendLessonDetail = (lessonId: string) => {
 const navigateToProgressTracking = (courseId: string) => {
   router.push({
     path: `/progress-tracking/${courseId}`,
-  })
-}
+  });
+};
 
 const updateMaxScroll = () => {
   const container = document.querySelector(".timeline-scroll-container");

@@ -54,13 +54,13 @@
           <!-- Progress Section -->
           <div class="w-1/4">
             <v-progress-linear
-              value="0"
+              :model-value="course.percentage_complete"
               height="15"
               class="mb-4 rounded-lg"
               color="secondary"
             >
               <template #default>
-                <strong class="text-text-primary"> 0% </strong>
+                <strong class="text-text-primary"> {{ course.percentage_complete }}%</strong>
               </template>
             </v-progress-linear>
           </div>

@@ -31,7 +31,7 @@
       <template v-slot:activator="{ props }">
         <v-list-item
           v-bind="props"
-          :prepend-avatar="authStore.userAvatar"
+          :prepend-avatar="user?.avatar"
           :title="userInfo?.name"
           :subtitle="userInfo?.email"
           class="cursor-pointer pa-2"
@@ -39,7 +39,7 @@
         >
           <template v-slot:prepend>
             <v-avatar size="36" class="avatar-border">
-              <v-img :src="authStore.userAvatar" cover></v-img>
+              <v-img :src="user?.avatar" cover></v-img>
             </v-avatar>
           </template>
         </v-list-item>
@@ -119,4 +119,7 @@ const handleProfile = (event: MouseEvent | KeyboardEvent) => {
   const newRole = userInfo?.role || "";
   router.push({ path: "/profile", query: { email: newEmail, role: newRole } });
 };
+onMounted(() => {
+  console.log("User Info:", userInfo);
+})
 </script>

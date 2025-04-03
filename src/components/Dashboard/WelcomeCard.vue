@@ -31,6 +31,7 @@
           color="primary"
           class="px-4 py-2 mt-2 font-medium hover:bg-blue-50 transition-colors"
           :to="`/courselist/course/${recentCourse.course_id}`"
+          @click="addActivity(recentCourse.course)"
         >
           Tap to learn
           <v-icon end icon="mdi-arrow-right" class="ml-1" />
@@ -41,12 +42,13 @@
 </template>
 
 <script setup lang="ts">
+import { reloadManager } from "@/modals/manager/reload";
 import { dashboardService } from "@/services/dashboardService";
 import { useAuthStore } from "@/stores/auth";
-import { GetRecentCorseRespounse } from "@/types/Dashboard";
+import { GetRecentCourseResponse } from "@/types/Dashboard";
 const showError = inject("showError") as (message: string) => void;
 const showSuccess = inject("showSuccess") as (message: string) => void;
-const recentCourse = ref<GetRecentCorseRespounse>({
+const recentCourse = ref<GetRecentCourseResponse>({
   course: "",
   course_id: "",
   last_accessed: "",
@@ -60,7 +62,26 @@ const fetchRecentCourse = async () => {
     showSuccess,
   });
   if (response && "data" in response && response.data) {
-    recentCourse.value = response.data as GetRecentCorseRespounse;
+    recentCourse.value = response.data as GetRecentCourseResponse;
+  }
+};
+const addActivity = async (courseName: string) => {
+  console.log("Adding activity for course:", courseName);
+  try {
+    const add_feedback = await dashboardService.addActivity(
+      { showError, showSuccess },
+      {
+        type: "access_course",
+        description: "Accessed Course: " + courseName,
+      }
+    );
+    if (add_feedback) {
+      console.log("Activity added successfully:", add_feedback);
+      showSuccess("Accessed Course: " + courseName);
+      await reloadManager.trigger("activities");
+    }
+  } catch (error) {
+    showError("Failed to add activity");
   }
 };
 onMounted(() => {

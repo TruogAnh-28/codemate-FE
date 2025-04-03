@@ -210,7 +210,7 @@
 
           <template v-slot:item.rate="{ item }">
             <v-rating
-              :value="Number(item.rate)"
+              v-model:model-value="item.rate"
               readonly
               density="compact"
               size="small"
@@ -411,6 +411,7 @@ const fetchFeedbacks = async () => {
 
     if ("data" in response && response.data) {
       feedbacks.value = response.data;
+      console.log("Rating list", response.data.map((item) => item.rate));
     }
   } catch (error) {
     console.error("Error fetching feedbacks:", error);

@@ -40,12 +40,12 @@
   </v-card>
 
   <!-- Only show feedback modal for students -->
-  <FeedbackLesson
+  <FeedbackCard
     v-if="isStudent"
-    :lessonId="selectedLessonId"
-    :showModal="showFeedbackModal"
-    @update:showModal="updateFeedbackModal"
-    @feedback-submitted="handleFeedbackSubmitted"
+    @open-feedback="openFeedbackModal"
+    type="course"
+    :courseId="props.course.course_id"
+    ref="feedbackCardRef"
   />
 
   <!-- Add CreateLessonModal for edit functionality -->
@@ -149,18 +149,19 @@ import {
 import { coursesService } from "@/services/courseslistServices";
 import { lessonService } from "@/services/lessonServices";
 import { lessonService as lessonProfessorService } from "@/services/Professor/LessonServices";
+import FeedbackCard from "../Dashboard/FeedbackCard.vue";
 const authStore = useAuthStore;
 type CourseProps = {
   course: CourseDetailResponse | GetCourseDetailProfessorResponse;
 };
 const { user } = authStore.getState();
 const props = defineProps<CourseProps>();
+const feedbackCardRef = ref<InstanceType<typeof FeedbackCard> | null>(null);
 
 const role = computed(() => user?.role);
 const isStudent = computed(() => role.value === "student");
 
 const showDocumentsModal = ref(false);
-const showFeedbackModal = ref(false);
 const showEditModal = ref(false);
 const showDeleteConfirmDialog = ref(false);
 const showAddDocumentsModal = ref(false);
@@ -196,7 +197,9 @@ const handleButtonClick = async (
       break;
     case 2:
       if (isStudent.value) {
-        openFeedbackModal(lesson.id);
+        // For students, open feedback modal with lesson title
+        console.log("Opening feedback modal for lesson:", lesson.title);
+        openFeedbackModal(lesson.title);
       } else {
         // For professors, open edit modal
         openEditModal(lesson.id);
@@ -254,13 +257,14 @@ const downloadDocuments = (lessonId: string) => {
   console.log("Downloading documents for lesson:", lessonId);
 };
 
-const updateFeedbackModal = (value: boolean): void => {
-  showFeedbackModal.value = value;
-};
-
-const openFeedbackModal = (lessonId: string): void => {
-  selectedLessonId.value = lessonId;
-  showFeedbackModal.value = true;
+const openFeedbackModal = (lessonTitle?: string): void => {
+  console.log("check feedback card ref", feedbackCardRef.value);
+  // If we have a lesson title and the feedback card ref is available
+  if (feedbackCardRef.value) {
+    console.log("Setting lesson title in feedback card:", lessonTitle);
+    // Set the lesson title in the feedback card
+    feedbackCardRef.value.setLessonTitle(lessonTitle);
+  }
 };
 
 const openEditModal = (lessonId: string): void => {
@@ -361,18 +365,6 @@ const confirmDeleteLesson = async (): Promise<void> => {
       selectedLessonId.value = undefined;
     }
   }
-};
-
-const handleFeedbackSubmitted = (feedbackData: {
-  lessonId: string;
-  feedback: string;
-}): void => {
-  console.log(
-    `Feedback received for lesson ${feedbackData.lessonId}:`,
-    feedbackData.feedback
-  );
-  showFeedbackModal.value = false;
-  selectedLessonId.value = undefined;
 };
 
 const getActionButtons = (lesson: any) => {

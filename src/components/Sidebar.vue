@@ -15,23 +15,18 @@
       <div class="flex-grow-0 pa-4">
         <v-list>
           <v-list-item
+            :active="false"
+            @click="handleNavigateToDashboard"
             prepend-avatar="@/assets/codemate.png"
             title="CODEMATE"
-            class="text-heading-2  mb-2 text-text-primary dark:text-text-primary"
+            class="text-heading-2 mb-2 text-text-primary dark:text-text-primary cursor-pointer"
           >
-            <!-- <template v-slot:append v-if="expanded">
-              <v-chip
-                size="small"
-                color="primary"
-                variant="flat"
-                class="ml-2"
-              >
-                Beta
-              </v-chip>
-            </template> -->
           </v-list-item>
         </v-list>
-        <v-divider class="border-opacity-50 border-border dark:border-border"></v-divider>
+
+        <v-divider
+          class="border-opacity-100 border-border dark:border-border"
+        ></v-divider>
       </div>
 
       <!-- Scrollable Content -->
@@ -49,7 +44,7 @@
                   v-bind="props"
                   :prepend-icon="item.icon"
                   :title="item.title"
-                 refclass="text-h6 font-weight-medium py-3 px-4"
+                  refclass="text-h6 font-weight-medium py-3 px-4"
                   rounded="lg"
                   active-class="bg-primary-subtle"
                 >
@@ -97,7 +92,9 @@
 
       <!-- Footer with Logout Button -->
       <div class="flex-grow-0 pa-4">
-        <v-divider class="border-opacity-50 border-border dark:border-border mb-4"></v-divider>
+        <v-divider
+          class="border-opacity-50 border-border dark:border-border mb-4"
+        ></v-divider>
         <v-list-item
           prepend-icon="mdi-logout"
           title="Logout"
@@ -123,6 +120,7 @@ const authStore = useAuthStore;
 const props = defineProps<{
   modelValue: boolean;
 }>();
+const router = useRouter();
 
 const emit = defineEmits<{
   (e: "update:modelValue", value: boolean): void;
@@ -189,7 +187,7 @@ const professorItems: NavigationItem[] = [
     to: "/professor-courselist",
   },
   {
-    icon: feedbackManagement,
+    icon: "mdi-account-details",
     title: "Feedback Management",
     value: "professor-feedback",
     to: "/professor-feedback",
@@ -216,7 +214,7 @@ const adminItems: NavigationItem[] = [
     to: "/admin-dashboard",
   },
   {
-    icon: feedbackManagement,
+    icon: "mdi-account-details",
     title: "Feedback Management",
     value: "feedback-management",
     to: "/feedback-management",
@@ -286,6 +284,16 @@ const filteredNavigationItems = computed(() => {
       return [];
   }
 });
+const handleNavigateToDashboard = () => {
+  console.log(role.value);
+  if (role.value === "student") {
+    router.push("/dashboard");
+  } else if (role.value === "professor") {
+    router.push("/professor-dashboard");
+  } else if (role.value === "admin") {
+    router.push("/admin-dashboard");
+  }
+};
 </script>
 
 <style scoped>

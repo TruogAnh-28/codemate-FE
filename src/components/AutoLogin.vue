@@ -45,7 +45,7 @@ const isRouteValidForRole = (role: string, path: string): boolean => {
   return rolePaths[role as keyof typeof rolePaths]?.some(pattern => path.startsWith(pattern)) || false;
 };
 
-const redirectUser = (userRole: string) => {
+const redirectUser = async (userRole: string) => {
   const redirectUrl = sessionStorage.getItem("redirectUrl");
   const currentPath = route.path;
 
@@ -66,6 +66,18 @@ const redirectUser = (userRole: string) => {
         admin: "/admin-dashboard",
       }[userRole] || "/login";
     router.push(redirectPath);
+  }
+  await trackUserLogin(userRole);
+};
+
+const trackUserLogin = async (userRole: string) => {
+  try {
+    await usersService.createUserLogin({
+      user_role: userRole,
+      login_timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error("Failed to track user login:", error);
   }
 };
 

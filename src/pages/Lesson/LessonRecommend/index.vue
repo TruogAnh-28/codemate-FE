@@ -45,7 +45,7 @@
             variant="tonal"
             class="text-none rounded-lg ml-4"
             prepend-icon="mdi-comment-text-outline"
-            @click="showFeedbackModal = true"
+            @click="openFeedbackModal(lesson.name)"
           >
             Feedback
           </v-btn>
@@ -215,6 +215,7 @@
               class="text-none rounded-lg"
               block
               prepend-icon="mdi-play-circle-outline"
+              @click="addActivity(module.title)"
             >
               Start Module
             </v-btn>
@@ -232,12 +233,11 @@
       @review="handleModalClose"
       @repeat="handleModalClose"
     />
-    <FeedbackLesson
-      v-if="showFeedbackModal"
-      :lessonId="lessonId"
-      :showModal="showFeedbackModal"
-      @update:showModal="updateFeedbackModal"
-      @feedback-submitted="handleFeedbackSubmitted"
+    <FeedbackCard
+      @open-feedback="openFeedbackModal"
+      type="course"
+      :courseId="getCourseId(courseStore.courseDetails)"
+      ref="feedbackCardRef"
     />
   </v-container>
 </template>
@@ -249,23 +249,42 @@ import { renderStatusLabel } from "@/utils/functions/render";
 import { useBreadcrumbsStore } from "@/stores/breadcrumbs";
 import { useCourseStore } from "@/stores/courseStore";
 import { useTimeSpentStore } from "@/stores/timeSpentStore";
+import FeedbackCard from "@/components/Dashboard/FeedbackCard.vue";
+import { CourseDetailResponse, CoursesListResponse } from "@/types/Course";
+import { dashboardService } from "@/services/dashboardService";
 // Define props explicitly
 const props = defineProps<{
   lessonId: string;
 }>();
-const showFeedbackModal = ref(false);
-const updateFeedbackModal = (value: boolean): void => {
-  showFeedbackModal.value = value;
+const feedbackCardRef = ref<InstanceType<typeof FeedbackCard> | null>(null);
+
+// Type guard to check if courseDetails is of type CourseDetailResponse
+const getCourseId = (
+  courseDetails: CourseDetailResponse | CoursesListResponse | null
+): string => {
+  if (
+    courseDetails &&
+    "course_id" in courseDetails &&
+    courseDetails.course_id
+  ) {
+    return courseDetails.course_id;
+  } else if (courseDetails && "id" in courseDetails) {
+    return courseDetails.id;
+  }
+  return "";
 };
 
-const handleFeedbackSubmitted = (feedbackData: {
-  lessonId: string;
-  feedback: string;
-}): void => {
-  console.log(
-    `Feedback received for lesson ${feedbackData.lessonId}:,${feedbackData.feedback}`
-  );
-  showFeedbackModal.value = false;
+const openFeedbackModal = (lessonTitle?: string): void => {
+  // Don't set showFeedbackModal here since the dialog is controlled inside the component
+  nextTick(() => {
+    if (feedbackCardRef.value) {
+      // Get the lesson name and append "Recommend Lesson" to make it clear
+      const title =
+        lessonTitle + " Recommend Lesson" ||
+        (lesson.value ? lesson.value.name + " Recommend Lesson" : "");
+      feedbackCardRef.value.setLessonTitle(title);
+    }
+  });
 };
 
 const lesson = ref<Lesson | null>(null);
@@ -290,6 +309,25 @@ function openDialog(module: Module) {
   selectedModule.value = module;
   showDialog.value = true;
 }
+
+const addActivity = async (moduleName: string) => {
+  try {
+    const add_feedback = await dashboardService.addActivity(
+      { showError, showSuccess },
+      {
+        type: "access_module",
+        description: "Accessed Module: " + moduleName,
+      }
+    );
+    if (add_feedback) {
+      showSuccess("Accessed Module: " + moduleName);
+    } else {
+      throw new Error("Failed to add activity.");
+    }
+  } catch (error) {
+    showError("Failed to add activity");
+  }
+};
 
 const parsedLearningOutcomes = (learning_outcomes: string[]) => {
   try {
@@ -385,7 +423,6 @@ onBeforeUnmount(async () => {
   console.log("Time spent:", timeSpentStore.timeSpentInSeconds, "seconds");
   console.log("Formatted time:", timeSpentStore.formattedTimeSpent);
 });
-
 
 onMounted(async () => {
   loading.value = true;

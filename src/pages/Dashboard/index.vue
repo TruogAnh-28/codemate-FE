@@ -11,11 +11,6 @@
     </div>
 
     <CourseListCard/>
-
-    <FeedbackLesson
-      v-model:showModal="showFeedbackDialog"
-      @feedback-submitted="handleFeedbackSubmit"
-    />
   </div>
 </template>
 
@@ -24,13 +19,6 @@ const showFeedbackDialog = ref(false);
 
 const openFeedback = () => {
   showFeedbackDialog.value = true;
-};
-
-const handleFeedbackSubmit = (feedbackData: {
-  lessonId: string | null;
-  feedback: string;
-}) => {
-  console.log("Feedback submitted:", feedbackData);
 };
 
 </script>

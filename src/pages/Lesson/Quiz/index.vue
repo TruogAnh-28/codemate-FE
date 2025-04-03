@@ -229,6 +229,7 @@ import { useBreadcrumbsStore } from "@/stores/breadcrumbs";
 import { Breadcrumbs } from "@/types/Breadcrumbs";
 import ReadingMaterial from "@/components/ReadingMaterial/ReadingMaterial.vue";
 import { useTimeSpentStore } from "@/stores/timeSpentStore";
+import { dashboardService } from "@/services/dashboardService";
 interface RouteParams {
   moduleId: string;
   lessonId: string;
@@ -264,6 +265,19 @@ async function generateQuiz() {
 }
 async function doQuiz(quizId: string, status: string): Promise<void> {
   const path = `/lessonRecommend/${lessonId}/module/${moduleId}/Quiz/${quizId}`;
+  const addActivity = await dashboardService.addActivity(
+    { showError, showSuccess },
+    {
+      type: "do_quiz",
+      description: "Took Quiz: " + moduleQuizzes.value.title,
+    }
+  );
+  if (addActivity) {
+    console.log("Activity added successfully:", addActivity);
+    showSuccess("Took Quiz: " + moduleQuizzes.value.title);
+  } else {
+    console.error("Failed to add activity");
+  }
   if (status === "completed") {
     await clearQuizAnswers(quizId);
   }
@@ -341,10 +355,7 @@ onMounted(() => {
 
 onBeforeUnmount(async () => {
   timeSpentStore.stopTracking();
-  await timeSpentStore.updateTimeSpent(
-    { showError, showSuccess },
-    lessonId
-  );
+  await timeSpentStore.updateTimeSpent({ showError, showSuccess }, lessonId);
   console.log("Time spent:", timeSpentStore.timeSpentInSeconds, "seconds");
   console.log("Formatted time:", timeSpentStore.formattedTimeSpent);
 });

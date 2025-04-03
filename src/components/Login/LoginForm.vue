@@ -17,9 +17,15 @@
           </div>
         </div>
 
-        <v-form @submit.prevent="handleSubmit" v-model="isValid" class="space-y-6">
+        <v-form
+          @submit.prevent="handleSubmit"
+          v-model="isValid"
+          class="space-y-6"
+        >
           <div class="space-y-2">
-            <label class="text-sm font-medium text-gray-700">Email address</label>
+            <label class="text-sm font-medium text-gray-700"
+              >Email address</label
+            >
             <v-text-field
               v-model="email"
               :rules="validationRules.email"
@@ -94,6 +100,7 @@ import { useAuthStore } from "@/stores/auth";
 import { EMAIL_PATTERN, PASSWORD_PATTERN } from "@/utils/constant";
 import type { LoginSuccessResponse } from "@/types/Auth";
 import { PUBLIC_ROUTES } from "@/common/api.service";
+import { usersService } from "@/services/usersServices";
 
 const email = ref("");
 const password = ref("");
@@ -146,7 +153,7 @@ const handleDialogClose = (value: boolean) => {
   isModalVisible.value = value;
 };
 
-const handleSuccessfulLogin = (data: LoginSuccessResponse) => {
+const handleSuccessfulLogin = async (data: LoginSuccessResponse) => {
   const userInfo = {
     role: data.role,
     email: data.email,
@@ -156,6 +163,11 @@ const handleSuccessfulLogin = (data: LoginSuccessResponse) => {
 
   setUser(userInfo);
   setTokens(data.access_token, data.refresh_token);
+
+  await usersService.createUserLogin({
+    user_role: userInfo.role,
+    login_timestamp: new Date().toISOString(),
+  });
 
   const redirectUrl = sessionStorage.getItem("redirectUrl");
   if (redirectUrl && !PUBLIC_ROUTES.includes(redirectUrl)) {
@@ -213,10 +225,6 @@ const handleSubmit = async () => {
       "is_active" in responseData &&
       responseData.is_active
     ) {
-      // await usersService.createUserLogin({
-      //   user_role: responseData.role,
-      //   login_timestamp: new Date().toISOString(),
-      // });
       handleSuccessfulLogin(responseData);
     }
   } finally {

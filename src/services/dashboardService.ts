@@ -1,13 +1,14 @@
 import ApiService from "@/common/api.service";
 import {
-  GetRecentCorseRespounse,
+  GetRecentCourseResponse,
   RecentActivitiesResponse,
   AddActivityRequest,
 } from "@/types/Dashboard";
 import { AuthConfig } from "./authenServices";
+import { IResponseData } from "@/modals/apis/response";
 export const dashboardService = {
   async fetchRecentCourse({ showError, showSuccess }: AuthConfig) {
-    return await ApiService.get<GetRecentCorseRespounse>(
+    return await ApiService.get<GetRecentCourseResponse>(
       "dashboard/student-recent-course",
       "",
       { showError, showSuccess }
@@ -26,7 +27,7 @@ export const dashboardService = {
     { showError, showSuccess }: AuthConfig,
     request: AddActivityRequest
   ) {
-    return await ApiService.post<boolean>("dashboard/student-activities/", request, {
+    return await ApiService.post<IResponseData<boolean>>("dashboard/student-activities/", request, {
       showError,
       showSuccess,
     });
