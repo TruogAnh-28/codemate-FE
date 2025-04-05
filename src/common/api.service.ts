@@ -163,7 +163,7 @@ class ApiServiceClass {
               return Promise.reject(error);
             });
         }
-        
+
         return Promise.reject(error);
       }
     );
@@ -395,7 +395,7 @@ class ApiServiceClass {
     config?: ApiCallConfig
   ): Promise<T> {
     return this.request<T>("PATCH", `${resource}/${slug}`, { ...config, data });
-  }  
+  }
 
   put<T>(resource: string, data: object, config?: ApiCallConfig): Promise<T> {
     return this.request<T>("PUT", resource, { ...config, data });
@@ -436,3 +436,59 @@ export const manageExpirationTimer = () => {
 export const clearExpirationTimer = () => {
   clearInterval(expirationTimer);
 };
+
+export async function streamFromApi(
+  url: string,
+  onChunk: (chunk: string) => void,
+  options?: {
+    method?: "GET" | "POST" | "PUT" | "DELETE"; // Extend as needed
+    body?: Record<string, any>;
+    headers?: Record<string, string>;
+  }
+): Promise<void> {
+  const {
+    method = "GET",
+    body,
+    headers = {},
+  } = options || {};
+
+  const token = ApiService.getToken();
+
+  if (body) {
+    console.log("content:", body.content);
+  }
+
+  const response = await fetch(import.meta.env.VITE_APP_V1_API_URL + url, {
+    method,
+    headers: {
+      Authorization: token ? `Bearer ${token}` : "",
+      Accept: "text/event-stream",
+      "Content-Type": body ? "application/json" : "",
+      ...headers,
+    },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+
+  if (!response.ok || !response.body) {
+    throw new Error(`Stream request failed with status ${response.status}`);
+  }
+
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      const chunk = decoder.decode(value, { stream: true });
+      onChunk(chunk);
+    }
+  } catch (err) {
+    console.error("Error while reading stream:", err);
+    throw err;
+  } finally {
+    reader.releaseLock();
+  }
+}
+

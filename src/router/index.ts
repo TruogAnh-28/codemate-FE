@@ -56,6 +56,8 @@ const StudentRoutes = [
       meta: { requiresAuth: true, role: "student" },
     }],
   },
+
+
   {
     path: "/progress-tracking/:courseId",
     component: () => import("@/layouts/default.vue"),
@@ -76,6 +78,7 @@ const StudentRoutes = [
       meta: { requiresAuth: true, role: "student" },
     }],
   },
+
   {
     path: "/courselist/course/:id",
     name: "CourseDetail",
@@ -88,6 +91,13 @@ const StudentRoutes = [
       meta: { requiresAuth: true, role: "student" },
     }]
   },
+  {
+    path: "/exercise-code/:exerciseId?",
+    name: "PracticeCoding",
+    component: () => import("@/pages/Code/index.vue"),
+    meta: { requiresAuth: true, role: "student" },
+  },
+
   {
     path: "/lessonRecommend/:lessonId",
     component: () => import("@/layouts/default.vue"),
@@ -109,6 +119,13 @@ const StudentRoutes = [
           path: "Module/:moduleId/Quiz",
           name: "LessonRecommendQuiz",
           component: () => import("@/pages/Lesson/Quiz/index.vue"),
+          props: true,
+          meta: { requiresAuth: true, role: "student" },
+        },
+        {
+          path: "Module/:moduleId/Quiz/:quizId",
+          name: "LessonRecommendDoQuiz",
+          component: () => import("@/pages/Lesson/DoQuiz/index.vue"),
           props: true,
           meta: { requiresAuth: true, role: "student" },
         },
@@ -280,6 +297,7 @@ const ProfessorRoutes = [
       path: "",
       name: "ProfessorCode",
       component: () => import("@/pages/Code/index.vue"),
+      meta: { requiresAuth: false, role: "professor" },
       meta: { requiresAuth: true, role: "professor" },
     }],
   },
@@ -328,18 +346,18 @@ const ProfileRoute = {
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    ...LoginRoute, 
+    ...LoginRoute,
     ...StudentRoutes,
-    ...AdminRoutes, 
-    ...ProfessorRoutes, 
-    ProfileRoute,  
+    ...AdminRoutes,
+    ...ProfessorRoutes,
+    ProfileRoute,
 
     ...setupLayouts([...autoRoutes]),
   ],
 });
 
-router.beforeEach(navigationGuard);
 
+router.beforeEach(navigationGuard);
 router.onError((err, to) => {
   if (err?.message?.includes?.("Failed to fetch dynamically imported module")) {
     if (!localStorage.getItem("vuetify:dynamic-reload")) {
