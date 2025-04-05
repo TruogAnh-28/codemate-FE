@@ -1,17 +1,7 @@
 <template>
   <div>
-    <v-textarea
-      v-model="localQuestion.question"
-      label="Question Text*"
-      placeholder="Describe the coding problem to solve"
-      variant="outlined"
-      density="comfortable"
-      class="mb-4 rounded-lg"
-      rows="4"
-      :rules="[v => !!v || 'Question text is required']"
-      hide-details="auto"
-      @update:model-value="emitUpdate"
-    ></v-textarea>
+    <label class="font-weight-medium mb-2 d-block">Problem description*</label>
+    <div ref="editorRef" class="editor-container mb-4 rounded-lg" />
 
     <div class="d-flex align-items-center mb-3">
       <v-select
@@ -81,7 +71,6 @@
       @update:model-value="emitUpdate"
     ></v-textarea>
 
-    <!-- Performance Constraints -->
     <div class="d-flex align-items-center mb-3">
       <v-text-field
         v-model="localQuestion.time_limit_seconds"
@@ -111,6 +100,10 @@
 </template>
 
 <script lang="ts" setup>
+import { ref, watch, onMounted } from 'vue';
+import Quill from 'quill';
+import 'quill/dist/quill.snow.css';
+
 import { CodeModel } from '@/types/Exercise';
 
 const props = defineProps<{
@@ -123,16 +116,75 @@ const emit = defineEmits<{
   'update:question': [value: CodeModel]
 }>();
 
-// Use a local copy to avoid directly modifying props
 const localQuestion = ref<CodeModel>({ ...props.question });
 
-// Watch for prop changes to update local state
+// Add a flag to prevent recursion
+const isUpdatingFromEditor = ref(false);
+
 watch(() => props.question, (newVal) => {
-  localQuestion.value = { ...newVal };
+  // Only update the editor content if not currently updating from the editor
+  if (!isUpdatingFromEditor.value) {
+    localQuestion.value = { ...newVal };
+
+    if (quill && quill.root) {
+      // Use setContents instead of directly modifying innerHTML
+      const delta = quill.clipboard.convert(newVal.question || '');
+      quill.setContents(delta, 'api');
+    }
+  }
 }, { deep: true });
 
-// Emit update whenever local state changes
 const emitUpdate = () => {
   emit('update:question', { ...localQuestion.value });
 };
+
+const editorRef = ref<HTMLElement | null>(null);
+let quill: Quill;
+
+onMounted(() => {
+  if (editorRef.value) {
+    quill = new Quill(editorRef.value, {
+      theme: 'snow',
+      placeholder: 'Describe the coding problem to solve',
+      modules: {
+        toolbar: [
+          [{ header: [1, 2, false] }],
+          ['bold', 'italic', 'underline', 'code-block'],
+          [{ list: 'ordered' }, { list: 'bullet' }],
+          ['link']
+        ]
+      }
+    });
+
+    // Set initial content using delta
+    const delta = quill.clipboard.convert(localQuestion.value.question || '');
+    quill.setContents(delta);
+
+    quill.on('text-change', (delta, oldContents, source) => {
+      // Only emit updates for user changes, not programmatic ones
+      if (source === 'user') {
+        isUpdatingFromEditor.value = true;
+        localQuestion.value.question = quill.root.innerHTML;
+        emitUpdate();
+        // Reset the flag after the update cycle
+        setTimeout(() => {
+          isUpdatingFromEditor.value = false;
+        }, 0);
+      }
+    });
+  }
+});
+
 </script>
+
+<style scoped>
+.editor-container {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  min-height: 150px;
+  padding: 10px;
+  background-color: white;
+  text-align: left;
+}
+</style>
+

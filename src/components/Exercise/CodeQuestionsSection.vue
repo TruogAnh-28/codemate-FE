@@ -5,11 +5,11 @@
       <h3 class="text-subtitle-1 font-weight-bold mb-0">Coding Questions</h3>
     </div>
 
-    <v-sheet 
-      v-for="(question, questionIndex) in questions" 
-      :key="questionIndex" 
-      rounded="lg" 
-      elevation="1" 
+    <v-sheet
+      v-for="(question, questionIndex) in questions"
+      :key="questionIndex"
+      rounded="lg"
+      elevation="1"
       class="pa-4 mb-4 "
     >
       <div class="d-flex align-center mb-4">
@@ -25,8 +25,8 @@
         ></v-btn>
       </div>
 
-      <QuestionDetails 
-        :question="question" 
+      <QuestionDetails
+        :question="question"
         :difficultyLevels="difficultyLevels"
         :programmingLanguages="programmingLanguages"
         @update:question="updateQuestion(questionIndex, $event)"

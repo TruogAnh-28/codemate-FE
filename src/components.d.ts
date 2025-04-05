@@ -58,6 +58,9 @@ declare module 'vue' {
     LearningOutcomes: typeof import('./components/CourseList/LearningOutcomes.vue')['default']
     LearningOutcomesModal: typeof import('./components/CourseList/LearningOutcomesModal.vue')['default']
     LoginForm: typeof import('./components/Login/LoginForm.vue')['default']
+    MarkdownEditor: typeof import('./components/Form/MarkdownEditor.vue')['default']
+    MonacoEditor: typeof import('./components/Code/MonacoEditor.vue')['default']
+    MonacoEditorCode: typeof import('./components/Code/MonacoEditorCode.vue')['default']
     OptionsSection: typeof import('./components/Exercise/OptionsSection.vue')['default']
     OverallProgress: typeof import('./components/ProgressTracking/OverallProgress.vue')['default']
     PasswordModal: typeof import('./components/Login/PasswordModal.vue')['default']
@@ -88,6 +91,7 @@ declare module 'vue' {
     Testcase: typeof import('./components/Code/Testcase.vue')['default']
     TestCaseImport: typeof import('./components/Exercise/TestCaseImport.vue')['default']
     TestCasesSection: typeof import('./components/Exercise/TestCasesSection.vue')['default']
+    TextEditor: typeof import('./components/TextEditor.vue')['default']
     TimingSection: typeof import('./components/Exercise/TimingSection.vue')['default']
     UpcomingEvents: typeof import('./components/Dashboard/UpcomingEvents.vue')['default']
     Uploader: typeof import('./components/File/Uploader.vue')['default']
@@ -95,5 +99,6 @@ declare module 'vue' {
     WebVitals: typeof import('./components/AdminDashboard/WebVitals.vue')['default']
     WelcomeCard: typeof import('./components/Dashboard/WelcomeCard.vue')['default']
     WelcomeCardProfessor: typeof import('./components/Dashboard/WelcomeCardProfessor.vue')['default']
+    WysiwygMarkdownEditor: typeof import('./components/WysiwygMarkdownEditor.vue')['default']
   }
 }

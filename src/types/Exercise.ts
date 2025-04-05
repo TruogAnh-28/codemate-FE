@@ -188,12 +188,13 @@ export interface ExerciseCodeRequest  {
   penalty_per_attempt?: number;
   pass_mark?: number;
 }
+
 export interface ExerciseCodeResponse extends ExerciseCodeRequest {
   id: string;
 }
 
 export interface GetExercisesList{
-  id: UUID; 
+  id: UUID;
   name: string;
   description: string;
   type: ExerciseType;

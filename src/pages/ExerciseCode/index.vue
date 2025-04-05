@@ -26,20 +26,22 @@
         <!-- General Section -->
         <GeneralSection v-model:formData="formData" />
 
+
+
         <!-- Timing Section -->
         <TimingSection v-model:formData="formData" />
 
         <!-- Grade Section -->
-        <GradeSection 
-          v-model:formData="formData" 
-          :gradingMethodOptions="Object.values(GradingMethodType)" 
+        <GradeSection
+          v-model:formData="formData"
+          :gradingMethodOptions="Object.values(GradingMethodType)"
         />
 
         <!-- Options Section -->
         <!-- <OptionsSection v-model:formData="formData" /> -->
 
         <!-- Coding Questions Section -->
-        <CodeQuestionsSection 
+        <CodeQuestionsSection
           v-model:questions="formData.questions"
           :difficultyLevels="difficultyLevels"
           :programmingLanguages="programmingLanguages"
@@ -135,12 +137,12 @@ const calculateMaxScore = () => {
     formData.value.max_score = 0;
     return;
   }
-  
+
   const totalScore = formData.value.questions.reduce((sum, question) => {
     const questionScore = Number(question.score) || 0;
     return sum + questionScore;
   }, 0);
-  
+
   formData.value.max_score = totalScore;
 };
 
@@ -213,7 +215,7 @@ const fetchExerciseDetails = async () => {
         penalty_per_attempt: exerciseData.penalty_per_attempt || 0,
         pass_mark: exerciseData.pass_mark || 0
       };
-      
+
       // Calculate max score after loading the data
       calculateMaxScore();
     }
@@ -232,10 +234,10 @@ const handleSubmit = async () => {
     showError('Please check the form for errors');
     return;
   }
-  
+
   // Ensure max_score is up-to-date before submission
   calculateMaxScore();
-  
+
   try {
     if (exerciseId) {
       const response = await exercisesService.editExerciseCode(
