@@ -13,9 +13,7 @@
           ACTIVITY_MAP[activity.activity_type]?.icon ||
           'mdi-information-outline'
         "
-        :description="`${
-          ACTIVITY_MAP[activity.activity_type]?.label || 'Unknown Activity'
-        }: ${activity.activity_description}`"
+        :description="`${activity.activity_description}`"
         :timestamp="formatDateTime(activity.activity_date)"
         :iconColor="ACTIVITY_MAP[activity.activity_type]?.color || 'gray'"
       />
@@ -40,18 +38,8 @@ const ACTIVITY_MAP: Record<
     color: string;
   }
 > = {
-  view_course: {
-    label: "Viewed Course",
-    icon: "mdi-book-open-outline",
-    color: "secondary",
-  },
-  resume_activity: {
-    label: "Resumed Activity",
-    icon: "mdi-play-circle",
-    color: "primary",
-  },
-  enroll_course: {
-    label: "Enrolled in Course",
+  access_course: {
+    label: "Accessed Course",
     icon: "mdi-account-plus",
     color: "yellow",
   },
@@ -60,20 +48,25 @@ const ACTIVITY_MAP: Record<
     icon: "mdi-checkbox-marked-circle",
     color: "success",
   },
-  complete_assignment: {
-    label: "Completed Assignment",
-    icon: "mdi-clipboard-check",
-    color: "secondary-variant",
-  },
-  badge_earned: {
-    label: "Earned Badge",
-    icon: "mdi-trophy",
-    color: "warning",
-  },
   add_feedback: {
     label: "Added Feedback",
     icon: "mdi-comment-plus",
     color: "info",
+  },
+  access_recommend_lesson: {
+    label: "Accessed Recommended Lesson",
+    icon: "mdi-star-box-outline",
+    color: "purple",
+  },
+  access_module: {
+    label: "Accessed Module",
+    icon: "mdi-folder-open",
+    color: "primary",
+  },
+  do_quiz: {
+    label: "Took Quiz",
+    icon: "mdi-help-circle-outline",
+    color: "accent",
   },
 };
 

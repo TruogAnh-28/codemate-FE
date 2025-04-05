@@ -390,6 +390,7 @@
         </v-lazy>
       </div>
     </v-main>
+    <AutoLogin />
   </v-layout>
 </template>
 

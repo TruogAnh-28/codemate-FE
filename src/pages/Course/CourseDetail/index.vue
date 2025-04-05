@@ -1,5 +1,6 @@
 <template>
   <v-container fluid class="py-6">
+    <HorizontalLearningPath v-if="course" :course="course" />
     <v-row>
       <v-col cols="12" md="8">
         <CourseMainContent
@@ -13,9 +14,12 @@
         <CourseSidebar
           :course="course"
           :dialog="dialog"
+          :show-recommendations-modal="showCourseRecommendationsModal"
+          :has-learning-path="hasLearningPath"
           @open-recommendation="openRecommendationModal"
-          @open-course-recommendations="openCourseRecommendationsModal"
+          @create-new-path="openRecommendationModal"
           @update:dialog="dialog = $event"
+          @update:show-recommendations-modal="showCourseRecommendationsModal = $event"
           @submit-goal="handleGoalSubmission"
         />
       </v-col>
@@ -27,6 +31,8 @@
 import { CourseDetailResponse, ProfessorInformation } from "@/types/Course";
 import { coursesService } from "@/services/courseslistServices";
 import { Tab } from "@/components/CourseDetail/CourseMainContent.vue";
+import { useCourseStore } from "@/stores/courseStore";
+import { aiGenerateServices } from "@/services/aiGenerateServices";
 
 const props = defineProps<{
   id: string;
@@ -57,13 +63,48 @@ const tabs = ref<Tab[]>([
   },
 ]);
 
+const hasLearningPath = ref(false);
+
 const fetchCourseDetail = async () => {
-  const response = await coursesService.fetchCourseDetail(
-    { showError, showSuccess },
-    id
-  );
+  const response = await coursesService.fetchCourseDetail({ showError, showSuccess }, id);
   if (response && "data" in response && response.data) {
     course.value = response.data as CourseDetailResponse;
+    useCourseStore.getState().setCourseDetails(response.data as CourseDetailResponse);
+    
+    // Check if learning path exists by fetching recommended lessons
+    const lessonsResponse = await coursesService.getRecommendedLessons(
+      { showError, showSuccess },
+      id
+    );
+    hasLearningPath.value = !!(lessonsResponse && "data" in lessonsResponse && 
+      lessonsResponse.data && lessonsResponse.data.lessons.length > 0);
+  }
+};
+
+// Update handleGoalSubmission to handle new path creation
+const handleGoalSubmission = async (goal: string) => {
+  try {
+    const response = await aiGenerateServices.generateLearningPath(
+      {
+        showError,
+        showSuccess,
+      },
+      {
+        course_id: id,
+        goal: goal,
+      }
+    );
+
+    if (response && "data" in response && response.data) {
+      dialog.value = false;
+      openCourseRecommendationsModal();
+      hasLearningPath.value = true; // Update the status
+      showSuccess("Learning path generated successfully");
+    }
+  } catch (error) {
+    showError("Failed to generate learning path");
+  } finally {
+    dialog.value = false;
   }
 };
 
@@ -81,13 +122,10 @@ const openRecommendationModal = () => {
   dialog.value = true;
 };
 
+const showCourseRecommendationsModal = ref(false);
+
 const openCourseRecommendationsModal = () => {
-
-};
-
-const handleGoalSubmission = (goal: string) => {
-  console.log("Learning Goal Submitted:", goal);
-  dialog.value = false;
+  showCourseRecommendationsModal.value = true;
 };
 
 watch(

@@ -3,13 +3,13 @@ import { AuthConfig } from "@/services/authenServices";
 import { ModuleQuizResponse, QuizExerciseResponse, ClearAnswerResponse } from "@/types/Exercise";
 import { DocumentResponse } from "@/types/Document";
 import { QuizScoreResponse, QuizAnswerRequest } from "@/types/Exercise";
-
+import { IResponseData } from "@/modals/apis/response";
 export const moduleService = {
   async fetchModuleQuizzes(
     { showError, showSuccess }: AuthConfig,
     moduleId: string
   ) {
-    return await ApiService.get<ModuleQuizResponse>(
+    return await ApiService.get<IResponseData<ModuleQuizResponse>>(
       `modules/${moduleId}/quizzes`,
       "",
       { showError, showSuccess }
@@ -18,11 +18,10 @@ export const moduleService = {
 
   async fetchQuizDetails(
     { showError, showSuccess }: AuthConfig,
-    moduleId: string,
     quizId: string
   ) {
     return await ApiService.get<QuizExerciseResponse>(
-      `modules/${moduleId}/quizzes/${quizId}`,
+      `modules/quizzes/${quizId}`,
       "",
       { showError, showSuccess }
     );
@@ -30,12 +29,11 @@ export const moduleService = {
 
   async submitQuizAnswers(
     { showError, showSuccess }: AuthConfig,
-    moduleId: string,
     quizId: string,
     request: QuizAnswerRequest
   ) {
     return await ApiService.put<QuizScoreResponse>(
-      `modules/${moduleId}/quizzes/${quizId}/submit`,
+      `modules/quizzes/${quizId}/submit`,
       request,
       { showError, showSuccess }
     );

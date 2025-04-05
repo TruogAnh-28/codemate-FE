@@ -1,5 +1,47 @@
 import { UUID, DateString, ExerciseType } from "@/utils/commonType"
-
+//-------------------Student----------------------
+export interface ProgressTrackingStudent {
+    student_assessment: StudentAssessment
+  }
+  
+  export interface StudentAssessment {
+    student_info: StudentInfo
+    learning_goal: string
+    assessment_date: string
+    assessment_summary: AssessmentSummary
+    progress_review: ProgressReview
+    advice: Advice
+  }
+  
+  export interface StudentInfo {
+    name: string
+    email: string
+  }
+  
+  export interface AssessmentSummary {
+    situation: string
+    task: string
+    action: Action
+    result: string
+  }
+  
+  export interface Action {
+    theoretical_knowledge: string
+    coding_skills: string
+    effort: string
+  }
+  
+  export interface ProgressReview {
+    strengths: string
+    areas_to_note: string
+  }
+  
+  export interface Advice {
+    theoretical_knowledge: string
+    coding_skills: string
+    effort: string
+  }
+  
 
 //------------------Professor----------------------
 export interface CourseNameResponse {

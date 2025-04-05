@@ -12,7 +12,6 @@
         width="150"
       ></v-select>
       <v-spacer></v-spacer>
-
       <v-btn variant="tonal" color="warning" class="mr-2" @click="giveHints" :loading="isGettingHints">Give Hints</v-btn>
       <v-btn variant="tonal" color="info" class="mr-2" @click="explainCode" :loading="isExplaining">Explain Code</v-btn>
       <v-btn variant="tonal" color="success" class="mr-2" @click="runCode" :loading="isLoading">Run</v-btn>
@@ -34,15 +33,20 @@ import { indentOnInput, syntaxHighlighting, defaultHighlightStyle, bracketMatchi
 import { closeBrackets, closeBracketsKeymap } from '@codemirror/autocomplete';
 import { lintGutter } from '@codemirror/lint';
 // import { javascript } from '@codemirror/lang-javascript';
+// import { rust } from '@codemirror/lang-rust';
 import { cpp } from '@codemirror/lang-cpp';
 import { python } from '@codemirror/lang-python';
 import { java } from '@codemirror/lang-java';
-// import { rust } from '@codemirror/lang-rust';
 import { LANGUAGES, LANGUAGE_MAP, DEFAULT_CODE } from '@/constants/templateLanguage';
 import { createSubmission, pollSubmission, prepareStdin } from '@/services/Professor/judge0api';
 import { llmCodeServices } from '@/services/llmCodeServices';
-import { TestInput,LineExplanation,CodeAnalysisRequest,LanguageKey } from '@/types/LLM_code';
-// import { SubmissionResult as Judge0SubmissionResult } from '@/types/Judge0API';
+import { TestInput, LineExplanation, CodeAnalysisRequest, LanguageKey } from '@/types/LLM_code';
+
+// Define types for hints
+interface LineHint {
+  line: number;
+  hint: string;
+}
 
 // Define props
 const props = defineProps<{
@@ -61,6 +65,7 @@ const editorContainer = ref<HTMLElement | null>(null);
 const languages = ref(LANGUAGES);
 const isLoading = ref<boolean>(false);
 const isExplaining = ref<boolean>(false);
+const isGettingHints = ref<boolean>(false);
 const lineExplanations = ref<LineExplanation[]>([]);
 const showError = inject("showError") as (message: string) => void;
 const showSuccess = inject("showSuccess") as (message: string) => void;
@@ -147,6 +152,9 @@ const darkTheme = EditorView.theme({
   },
   ".cm-activeLineGutter": {
     backgroundColor: "#222"
+  },
+  ".cm-hint-line": {
+    backgroundColor: "rgba(255, 217, 0, 0.1)"
   }
 }, { dark: true });
 
@@ -185,6 +193,7 @@ const initEditor = (): void => {
     parent: editorContainer.value
   });
 };
+
 
 const giveHints = async (): Promise<void> => {
   try {
@@ -491,6 +500,7 @@ watch(code, (newCode) => {
   width: 100%;
   height: 100%;
   overflow: auto;
+  background-color: #1e1e1e;
 }
 
 .language-select {

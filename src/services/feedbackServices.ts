@@ -55,5 +55,32 @@ export const feedbackServices = {
         showSuccess: config.showSuccess,
       }
     );
+  },
+  async updateFeedback(
+    { showError, showSuccess }: AuthConfig,
+    feedbackId: string,
+    request: {status: string}
+  ) {
+    return ApiService.update<IResponseData<boolean>>(
+      `/feedback`,
+      feedbackId,
+      request,
+      {
+        showError,
+        showSuccess,
+      }
+    )
+  },
+  async deleteFeedback( 
+    { showError, showSuccess }: AuthConfig,
+    feedbackId: string
+  ) {
+    return ApiService.delete<IResponseData<boolean>>(
+      `/feedback/${feedbackId}/`,
+      {
+        showError,
+        showSuccess,
+      }
+    );
   }
 };

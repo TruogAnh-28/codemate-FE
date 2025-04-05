@@ -9,6 +9,7 @@ export interface CreateFeedbackRequest {
   description: string
   rate: number
   status: FeedbackStatusType
+  courseId?: string
 }
 
 export interface CreateFeedbackResponse {

@@ -1,17 +1,22 @@
 <script setup lang="ts">
+import { ref, inject, watch } from 'vue';
+import { useRouter } from 'vue-router';
 import { googleTokenLogin } from "vue3-google-login";
 import ApiService from "@/common/api.service";
 import { FetchUserInformationFromGoogleResponse } from "@/types/Auth";
 import { authenService } from "@/services/authenServices";
 import googleLogo from "@/assets/login/googleLogo.vue";
 import { useAuthStore } from "@/stores/auth";
-const authStore = useAuthStore();
+
+const authStore = useAuthStore;
+const { setUser, setTokens } = authStore.getState();
 const router = useRouter();
+
 const passwordFromModal = ref("");
 const isModalVisible = ref(false);
 const loading = ref(false);
 const googleLoginMessage = ref("");
-const googleUserInfo_Store = ref<FetchUserInformationFromGoogleResponse>();
+const googleUserInfo = ref<FetchUserInformationFromGoogleResponse | null>(null);
 
 const showModal = () => {
   isModalVisible.value = true;
@@ -20,15 +25,31 @@ const showModal = () => {
 const handlePasswordSubmitted = (password: string) => {
   passwordFromModal.value = password;
   isModalVisible.value = false;
-  loading.value = false;
 };
 
 const handleDialogClose = (isOpen: boolean) => {
   isModalVisible.value = isOpen;
   loading.value = false;
 };
+
 const showError = inject("showError") as (message: string) => void;
 const showSuccess = inject("showSuccess") as (message: string) => void;
+
+const navigateToDashboard = (role?: string) => {
+  switch (role) {
+    case "student":
+      router.push("/dashboard");
+      break;
+    case "professor":
+      router.push("/professor-dashboard");
+      break;
+    case "admin":
+      router.push("/admin-dashboard");
+      break;
+    default:
+      router.push("/login");
+  }
+};
 
 const login = async () => {
   loading.value = true;
@@ -38,9 +59,10 @@ const login = async () => {
 
     if (!responseFromGoogle.access_token) {
       showError("No access token received from Google");
+      return;
     }
 
-    const googleUserInfo = await ApiService.query<FetchUserInformationFromGoogleResponse>(
+    const fetchedGoogleUserInfo = await ApiService.query<FetchUserInformationFromGoogleResponse>(
       import.meta.env.VITE_APP_googleApiLink,
       { access_token: responseFromGoogle.access_token },
       {
@@ -48,28 +70,32 @@ const login = async () => {
       }
     );
 
-    if (!googleUserInfo?.email) {
+    if (!fetchedGoogleUserInfo?.email) {
       showError("Unable to retrieve email from Google");
+      return;
     }
+
+    // Store the Google user info
+    googleUserInfo.value = fetchedGoogleUserInfo;
 
     const sendGoogleTokenResponse = await authenService.loginWithGoogle(
       { showError, showSuccess },
       {
         access_token: responseFromGoogle.access_token,
-        user_info: googleUserInfo,
+        user_info: fetchedGoogleUserInfo,
       }
     );
+
     if (sendGoogleTokenResponse?.isSuccess) {
       if (
-        sendGoogleTokenResponse.message ===
-          "Google login successfully! Please add password to your account to complete your profile." ||
-        sendGoogleTokenResponse.message ===
-          "Your account hasn't had the password. Please add a password to your account to complete your profile."
+        sendGoogleTokenResponse.message.includes("Please add password") ||
+        sendGoogleTokenResponse.message.includes("hasn't had the password")
       ) {
         googleLoginMessage.value = sendGoogleTokenResponse.message;
         showModal();
       } else if (sendGoogleTokenResponse.message === "Login successfully") {
         showSuccess("Login successfully");
+        
         if (
           sendGoogleTokenResponse.data &&
           "access_token" in sendGoogleTokenResponse.data
@@ -81,22 +107,13 @@ const login = async () => {
             rememberMe: "false",
           };
 
-          authStore.setUser(userInfo);
-          authStore.setTokens(
+          setUser(userInfo);
+          setTokens(
             sendGoogleTokenResponse.data.access_token,
             sendGoogleTokenResponse.data.refresh_token
           );
 
-          const user = authStore.user;
-          if (user?.role === "student") {
-            router.push("/dashboard");
-          } else if (user?.role === "professor") {
-            router.push("/professor-dashboard");
-          } else if (user?.role === "admin") {
-            router.push("/admin-dashboard");
-          } else {
-            router.push("/login");
-          }
+          navigateToDashboard(userInfo.role);
         }
       }
     } else {
@@ -117,54 +134,45 @@ const login = async () => {
 watch(
   () => passwordFromModal.value,
   async (newPassword: string) => {
-    if (newPassword) {
+    if (newPassword && googleUserInfo.value?.email) {
       try {
-        if (googleUserInfo_Store.value?.email) {
-          const response = await authenService.loginWithEmail(
-            { showError, showSuccess },
-            {
-              email: googleUserInfo_Store.value.email,
-              password: newPassword,
-            }
-          );
-          if (response) {
-            showSuccess("Login successfully");
-            if (response.data && "access_token" in response.data) {
-              const userInfo = {
-                role: response.data.role,
-                email: response.data.email,
-                name: response.data.name,
-                rememberMe: "false",
-              };
-
-              authStore.setUser(userInfo);
-              authStore.setTokens(
-                response.data.access_token,
-                response.data.refresh_token
-              );
-
-              const user = authStore.user;
-              if (user?.role === "student") {
-                router.push("/dashboard");
-              } else if (user?.role === "professor") {
-                router.push("/professor-dashboard");
-              } else if (user?.role === "admin") {
-                router.push("/admin-dashboard");
-              } else {
-                router.push("/login");
-              }
-            }
+        const response = await authenService.loginWithEmail(
+          { showError, showSuccess },
+          {
+            email: googleUserInfo.value.email,
+            password: newPassword,
           }
-        } else {
-          showError("Cannot fetch your email from google");
+        );
+
+        if (response) {
+          showSuccess("Login successfully");
+          if (response.data && "access_token" in response.data) {
+            const userInfo = {
+              role: response.data.role,
+              email: response.data.email,
+              name: response.data.name,
+              rememberMe: "false",
+            };
+
+            setUser(userInfo);
+            setTokens(
+              response.data.access_token,
+              response.data.refresh_token
+            );
+
+            navigateToDashboard(userInfo.role);
+          }
         }
       } catch (error) {
-        showError((("Error during login: " + error) as unknown) as string);
+        showError(String(error));
       }
+    } else {
+      showError("Cannot fetch your email from google");
     }
   }
 );
 </script>
+
 <template>
   <v-btn
     @click="login"
@@ -182,6 +190,7 @@ watch(
     @update:isDialogOpen="handleDialogClose"
   />
 </template>
+
 <style scoped>
 .v-btn p {
   text-transform: none !important;

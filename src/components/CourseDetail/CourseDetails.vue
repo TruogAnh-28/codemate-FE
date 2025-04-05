@@ -12,11 +12,11 @@
       <v-icon size="18" color="primary" class="mr-1"
         >mdi-book-open-variant</v-icon
       >
-      <span>N/A</span>
+      <span>{{ course?.course_courseID }}</span>
     </div>
     <div class="d-flex align-center mb-2 text-body-small-2">
       <v-icon size="18" color="primary" class="mr-1">mdi-account</v-icon>
-      <span>{{ professor_information?.professor_name }}</span>
+      <span>Professor: {{ professor_information?.professor_name }}</span>
     </div>
   </v-col>
 </template>
