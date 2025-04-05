@@ -33,6 +33,7 @@
         </v-container>
       </v-footer>
     </v-container>
+    <AutoLogin />
   </div>
 </template>
 

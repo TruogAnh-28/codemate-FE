@@ -36,7 +36,6 @@ declare module 'vue-router/auto-routes' {
     '/FeedbackManagement/Professor': RouteRecordInfo<'/FeedbackManagement/Professor', '/FeedbackManagement/Professor', Record<never, never>, Record<never, never>>,
     '/Lesson/': RouteRecordInfo<'/Lesson/', '/Lesson', Record<never, never>, Record<never, never>>,
     '/Lesson/Code/': RouteRecordInfo<'/Lesson/Code/', '/Lesson/Code', Record<never, never>, Record<never, never>>,
-    '/Lesson/Document/': RouteRecordInfo<'/Lesson/Document/', '/Lesson/Document', Record<never, never>, Record<never, never>>,
     '/Lesson/DoQuiz/': RouteRecordInfo<'/Lesson/DoQuiz/', '/Lesson/DoQuiz', Record<never, never>, Record<never, never>>,
     '/Lesson/LessonRecommend/': RouteRecordInfo<'/Lesson/LessonRecommend/', '/Lesson/LessonRecommend', Record<never, never>, Record<never, never>>,
     '/Lesson/Quiz/': RouteRecordInfo<'/Lesson/Quiz/', '/Lesson/Quiz', Record<never, never>, Record<never, never>>,

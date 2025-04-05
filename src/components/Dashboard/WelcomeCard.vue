@@ -13,7 +13,9 @@
     <v-card-text class="relative z-10 p-6">
       <div class="space-y-4">
         <div class="space-y-1">
-          <h2 class="text-heading-1 font-semibold text-gray-800">Welcome back,</h2>
+          <h2 class="text-heading-1 font-semibold text-gray-800">
+            Welcome back,
+          </h2>
           <p class="text-heading-4 text-blue-600 font-medium">
             {{ studentName }}
           </p>
@@ -29,6 +31,7 @@
           color="primary"
           class="px-4 py-2 mt-2 font-medium hover:bg-blue-50 transition-colors"
           :to="`/courselist/course/${recentCourse.course_id}`"
+          @click="addActivity(recentCourse.course)"
         >
           Tap to learn
           <v-icon end icon="mdi-arrow-right" class="ml-1" />
@@ -39,6 +42,7 @@
 </template>
 
 <script setup lang="ts">
+import { reloadManager } from "@/modals/manager/reload";
 import { dashboardService } from "@/services/dashboardService";
 import { useAuthStore } from "@/stores/auth";
 import { GetRecentCourseResponse } from "@/types/Dashboard";
@@ -49,7 +53,9 @@ const recentCourse = ref<GetRecentCourseResponse>({
   course_id: "",
   last_accessed: "",
 });
-const studentName = useAuthStore().userName;
+const authStore = useAuthStore;
+const { user } = authStore.getState();
+const studentName = user?.name ?? "";
 const fetchRecentCourse = async () => {
   const response = await dashboardService.fetchRecentCourse({
     showError,
@@ -57,6 +63,25 @@ const fetchRecentCourse = async () => {
   });
   if (response && "data" in response && response.data) {
     recentCourse.value = response.data as GetRecentCourseResponse;
+  }
+};
+const addActivity = async (courseName: string) => {
+  console.log("Adding activity for course:", courseName);
+  try {
+    const add_feedback = await dashboardService.addActivity(
+      { showError, showSuccess },
+      {
+        type: "access_course",
+        description: "Accessed Course: " + courseName,
+      }
+    );
+    if (add_feedback) {
+      console.log("Activity added successfully:", add_feedback);
+      showSuccess("Accessed Course: " + courseName);
+      await reloadManager.trigger("activities");
+    }
+  } catch (error) {
+    showError("Failed to add activity");
   }
 };
 onMounted(() => {

@@ -17,9 +17,15 @@
           </div>
         </div>
 
-        <v-form @submit.prevent="handleSubmit" v-model="isValid" class="space-y-6">
+        <v-form
+          @submit.prevent="handleSubmit"
+          v-model="isValid"
+          class="space-y-6"
+        >
           <div class="space-y-2">
-            <label class="text-sm font-medium text-gray-700">Email address</label>
+            <label class="text-sm font-medium text-gray-700"
+              >Email address</label
+            >
             <v-text-field
               v-model="email"
               :rules="validationRules.email"
@@ -93,7 +99,7 @@ import { authenService } from "@/services/authenServices";
 import { useAuthStore } from "@/stores/auth";
 import { EMAIL_PATTERN, PASSWORD_PATTERN } from "@/utils/constant";
 import type { LoginSuccessResponse } from "@/types/Auth";
-import ApiService, { PUBLIC_ROUTES } from "@/common/api.service";
+import { PUBLIC_ROUTES } from "@/common/api.service";
 import { usersService } from "@/services/usersServices";
 
 const email = ref("");
@@ -106,7 +112,8 @@ const loading = ref(false);
 const messageToVerifyModal = ref("");
 const isModalVisible = ref(false);
 
-const authStore = useAuthStore();
+const authStore = useAuthStore;
+const { setTokens, setUser } = authStore.getState();
 const router = useRouter();
 
 const showError = inject("showError") as (message: string) => void;
@@ -146,7 +153,7 @@ const handleDialogClose = (value: boolean) => {
   isModalVisible.value = value;
 };
 
-const handleSuccessfulLogin = (data: LoginSuccessResponse) => {
+const handleSuccessfulLogin = async (data: LoginSuccessResponse) => {
   const userInfo = {
     role: data.role,
     email: data.email,
@@ -154,9 +161,13 @@ const handleSuccessfulLogin = (data: LoginSuccessResponse) => {
     rememberMe: rememberMe.value.toString(),
   };
 
-  authStore.setUser(userInfo);
-  authStore.isAuthenticated = true;
-  authStore.setTokens(data.access_token, data.refresh_token);
+  setUser(userInfo);
+  setTokens(data.access_token, data.refresh_token);
+
+  await usersService.createUserLogin({
+    user_role: userInfo.role,
+    login_timestamp: new Date().toISOString(),
+  });
 
   const redirectUrl = sessionStorage.getItem("redirectUrl");
   if (redirectUrl && !PUBLIC_ROUTES.includes(redirectUrl)) {
@@ -214,10 +225,6 @@ const handleSubmit = async () => {
       "is_active" in responseData &&
       responseData.is_active
     ) {
-      // await usersService.createUserLogin({
-      //   user_role: responseData.role,
-      //   login_timestamp: new Date().toISOString(),
-      // });
       handleSuccessfulLogin(responseData);
     }
   } finally {

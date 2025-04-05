@@ -5,34 +5,53 @@
     @mouseenter="handleExpand(true)"
     @mouseleave="handleExpand(false)"
     permanent
-    elevation="1"
+    elevation="2"
     class="sidebar-navigation bg-background dark:bg-background text-text-primary dark:text-text-primary"
+    width="300"
+    rail-width="100"
   >
     <div class="d-flex flex-column h-100">
       <!-- Fixed Header -->
-      <div class="flex-grow-0">
+      <div class="flex-grow-0 pa-4">
         <v-list>
           <v-list-item
+            :active="false"
+            @click="handleNavigateToDashboard"
             prepend-avatar="@/assets/codemate.png"
             title="CODEMATE"
-            class="text-body-large-2 font-bold mb-2 text-text-primary dark:text-text-primary"
-          ></v-list-item>
+            class="text-heading-2 mb-2 text-text-primary dark:text-text-primary cursor-pointer"
+          >
+          </v-list-item>
         </v-list>
-        <v-divider class="border-border dark:border-border"></v-divider>
+
+        <v-divider
+          class="border-opacity-100 border-border dark:border-border"
+        ></v-divider>
       </div>
 
       <!-- Scrollable Content -->
       <div class="flex-grow-1 overflow-y-auto">
-        <v-list density="compact" nav>
+        <v-list density="comfortable" nav class="pa-3">
           <template v-for="item in filteredNavigationItems" :key="item.value">
             <!-- For items with children -->
-            <v-list-group v-if="item.children" :value="item.value">
+            <v-list-group
+              v-if="item.children"
+              :value="item.value"
+              class="rounded-lg mb-1"
+            >
               <template v-slot:activator="{ props }">
                 <v-list-item
                   v-bind="props"
                   :prepend-icon="item.icon"
                   :title="item.title"
-                ></v-list-item>
+                  refclass="text-h6 font-weight-medium py-3 px-4"
+                  rounded="lg"
+                  active-class="bg-primary-subtle"
+                >
+                  <template v-slot:prepend>
+                    <v-icon size="28" class="mr-3">{{ item.icon }}</v-icon>
+                  </template>
+                </v-list-item>
               </template>
 
               <v-list-item
@@ -42,8 +61,14 @@
                 :prepend-icon="child.icon"
                 :title="child.title"
                 :to="child.to"
-                class="pl-4"
-              ></v-list-item>
+                class="pl-10 text-subtitle-1 font-weight-regular py-2 px-4"
+                rounded="lg"
+                active-class="bg-primary-subtle"
+              >
+                <template v-slot:prepend>
+                  <v-icon size="24" class="mr-3">{{ child.icon }}</v-icon>
+                </template>
+              </v-list-item>
             </v-list-group>
 
             <!-- For items without children -->
@@ -53,9 +78,35 @@
               :title="item.title"
               :value="item.value"
               :to="item.to"
-            ></v-list-item>
+              class="text-h6 font-weight-medium py-3 px-4 mb-1"
+              rounded="lg"
+              active-class="bg-primary-subtle"
+            >
+              <template v-slot:prepend>
+                <v-icon size="28" class="mr-3">{{ item.icon }}</v-icon>
+              </template>
+            </v-list-item>
           </template>
         </v-list>
+      </div>
+
+      <!-- Footer with Logout Button -->
+      <div class="flex-grow-0 pa-4">
+        <v-divider
+          class="border-opacity-50 border-border dark:border-border mb-4"
+        ></v-divider>
+        <v-list-item
+          prepend-icon="mdi-logout"
+          title="Logout"
+          class="text-h6 font-weight-medium py-3 px-4"
+          rounded="lg"
+          active-class="bg-error-subtle"
+          @click="handleLogout"
+        >
+          <template v-slot:prepend>
+            <v-icon size="28" class="mr-3">mdi-logout</v-icon>
+          </template>
+        </v-list-item>
       </div>
     </div>
   </v-navigation-drawer>
@@ -65,23 +116,24 @@
 import { ref, computed } from "vue";
 import { useAuthStore } from "@/stores/auth";
 import feedbackManagement from "@/assets/icons/feedbackManagement.vue";
-
+const authStore = useAuthStore;
 const props = defineProps<{
   modelValue: boolean;
 }>();
+const router = useRouter();
 
 const emit = defineEmits<{
   (e: "update:modelValue", value: boolean): void;
   (e: "expand", value: boolean): void;
 }>();
-
+const { user, logout } = authStore.getState();
 const drawer = computed({
   get: () => props.modelValue,
   set: (value) => emit("update:modelValue", value),
 });
 
 const expanded = ref(false);
-const role = computed(() => useAuthStore().userRole);
+const role = computed(() => user?.role);
 
 const handleExpand = (value: boolean) => {
   expanded.value = value;
@@ -95,7 +147,10 @@ interface NavigationItem {
   to?: string;
   children?: NavigationItem[];
 }
-
+const handleLogout = () => {
+  logout();
+  emit("update:modelValue", false);
+};
 const studentItems: NavigationItem[] = [
   {
     icon: "mdi-view-dashboard",
@@ -103,13 +158,18 @@ const studentItems: NavigationItem[] = [
     value: "dashboard",
     to: "/dashboard",
   },
-  { icon: "mdi-school", title: "My Courses", value: "course", to: "/courselist" },
   {
-    icon: "mdi-chart-pie",
-    title: "My Progress",
-    value: "progress-tracking",
-    to: "/progress-tracking",
+    icon: "mdi-school",
+    title: "My Courses",
+    value: "course",
+    to: "/courselist",
   },
+  // {
+  //   icon: "mdi-chart-pie",
+  //   title: "My Progress",
+  //   value: "progress-tracking",
+  //   to: "/progress-tracking",
+  // },
   // { icon: "mdi-calendar", title: "Schedule", value: "schedule", to: "/schedule" },
 ];
 
@@ -127,7 +187,7 @@ const professorItems: NavigationItem[] = [
     to: "/professor-courselist",
   },
   {
-    icon: feedbackManagement,
+    icon: "mdi-account-details",
     title: "Feedback Management",
     value: "professor-feedback",
     to: "/professor-feedback",
@@ -154,7 +214,7 @@ const adminItems: NavigationItem[] = [
     to: "/admin-dashboard",
   },
   {
-    icon: feedbackManagement,
+    icon: "mdi-account-details",
     title: "Feedback Management",
     value: "feedback-management",
     to: "/feedback-management",
@@ -190,25 +250,25 @@ const adminItems: NavigationItem[] = [
       },
     ],
   },
-  {
-    icon: "mdi-chart-pie",
-    title: "Statistics",
-    value: "statistics",
-    children: [
-      {
-        icon: "mdi-chart-bar",
-        title: "Feedback Statistics",
-        value: "feedback-statistics",
-        to: "/feedback-statistics",
-      },
-      {
-        icon: "mdi-chart-line",
-        title: "System Usage Statistics",
-        value: "system-usage-statistics",
-        to: "/system-usage-statistics",
-      },
-    ],
-  },
+  // {
+  //   icon: "mdi-chart-pie",
+  //   title: "Statistics",
+  //   value: "statistics",
+  //   children: [
+  //     {
+  //       icon: "mdi-chart-bar",
+  //       title: "Feedback Statistics",
+  //       value: "feedback-statistics",
+  //       to: "/feedback-statistics",
+  //     },
+  //     {
+  //       icon: "mdi-chart-line",
+  //       title: "System Usage Statistics",
+  //       value: "system-usage-statistics",
+  //       to: "/system-usage-statistics",
+  //     },
+  //   ],
+  // },
 ];
 
 // Add a computed property to filter navigation items based on role
@@ -224,6 +284,16 @@ const filteredNavigationItems = computed(() => {
       return [];
   }
 });
+const handleNavigateToDashboard = () => {
+  console.log(role.value);
+  if (role.value === "student") {
+    router.push("/dashboard");
+  } else if (role.value === "professor") {
+    router.push("/professor-dashboard");
+  } else if (role.value === "admin") {
+    router.push("/admin-dashboard");
+  }
+};
 </script>
 
 <style scoped>
@@ -267,5 +337,26 @@ const filteredNavigationItems = computed(() => {
 
 .overflow-y-auto::-webkit-scrollbar-thumb:hover {
   background: rgba(156, 163, 175, 0.5);
+}
+.sidebar-navigation {
+  transition: all 0.3s ease-in-out;
+}
+
+.v-list-item:hover {
+  background-color: rgba(var(--v-theme-primary), 0.1);
+  transition: background-color 0.2s ease;
+}
+
+.v-list-group .v-list-item {
+  transition: all 0.2s ease;
+}
+
+/* Ensure rail mode looks clean */
+.v-navigation-drawer--rail .v-list-item__title {
+  display: none; /* Hide titles in rail mode */
+}
+
+.v-navigation-drawer--rail .v-chip {
+  display: none; /* Hide chip in rail mode */
 }
 </style>

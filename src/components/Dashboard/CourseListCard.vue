@@ -3,9 +3,7 @@
     <div class="p-4">
       <div class="flex justify-between items-center mb-4">
         <h3 class="text-body-large-1 font-semibold text-gray-800">Courses</h3>
-        <v-btn variant="text" color="secondary" :to="'/courselist'">
-          View Details
-        </v-btn>
+        <v-btn variant="text" color="secondary" :to="'/courselist'"> View Details </v-btn>
       </div>
 
       <div
@@ -25,23 +23,24 @@
           <!-- Avatar and Course Name Section -->
           <div class="flex items-center w-1/3 space-x-3">
             <!-- Course Avatar -->
-            <v-img
-              :max-width="100"
-              height="70px"
-              :src="course.image || '../../assets/default-course-avt.svg'"
-              class="rounded-lg"
-              cover
-            >
-              <template v-slot:error>
-                <!-- Default Avatar on Error -->
+            <div class="image-container">
+              <template v-if="course.image">
                 <v-img
-                  src="../../assets/default-course-avt.svg"
-                  alt="Course Avatar"
-                  class="rounded-lg"
+                  class="flex-shrink-0 course-image"
+                  width="300px"
+                  height="200px"
+                  :src="course.image"
                   cover
-                />
+                >
+                  <template v-slot:error>
+                    <CourseInitialAvatar :course-name="course.name" />
+                  </template>
+                </v-img>
               </template>
-            </v-img>
+              <template v-else>
+                <CourseInitialAvatar :course-name="course.name" />
+              </template>
+            </div>
 
             <!-- Course Name -->
             <span class="font-medium text-gray-800">{{ course.name }}</span>
@@ -55,13 +54,13 @@
           <!-- Progress Section -->
           <div class="w-1/4">
             <v-progress-linear
-              value="0"
+              :model-value="course.percentage_complete"
               height="15"
               class="mb-4 rounded-lg"
               color="secondary"
             >
               <template #default>
-                <strong class="text-text-primary"> 0% </strong>
+                <strong class="text-text-primary"> {{ course.percentage_complete }}%</strong>
               </template>
             </v-progress-linear>
           </div>
@@ -101,3 +100,13 @@ onMounted(() => {
   fetchCoursesList();
 });
 </script>
+<style scoped>
+.course-image {
+  transition: transform 0.5s ease;
+}
+.image-container {
+  width: 300px;
+  overflow: hidden;
+  border-radius: 8px;
+}
+</style>
