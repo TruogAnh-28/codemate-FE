@@ -150,7 +150,7 @@
                 variant="outlined"
                 density="compact"
                 placeholder="Enter username"
-                :rules="[(v) => !!v || 'Username is required']"
+                :rules="[(v: string) => !!v || 'Username is required']"
                 :color="`hsl(var(--primary))`"
               ></v-text-field>
             </v-col>
@@ -174,7 +174,7 @@
                 variant="outlined"
                 density="compact"
                 placeholder="Enter full name"
-                :rules="[(v) => !!v || 'Full name is required']"
+                :rules="[(v: string) => !!v || 'Full name is required']"
                 :color="`hsl(var(--primary))`"
               ></v-text-field>
             </v-col>
@@ -345,6 +345,8 @@ import { useAuthStore } from "@/stores/auth";
 import { GetProfileResponse } from "@/types/User";
 const userInfo = ref<GetProfileResponse | undefined>();
 
+const authStore = useAuthStore;
+const { user } = authStore.getState();
 // Original user info for reset when canceling
 const originalUserInfo = ref<GetProfileResponse | undefined>();
 const fetchUserProfile = async () => {
@@ -442,7 +444,7 @@ async function saveChanges() {
         fullname: editedInfo.fullname,
         date_of_birth: formattedDate,
         avatar: avatarFile.value || undefined,
-        role: (useAuthStore().userRole as "student" | "professor" | "admin") || "student",
+        role: (user?.role as "student" | "professor" | "admin") || "student",
       },
       {
         showError,

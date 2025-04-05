@@ -8,9 +8,8 @@
 import { createRouter, createWebHistory } from "vue-router";
 import { setupLayouts } from "virtual:generated-layouts";
 import { routes as autoRoutes } from "vue-router/auto-routes";
-import ApiService, { PUBLIC_ROUTES } from "@/common/api.service";
-import { useAuthStore } from "@/stores/auth";
 import { usersService } from "@/services/usersServices";
+import { navigationGuard } from "./navigationGuard";
 
 const LoginRoute = [
   {
@@ -60,7 +59,7 @@ const StudentRoutes = [
 
 
   {
-    path: "/progress-tracking",
+    path: "/progress-tracking/:courseId",
     component: () => import("@/layouts/default.vue"),
     children: [{
       path: "",
@@ -82,14 +81,15 @@ const StudentRoutes = [
 
   {
     path: "/courselist/course/:id",
+    name: "CourseDetail",
     component: () => import("@/layouts/default.vue"),
     children: [{
       path: "",
-      name: "CourseDetail",
+      name: "CourseDetailChild",
       component: () => import("@/pages/Course/CourseDetail/index.vue"),
       props: true,
       meta: { requiresAuth: true, role: "student" },
-    }],
+    }]
   },
   {
     path: "/exercise-code/:exerciseId?",
@@ -143,13 +143,13 @@ const StudentRoutes = [
           props: true,
           meta: { requiresAuth: true, role: "student" },
         },
-        {
-          path: "Module/:moduleId/Document",
-          name: "LessonRecommendDocument",
-          component: () => import("@/pages/Lesson/Document/index.vue"),
-          props: true,
-          meta: { requiresAuth: true, role: "student" },
-        },
+        // {
+        //   path: "Module/:moduleId/Document",
+        //   name: "LessonRecommendDocument",
+        //   component: () => import("@/pages/Lesson/Document/index.vue"),
+        //   props: true,
+        //   meta: { requiresAuth: true, role: "student" },
+        // },
       ],
     }],
   },
@@ -216,26 +216,26 @@ const AdminRoutes = [
       meta: { requiresAuth: true, role: "admin" },
     }],
   },
-  {
-    path: "/feedback-statistics",
-    component: () => import("@/layouts/default.vue"),
-    children: [{
-      path: "",
-      name: "FeedbackStatistics",
-      component: () => import("@/pages/FeedbackManagement/FeedbackStatistics.vue"),
-      meta: { requiresAuth: true, role: "admin" },
-    }],
-  },
-  {
-    path: "/system-usage-statistics",
-    component: () => import("@/layouts/default.vue"),
-    children: [{
-      path: "",
-      name: "SystemUsageStatistics",
-      component: () => import("@/pages/SystemUsageManagement/index.vue"),
-      meta: { requiresAuth: true, role: "admin" },
-    }],
-  }
+  // {
+  //   path: "/feedback-statistics",
+  //   component: () => import("@/layouts/default.vue"),
+  //   children: [{
+  //     path: "",
+  //     name: "FeedbackStatistics",
+  //     component: () => import("@/pages/FeedbackManagement/FeedbackStatistics.vue"),
+  //     meta: { requiresAuth: true, role: "admin" },
+  //   }],
+  // },
+  // {
+  //   path: "/system-usage-statistics",
+  //   component: () => import("@/layouts/default.vue"),
+  //   children: [{
+  //     path: "",
+  //     name: "SystemUsageStatistics",
+  //     component: () => import("@/pages/SystemUsageManagement/index.vue"),
+  //     meta: { requiresAuth: true, role: "admin" },
+  //   }],
+  // }
 ];
 
 const ProfessorRoutes = [
@@ -298,6 +298,7 @@ const ProfessorRoutes = [
       name: "ProfessorCode",
       component: () => import("@/pages/Code/index.vue"),
       meta: { requiresAuth: false, role: "professor" },
+      meta: { requiresAuth: true, role: "professor" },
     }],
   },
   {
@@ -356,129 +357,7 @@ const router = createRouter({
 });
 
 
-const showError = (msg: string) => alert(msg);
-
-const getUserInfo = async () => {
-  try {
-    const response = await usersService.getProfile({
-      showError,
-      showSuccess: (msg: string) => alert(msg)
-    });
-    if (response && "data" in response) {
-      return response.data ?? undefined;
-    }
-  } catch (error) {
-    showError("Failed to get user info.");
-  }
-  return undefined;
-};
-
-router.beforeEach(async (to, from, next) => {
-//  const authStore = useAuthStore();
-//  const accessToken = ApiService.getToken();
-//  const refreshToken = ApiService.getRefreshToken();
-//  const isToPublic = PUBLIC_ROUTES.includes(to.path);
-//  const isFromPublic = PUBLIC_ROUTES.includes(from.path);
-//
-//  if (isToPublic && isFromPublic && !((to.path === "/") && (from.path === "/"))) {
-//
-//    return next();
-//  }
-//
-//  else if ((!isToPublic && isFromPublic) || (isToPublic && isFromPublic && ((to.path === "/") && (from.path === "/")))) {
-//
-//    if (!authStore.isAuthenticated) {
-//      authStore.checkAuth();
-//    }  ➜  press h + enter to show help
-//
-//    if (!accessToken || !authStore.isAuthenticated) {
-//      sessionStorage.setItem("redirectUrl", to.fullPath);
-//      return next("/login");
-//    }
-//    if ((to.meta.role && to.meta.role !== authStore.userRole) || (!to.meta.role && authStore.userRole)) {
-//
-//      const rolePaths = {
-//        student: "/dashboard",
-//        professor: "/professor-dashboard",
-//        admin: "/admin-dashboard",
-//      };
-//      return next(rolePaths[authStore.userRole as keyof typeof rolePaths] || "/");
-//    }
-//    const redirectUrl = sessionStorage.getItem("redirectUrl");
-//    if (redirectUrl) {
-//      sessionStorage.removeItem("redirectUrl");
-//      return next(redirectUrl);
-//    }
-//    return next();
-//  }
-//
-//  else if (isToPublic && !isFromPublic) {
-//    if (accessToken || authStore.isAuthenticated) {
-//      return next(from.path);
-//    } else {
-//      return next();
-//    }
-//  }
-//
-//  else if (!isToPublic && !isFromPublic) {
-//    if (!accessToken && !refreshToken) {
-//      sessionStorage.setItem("redirectUrl", to.fullPath);
-//      return next("/login");
-//    }
-//    if (accessToken) {
-//      if (ApiService.checkTokenExpiration()) {
-//        try {
-//          const refreshed = await ApiService.refreshToken();
-//          if (refreshed) {
-//            return next();
-//          } else {
-//            authStore.logout();
-//            sessionStorage.setItem("redirectUrl", to.fullPath);
-//            showError("Your session has expired. Please log in again.");
-//            return next("/login");
-//          }
-//        } catch (error) {
-//          console.error("Error during token refresh:", error);
-//          authStore.logout();
-//          sessionStorage.setItem("redirectUrl", to.fullPath);
-//          showError("Your session has expired. Please log in again.");
-//          return next("/login");
-//        }
-//      } else {
-//        if (!authStore.isAuthenticated) {
-//          try {
-//            const userInfo = await getUserInfo();
-//            if (userInfo) {
-//              authStore.setUser({
-//                role: userInfo.role,
-//                email: userInfo.email,
-//                name: userInfo.name,
-//                rememberMe: localStorage.getItem("rememberMe") === "true" ? "true" : "false",
-//              });
-//            }
-//          } catch (error) {
-//            console.error("Error getting user info:", error);
-//            authStore.logou  ➜  press h + enter to show helpt();
-//            sessionStorage.setItem("redirectUrl", to.fullPath);
-//            return next("/login");
-//          }
-//        }
-//        if (to.meta.role && to.meta.role !== authStore.userRole) {
-//          const rolePaths = {
-//            student: "/dashboard",
-//            professor: "/professor-dashboard",
-//            admin: "/admin-dashboard",
-//          };
-//          return next(rolePaths[authStore.userRole as keyof typeof rolePaths] || "/");
-//        }
-//        return next();
-//      }
-//    }
-//  }
-//
-  return next();
-});
-
+router.beforeEach(navigationGuard);
 router.onError((err, to) => {
   if (err?.message?.includes?.("Failed to fetch dynamically imported module")) {
     if (!localStorage.getItem("vuetify:dynamic-reload")) {

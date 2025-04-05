@@ -1,16 +1,11 @@
 <template>
   <div>
     <RecommendationCard
+      :has-learning-path="hasLearningPath"
       @open-recommendation="$emit('open-recommendation')"
+      @create-new-path="$emit('create-new-path')"
       @open-course-recommendations="openRecommendationsModal"
     />
-
-    <!-- <ProgressStats
-      v-if="course"
-      :course="course"
-      class="mt-4"
-    /> -->
-
     <v-dialog
       :model-value="dialog"
       @update:model-value="handleDialogUpdate"
@@ -22,14 +17,6 @@
         @submitGoal="$emit('submit-goal', $event)"
       />
     </v-dialog>
-
-    <CourseRecommendLessons
-    :course="course"
-      v-if="showRecommendationsModal"
-      :show-modal="showRecommendationsModal"
-      @update:show-modal="updateRecommendationsModal"
-      @close="closeRecommendationsModal"
-    />
   </div>
 </template>
 
@@ -41,30 +28,25 @@ const showRecommendationsModal = ref(false);
 defineProps<{
   course: CourseDetailResponse | null;
   dialog: boolean;
+  showRecommendationsModal: boolean;
+  hasLearningPath: boolean;
 }>();
 
 const emit = defineEmits<{
-  'open-recommendation': [];
-  'open-course-recommendations': [];
-  'update:dialog': [value: boolean];
-  'submit-goal': [goal: string];
+  "open-recommendation": [];
+  "create-new-path": [];
+  "update:dialog": [value: boolean];
+  "update:show-recommendations-modal": [value: boolean];
+  "submit-goal": [goal: string];
 }>();
 
 const openRecommendationsModal = () => {
   showRecommendationsModal.value = true;
 };
 
-const closeRecommendationsModal = () => {
-  showRecommendationsModal.value = false;
-};
-
-const updateRecommendationsModal = (value: boolean) => {
-  showRecommendationsModal.value = value;
-};
-
 const handleDialogUpdate = (value: unknown) => {
-  if (typeof value === 'boolean') {
-    emit('update:dialog', value);
+  if (typeof value === "boolean") {
+    emit("update:dialog", value);
   }
 };
 </script>

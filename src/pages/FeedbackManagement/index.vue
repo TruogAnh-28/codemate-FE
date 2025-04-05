@@ -4,13 +4,17 @@
       <!-- Header Section -->
       <div class="max-w-7xl mx-auto mb-6">
         <div class="flex items-center justify-between">
-          <h1 class="text-3xl font-bold gradient-text">System Feedback Management</h1>
+          <h1 class="text-3xl font-bold gradient-text">
+            System Feedback Management
+          </h1>
           <v-btn
             @click="showFilters = !showFilters"
             variant="tonal"
             color="primary"
             class="rounded-lg transition-all duration-200 hover:scale-105"
-            :class="{ 'bg-primary-lighten-1 text-white': activeFiltersCount > 0 }"
+            :class="{
+              'bg-primary-lighten-1 text-white': activeFiltersCount > 0,
+            }"
           >
             <v-icon start>mdi-filter</v-icon>
             Filters
@@ -35,7 +39,9 @@
             <div class="flex flex-wrap gap-6">
               <!-- Date Range Filter -->
               <div class="flex-1 min-w-[300px] space-y-2">
-                <div class="text-sm font-semibold text-gray-700 mb-3">Date Range</div>
+                <div class="text-sm font-semibold text-gray-700 mb-3">
+                  Date Range
+                </div>
                 <div class="flex flex-col gap-4">
                   <v-text-field
                     v-model="filters.start_date"
@@ -70,7 +76,9 @@
 
               <!-- Category and Status Filters -->
               <div class="flex-1 min-w-[300px] space-y-2">
-                <div class="text-sm font-semibold text-gray-700 mb-3">Classification</div>
+                <div class="text-sm font-semibold text-gray-700 mb-3">
+                  Classification
+                </div>
                 <div class="flex flex-col gap-4">
                   <v-select
                     v-model="filters.category"
@@ -98,7 +106,10 @@
                     <template v-slot:item="{ props, item }">
                       <v-list-item v-bind="props" class="hover:bg-gray-100">
                         <template v-slot:prepend>
-                          <v-icon :color="getCategoryColor(item.value)" size="small">
+                          <v-icon
+                            :color="getCategoryColor(item.value)"
+                            size="small"
+                          >
                             mdi-circle-medium
                           </v-icon>
                         </template>
@@ -131,7 +142,10 @@
                     <template v-slot:item="{ props, item }">
                       <v-list-item v-bind="props" class="hover:bg-gray-100">
                         <template v-slot:prepend>
-                          <v-icon :color="getStatusColor(item.value)" size="small">
+                          <v-icon
+                            :color="getStatusColor(item.value)"
+                            size="small"
+                          >
                             mdi-circle-medium
                           </v-icon>
                         </template>
@@ -171,21 +185,57 @@
         >
           <template v-slot:loading>
             <div class="flex items-center justify-center pa-6">
-              <v-progress-circular indeterminate color="primary"></v-progress-circular>
+              <v-progress-circular
+                indeterminate
+                color="primary"
+              ></v-progress-circular>
               <span class="ml-4">Loading data...</span>
             </div>
           </template>
 
           <template v-slot:item.status="{ item }">
-            <v-chip
-              :color="getStatusColor(item.status)"
-              variant="outlined"
-              size="small"
-              class="font-medium transition-all hover:opacity-80"
-              pill
-            >
-              {{ item.status.replace("_", " ").toUpperCase() }}
-            </v-chip>
+            <div class="flex items-center">
+              <v-chip
+                :color="getStatusColor(item.status)"
+                variant="outlined"
+                size="small"
+                class="font-medium transition-all hover:opacity-80"
+                pill
+              >
+                {{ item.status.replace("_", " ").toUpperCase() }}
+              </v-chip>
+              <v-menu>
+                <template v-slot:activator="{ props }">
+                  <v-btn
+                    v-bind="props"
+                    variant="text"
+                    density="compact"
+                    icon="mdi-chevron-down"
+                    size="x-small"
+                    class="ml-1"
+                    :disabled="item.status === 'resolved'"
+                  ></v-btn>
+                </template>
+                <v-list>
+                  <v-list-item
+                    v-for="option in getAvailableStatusOptions(item.status)"
+                    :key="option.value"
+                    @click="updateFeedbackStatus(item, option.value)"
+                    class="hover:bg-gray-100"
+                  >
+                    <template v-slot:prepend>
+                      <v-icon
+                        :color="getStatusColor(option.value)"
+                        size="small"
+                      >
+                        mdi-circle-medium
+                      </v-icon>
+                    </template>
+                    <v-list-item-title>{{ option.title }}</v-list-item-title>
+                  </v-list-item>
+                </v-list>
+              </v-menu>
+            </div>
           </template>
 
           <template v-slot:item.category="{ item }">
@@ -210,7 +260,7 @@
 
           <template v-slot:item.rate="{ item }">
             <v-rating
-              :value="Number(item.rate)"
+              v-model:model-value="item.rate"
               readonly
               density="compact"
               size="small"
@@ -218,9 +268,91 @@
               class="transition-opacity hover:opacity-80"
             ></v-rating>
           </template>
+
+          <template v-slot:item.actions="{ item }">
+            <div class="flex gap-2">
+              <v-tooltip location="top" text="Delete Feedback">
+                <template v-slot:activator="{ props }">
+                  <v-btn
+                    v-bind="props"
+                    icon="mdi-delete"
+                    variant="text"
+                    density="compact"
+                    color="error"
+                    size="small"
+                    @click="openDeleteDialog(item)"
+                    class="transition-all hover:scale-110"
+                  ></v-btn>
+                </template>
+              </v-tooltip>
+            </div>
+          </template>
         </v-data-table>
       </v-card>
     </main>
+
+    <!-- Delete Confirmation Dialog -->
+    <v-dialog v-model="deleteDialog.show" max-width="500px">
+      <v-card class="rounded-xl">
+        <v-card-title class="text-h5 py-4 bg-red-50">
+          <v-icon color="error" class="mr-2">mdi-alert-circle</v-icon>
+          Confirm Delete
+        </v-card-title>
+        <v-card-text class="py-4">
+          <p class="text-lg">Are you sure you want to delete this feedback?</p>
+          <div class="mt-4 text-gray-600">
+            <p><strong>Title:</strong> {{ deleteDialog.feedback?.title }}</p>
+            <p>
+              <strong>Status:</strong>
+              {{
+                deleteDialog.feedback?.status?.replace("_", " ").toUpperCase()
+              }}
+            </p>
+          </div>
+          <p class="text-error font-medium mt-4">
+            This action cannot be undone.
+          </p>
+        </v-card-text>
+        <v-card-actions class="px-4 pb-4">
+          <v-spacer></v-spacer>
+          <v-btn
+            color="gray"
+            variant="text"
+            @click="deleteDialog.show = false"
+            class="transition-all hover:bg-gray-100"
+          >
+            Cancel
+          </v-btn>
+          <v-btn
+            color="error"
+            variant="elevated"
+            @click="deleteFeedback"
+            :loading="deleteDialog.loading"
+            class="transition-all hover:bg-error-darken-1"
+          >
+            Delete
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <!-- Status Update Success Snackbar -->
+    <v-snackbar
+      v-model="statusUpdateSnackbar.show"
+      :color="statusUpdateSnackbar.color"
+      timeout="3000"
+      location="top"
+    >
+      {{ statusUpdateSnackbar.message }}
+      <template v-slot:actions>
+        <v-btn
+          color="white"
+          variant="text"
+          @click="statusUpdateSnackbar.show = false"
+          icon="mdi-close"
+        ></v-btn>
+      </template>
+    </v-snackbar>
   </div>
 </template>
 
@@ -240,6 +372,20 @@ const showError = inject("showError") as (message: string) => void;
 const showSuccess = inject("showSuccess") as (message: string) => void;
 const currentDate = new Date().toISOString().split("T")[0];
 
+// Delete dialog state
+const deleteDialog = ref({
+  show: false,
+  loading: false,
+  feedback: null as GetListFeedbackResponse | null,
+});
+
+// Status update snackbar
+const statusUpdateSnackbar = ref({
+  show: false,
+  message: "",
+  color: "success",
+});
+
 const MaxStartDate = computed(() => {
   if (filters.value.end_date) {
     return filters.value.end_date;
@@ -256,7 +402,9 @@ const MinEndDate = computed(() => {
 const getListYear = (
   rawData: GetListFeedbackResponse[]
 ): { title: number; value: number }[] => {
-  const years = rawData.map((feedback) => new Date(feedback.created_at).getFullYear());
+  const years = rawData.map((feedback) =>
+    new Date(feedback.created_at).getFullYear()
+  );
   const uniqueYears = Array.from(new Set(years)).sort((a, b) => b - a);
   return uniqueYears.map((year) => ({ title: year, value: year }));
 };
@@ -325,6 +473,84 @@ const yearSelectDisabled = computed(() => {
 
   return startDate.getFullYear() !== endDate.getFullYear();
 });
+
+// Get available status options based on current status
+const getAvailableStatusOptions = (currentStatus: string) => {
+  switch (currentStatus) {
+    case "pending":
+      return [
+        { title: "In Progress", value: "in_progress" },
+        { title: "Resolved", value: "resolved" },
+      ];
+    case "in_progress":
+      return [{ title: "Resolved", value: "resolved" }];
+    case "resolved":
+      return []; // No further changes allowed
+    default:
+      return [];
+  }
+};
+
+// Open delete confirmation dialog
+const openDeleteDialog = (feedback: GetListFeedbackResponse) => {
+  deleteDialog.value.feedback = feedback;
+  deleteDialog.value.show = true;
+};
+
+// Delete feedback
+const deleteFeedback = async () => {
+  if (!deleteDialog.value.feedback?.id) return;
+
+  deleteDialog.value.loading = true;
+  try {
+    await feedbackServices.deleteFeedback(
+      {
+        showError,
+        showSuccess,
+      },
+      deleteDialog.value.feedback.id
+    );
+
+    // Remove feedback from list
+    feedbacks.value = feedbacks.value.filter(
+      (f) => f.id !== deleteDialog.value.feedback?.id
+    );
+    showSuccess("Feedback deleted successfully");
+  } catch (error) {
+    console.error("Error deleting feedback:", error);
+    showError("Failed to delete feedback");
+  } finally {
+    deleteDialog.value.loading = false;
+    deleteDialog.value.show = false;
+    deleteDialog.value.feedback = null;
+  }
+};
+
+// Update feedback status
+const updateFeedbackStatus = async (
+  feedback: GetListFeedbackResponse,
+  newStatus: string
+) => {
+  try {
+    const updatedData = {
+      status: newStatus,
+    };
+
+    await feedbackServices.updateFeedback(
+      {
+        showError,
+        showSuccess,
+      },
+      feedback.id,
+      updatedData
+    );
+
+    await fetchFeedbacks(); // Refresh feedback list after update
+  } catch (error) {
+    console.error("Error updating feedback status:", error);
+    showError("Failed to update feedback status");
+  }
+};
 
 // Validate date range and update disabled states
 const validateDateRange = () => {
@@ -411,6 +637,10 @@ const fetchFeedbacks = async () => {
 
     if ("data" in response && response.data) {
       feedbacks.value = response.data;
+      console.log(
+        "Rating list",
+        response.data.map((item) => item.rate)
+      );
     }
   } catch (error) {
     console.error("Error fetching feedbacks:", error);
@@ -437,9 +667,25 @@ const headers = [
   { title: "Feedback Description", key: "description" },
   { title: "Category", key: "category", align: "center" as const },
   { title: "Rating", key: "rate", align: "center" as const, sortable: true },
-  { title: "Created At", key: "created_at", align: "center" as const, sortable: true },
-  { title: "Resolved At", key: "resolved_at", align: "center" as const, sortable: true },
+  {
+    title: "Created At",
+    key: "created_at",
+    align: "center" as const,
+    sortable: true,
+  },
+  {
+    title: "Resolved At",
+    key: "resolved_at",
+    align: "center" as const,
+    sortable: true,
+  },
   { title: "Status", key: "status", align: "center" as const },
+  {
+    title: "Actions",
+    key: "actions",
+    align: "center" as const,
+    sortable: false,
+  },
 ];
 
 onMounted(() => {

@@ -39,6 +39,7 @@
 
 <script setup lang="ts">
 import { useAuthStore } from "@/stores/auth";
-
-const professor_name = useAuthStore().user?.name;
+const authStore = useAuthStore;
+const { user } = authStore.getState();
+const professor_name = user?.name;
 </script>

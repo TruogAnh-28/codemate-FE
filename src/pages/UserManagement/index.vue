@@ -96,6 +96,56 @@
         </v-card>
       </v-expand-transition>
 
+      <!-- Status Update Dialog -->
+      <v-dialog v-model="statusDialog.show" max-width="500" persistent>
+        <v-card class="rounded-xl">
+          <v-card-title class="pt-6 px-6 text-h5">
+            {{ statusDialog.title }}
+          </v-card-title>
+          <v-card-text class="px-6 pt-4">
+            Are you sure you want to {{ statusDialog.action }} this user?
+          </v-card-text>
+          <v-card-actions class="px-6 pb-6">
+            <v-spacer></v-spacer>
+            <v-btn
+              color="secondary"
+              variant="text"
+              @click="statusDialog.show = false"
+              class="rounded-lg"
+            >
+              Cancel
+            </v-btn>
+            <v-btn
+              color="primary"
+              variant="elevated"
+              @click="confirmStatusUpdate"
+              :loading="statusDialog.loading"
+              class="rounded-lg ml-4"
+            >
+              Confirm
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+
+      <!-- Status Update Success Snackbar -->
+      <v-snackbar
+        v-model="statusSnackbar.show"
+        :color="statusSnackbar.color"
+        timeout="3000"
+        location="top"
+        class="rounded-xl"
+      >
+        {{ statusSnackbar.text }}
+        <template v-slot:actions>
+          <v-btn
+            variant="text"
+            icon="mdi-close"
+            @click="statusSnackbar.show = false"
+          ></v-btn>
+        </template>
+      </v-snackbar>
+
       <!-- Data Table -->
       <v-card
         class="mt-4 max-w-7xl mx-auto rounded-xl bg-surface shadow-md animate-fade-in"
@@ -129,6 +179,20 @@
             </v-chip>
           </template>
 
+          <template v-slot:item.actions="{ item }">
+            <v-btn
+              size="small"
+              icon
+              :color="item.status ? 'error' : 'success'"
+              variant="text"
+              @click="openStatusDialog(item)"
+              class="hover-scale"
+              :title="item.status ? 'Deactivate User' : 'Activate User'"
+            >
+              <v-icon>{{ item.status ? 'mdi-account-off' : 'mdi-account-check' }}</v-icon>
+            </v-btn>
+          </template>
+
           <template v-slot:no-data>
             <div class="text-center pa-6 text-text-secondary">
               <v-icon size="48" class="mb-2 animate-pulse"
@@ -154,6 +218,23 @@ const users = ref<GetAllUsersResponse[]>([]);
 const loading = ref(false);
 const showFilters = ref(false);
 
+// Status update dialog state
+const statusDialog = ref({
+  show: false,
+  userId: null as string | null,
+  currentStatus: false,
+  title: "",
+  action: "",
+  loading: false
+});
+
+// Status update snackbar state
+const statusSnackbar = ref({
+  show: false,
+  text: "",
+  color: "success"
+});
+
 interface Filters {
   search_query: string;
   role: "student" | "professor" | "admin" | "";
@@ -166,15 +247,12 @@ const filters = ref<Filters>({
   status: undefined,
 });
 
-const headers: Array<{
-  title: string;
-  key: string;
-  align?: "start" | "center" | "end";
-}> = [
-  { title: "Name", key: "name", align: "start" },
-  { title: "Email", key: "email" },
-  { title: "Role", key: "role", align: "center" },
-  { title: "Status", key: "status", align: "center" },
+const headers = [
+  { title: "Name", key: "name", align: "start" as const },
+  { title: "Email", key: "email", align: undefined },
+  { title: "Role", key: "role", align: "center" as const },
+  { title: "Status", key: "status", align: "center" as const },
+  { title: "Actions", key: "actions", align: "center" as const, sortable: false },
 ];
 
 const roleOptions = [
@@ -235,6 +313,54 @@ const fetchUsers = async () => {
     console.error("Error fetching users:", error);
   } finally {
     loading.value = false;
+  }
+};
+
+// Open the status change dialog
+const openStatusDialog = (item: GetAllUsersResponse) => {
+  statusDialog.value.userId = item.id;
+  statusDialog.value.currentStatus = item.status;
+  
+  if (item.status) {
+    statusDialog.value.title = "Deactivate User";
+    statusDialog.value.action = "deactivate";
+  } else {
+    statusDialog.value.title = "Activate User";
+    statusDialog.value.action = "activate";
+  }
+  
+  statusDialog.value.show = true;
+};
+
+// Confirm status update
+const confirmStatusUpdate = async () => {
+  if (!statusDialog.value.userId) return;
+  
+  statusDialog.value.loading = true;
+  
+  try {
+    await usersService.updateStatusUserForAdmin(statusDialog.value.userId);
+    
+    // Update the local state
+    const userIndex = users.value.findIndex(user => user.id === statusDialog.value.userId);
+    if (userIndex !== -1) {
+      users.value[userIndex].status = !statusDialog.value.currentStatus;
+    }
+    
+    // Show success message
+    statusSnackbar.value.text = `User successfully ${statusDialog.value.currentStatus ? 'deactivated' : 'activated'}`;
+    statusSnackbar.value.color = statusDialog.value.currentStatus ? 'warning' : 'success';
+    statusSnackbar.value.show = true;
+    
+  } catch (error) {
+    console.error("Error updating user status:", error);
+    statusSnackbar.value.text = "Failed to update user status";
+    statusSnackbar.value.color = "error";
+    statusSnackbar.value.show = true;
+  } finally {
+    statusDialog.value.loading = false;
+    statusDialog.value.show = false;
+    statusDialog.value.userId = null;
   }
 };
 

@@ -62,6 +62,7 @@ export interface CoursesAdminListResponse {
   nCredit: number;
   nSemester: number;
   class_name: string;
+  professor_id: string;
 }
 
 export interface CoursesAdminListPaginatedResponse {
@@ -116,7 +117,7 @@ export interface CourseDetailResponse {
   course_last_accessed: DateTimeString
   completed_lessons: number
   time_spent: string
-  assignments_done: number
+  percentage_done: number
 }
 
 export interface LessonOriginalResponse {
@@ -143,18 +144,49 @@ export interface DocumentOriginalResponse {
   type: DocumentType
   document_url: string
 }
-
+export interface _GetRecommendedLessonsResponse {
+  student_goal: string
+  lessons: GetRecommendedLessonsResponse[]
+}
 
 export interface GetRecommendedLessonsResponse {
-  course_id: string
-  course_name: string
+  id: string
+  learning_path_id: string
   lesson_id: string
-  bookmark: boolean
+  progress: number
+  explain: string
   status: string
-  title: string
-  description: string
+  start_date: string
+  end_date: string
+  duration_notes: string
+  bookmark: boolean
+  modules: Module[]
+  lesson_title: string
   order: number
+  time_spent?: string
 }
+
+export interface Module {
+  id: string
+  recommend_lesson_id: string
+  title: string
+  objectives: string[]
+  last_accessed: string
+  progress: number
+}
+
+export interface UpdateCourseRequest {
+  name?: string;
+  professor_id?: string;
+  start_date?: string;  
+  end_date?: string; 
+  status?: string;
+  n_credit?: number;
+  n_semester?: number;
+  courseID?: string;
+  class_name?: string;
+}
+
 
 //---------------------------------Professor---------------------------------
 export interface PutLearningOutcomesCoursesResponse {
@@ -255,13 +287,12 @@ export interface CreateNewLessonResponse {
   courseId: UUID;
   order: number;
   learningOutcomes?: string[];
-  documents?: DocumentResponse[];
+  // documents?: DocumentResponse[];
 }
 export interface CreateNewLessonRequest {
   title: string;
   description: string;
   courseId: UUID;
-  order: number;
   learningOutcomes?: string[];
   documents?: File[];
   documentDescriptions?: string[];
@@ -271,7 +302,6 @@ export interface UpdateLessonRequest {
   title: string;
   description: string;
   courseId: UUID;
-  order: number;
   learningOutcomes?: string[];
   // documents?: File[];
   // documentDescriptions?: string[];

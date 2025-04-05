@@ -5,6 +5,7 @@ import {
   AddActivityRequest,
 } from "@/types/Dashboard";
 import { AuthConfig } from "./authenServices";
+import { IResponseData } from "@/modals/apis/response";
 export const dashboardService = {
   async fetchRecentCourse({ showError, showSuccess }: AuthConfig) {
     return await ApiService.get<GetRecentCourseResponse>(
@@ -26,7 +27,7 @@ export const dashboardService = {
     { showError, showSuccess }: AuthConfig,
     request: AddActivityRequest
   ) {
-    return await ApiService.post<boolean>("dashboard/student-activities/", request, {
+    return await ApiService.post<IResponseData<boolean>>("dashboard/student-activities/", request, {
       showError,
       showSuccess,
     });

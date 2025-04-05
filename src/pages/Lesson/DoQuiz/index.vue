@@ -1,81 +1,265 @@
 <template>
-  <v-container fluid class="ma-0" v-if="quizExercise">
-    <v-breadcrumbs class="ma-0 pa-0 mb-4"
+  <v-container fluid class="px-12" v-if="quizExercise">
+    <!-- Breadcrumbs -->
+    <v-breadcrumbs
+      class="ma-0 pa-0 mb-4"
       :items="breadcrumbs"
       divider="/"
     ></v-breadcrumbs>
+    
+    <!-- Main Quiz Header Card -->
+    <v-card class="border-card mb-6 overflow-hidden" elevation="3">
+      <div class="card-header pa-6 d-flex align-center">
+        <v-icon color="primary" size="x-large" class="mr-4">mdi-help-circle-outline</v-icon>
+        <div>
+          <h2 class="text-h5 font-weight-bold">{{ quizExercise.name }}</h2>
+          <p class="text-subtitle-2 text-medium-emphasis mb-0">
+            {{ questionCount }} questions to complete
+          </p>
+        </div>
+        <v-spacer></v-spacer>
+        <v-chip
+          v-if="quizExercise.status === 'completed'"
+          class="px-4 py-2 ml-2"
+          color="success"
+          prepend-icon="mdi-check-circle"
+          elevation="1"
+        >
+          Completed: {{ quizExercise.score }}/{{ quizExercise.max_score }}
+        </v-chip>
+        <v-chip
+          v-else
+          class="px-4 py-2 ml-2"
+          color="primary"
+          prepend-icon="mdi-play-circle"
+          elevation="1"
+        >
+          In Progress
+        </v-chip>
+      </div>
+      
+      <v-card-text class="px-6 pt-4 pb-6" v-if="quizExercise.description">
+        <v-sheet rounded="lg" elevation="0" class="pa-4 bg-grey-lighten-4 border-left-primary">
+          <p class="text-body-1 mb-0">{{ quizExercise.description }}</p>
+        </v-sheet>
+      </v-card-text>
+    </v-card>
+
+    <!-- Questions Section -->
     <v-row>
       <v-col
         v-for="(question, index) in quizExercise.questions"
-        :key="index"
+        :key="question.id"
         cols="12"
       >
-        <CardQuizResult
-          v-if="quizExercise.status === 'completed'"
-          :question="question"
-          :ordinal="index + 1"
-        />
-        <CardQuestionQuiz
-          v-else
-          :question="question"
-          :ordinal="index + 1"
-          @answerSelected="handleAnswer(index, $event)"
-        />
+        <v-card class="border-card mb-4 question-card" elevation="2">
+          <div class="question-header pa-4 d-flex align-center">
+            <v-avatar
+              :color="`primary-${(index % 3) + 1}`"
+              class="mr-3"
+              size="42"
+            >
+              <span class="text-h6 font-weight-bold white--text">{{ index + 1 }}</span>
+            </v-avatar>
+            <h3 class="text-subtitle-1 font-weight-bold mb-0 flex-grow-1">Question {{ index + 1 }}</h3>
+            <v-chip
+              size="small"
+              :color="getDifficultyColor(question.difficulty)"
+              class="ml-auto"
+            >
+              {{ question.difficulty }}
+            </v-chip>
+            <v-chip
+              size="small"
+              color="info"
+              class="ml-2"
+            >
+              {{ question.points }} points
+            </v-chip>
+          </div>
+          
+          <v-card-text class="pa-4">
+            <p class="text-body-1 font-weight-medium mb-4">{{ question.question_text }}</p>
+            
+            <!-- Dynamically render input based on question type -->
+            <template v-if="question.question_type === 'single_choice'">
+              <v-radio-group
+                v-model="answers[index]"
+                :disabled="quizExercise.status === 'completed'"
+                @update:model-value="(value: string | null) => handleAnswer(index, value)"
+              >
+                <v-radio
+                  v-for="(option, optIndex) in question.options"
+                  :key="optIndex"
+                  :value="option"
+                  :label="option"
+                  :class="getOptionClass(question, option)"
+                  class="mb-2 option-radio pa-2 rounded-lg"
+                ></v-radio>
+              </v-radio-group>
+            </template>
+
+            <template v-else-if="question.question_type === 'multiple_choice'">
+              <v-checkbox-group
+                v-model="multiChoiceAnswers[index]"
+                :disabled="quizExercise.status === 'completed'"
+              >
+                <v-checkbox
+                  v-for="(option, optIndex) in question.options"
+                  :key="optIndex"
+                  :value="option"
+                  :label="option"
+                  :model-value="multiChoiceAnswers[index].includes(option) || 
+                    (quizExercise.status === 'completed' && 
+                    question.user_choice && 
+                    question.user_choice.includes(option))"
+                  :class="getOptionClass(question, option)"
+                  class="mb-2 option-checkbox pa-2 rounded-lg"
+                ></v-checkbox>
+              </v-checkbox-group>
+            </template>
+            <template v-else-if="question.question_type === 'true_false'">
+              <v-radio-group
+                v-model="answers[index]"
+                :disabled="quizExercise.status === 'completed'"
+                @update:model-value="(value: string | null) => handleAnswer(index, value)"
+              >
+                <v-radio
+                  v-for="(option, optIndex) in question.options"
+                  :key="optIndex"
+                  :value="option"
+                  :label="option"
+                  :class="getOptionClass(question, option)"
+                  class="mb-2 option-radio pa-2 rounded-lg"
+                ></v-radio>
+              </v-radio-group>
+            </template>
+            
+            <!-- Explanation (only shown when completed) -->
+            <v-expand-transition>
+              <div v-if="quizExercise.status === 'completed'" class="mt-4">
+                <v-divider class="mb-3"></v-divider>
+                <v-sheet rounded="lg" elevation="0" class="pa-4 bg-grey-lighten-4 border-left-primary">
+                  <div class="d-flex align-center mb-2">
+                    <v-icon color="primary" class="mr-2">mdi-lightbulb-outline</v-icon>
+                    <h4 class="text-subtitle-2 font-weight-bold mb-0">Explanation</h4>
+                  </div>
+                  <p class="text-body-2 mb-0">{{ question.explanation }}</p>
+                </v-sheet>
+              </div>
+            </v-expand-transition>
+          </v-card-text>
+        </v-card>
       </v-col>
     </v-row>
-    <v-row v-if="quizExercise.status !== 'completed'" justify="center">
-      <v-col cols="auto">
-        <v-btn color="primary" @click="openConfirmDialog">Submit</v-btn>
+    
+    <!-- Quiz Navigation -->
+    <v-row class="mb-6" justify="center">
+      <v-col cols="auto" class="d-flex justify-center">
+        <v-btn
+          v-if="quizExercise.status === 'completed'"
+          color="primary"
+          variant="outlined"
+          class="mr-4"
+          prepend-icon="mdi-refresh"
+          @click="retakeQuiz"
+        >
+          Retake Quiz
+        </v-btn>
+        <v-btn
+          v-if="quizExercise.status !== 'completed'"
+          color="primary"
+          prepend-icon="mdi-check-circle"
+          :disabled="!allQuestionsAnswered"
+          @click="openConfirmDialog"
+        >
+          Submit Answers
+        </v-btn>
       </v-col>
     </v-row>
 
+    <!-- Confirmation Dialog -->
     <v-dialog v-model="isConfirmDialogOpen" max-width="400">
-      <v-card>
-        <v-card-title>Confirm Submission</v-card-title>
-        <v-card-text>
-          Are you sure you want to submit your answers? This action cannot be undone.
+      <v-card class="pa-2">
+        <v-card-title class="text-h5 pb-2">
+          <v-icon color="primary" class="mr-2">mdi-help-circle</v-icon>
+          Confirm Submission
+        </v-card-title>
+        <v-card-text class="pt-2">
+          <p class="text-body-1">Are you sure you want to submit your answers? This action cannot be undone.</p>
         </v-card-text>
-        <v-card-actions>
-          <v-btn @click="isConfirmDialogOpen = false">Cancel</v-btn>
-          <v-btn color="primary" @click="confirmSubmit" elevation="2">Confirm</v-btn>
+        <v-card-actions class="pt-0">
+          <v-spacer></v-spacer>
+          <v-btn color="grey-darken-1" variant="text" @click="isConfirmDialogOpen = false">Cancel</v-btn>
+          <v-btn color="primary" variant="elevated" @click="confirmSubmit">Confirm & Submit</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
 
-    <v-dialog v-model="isResultDialogOpen" max-width="400">
+    <!-- Results Dialog -->
+    <v-dialog v-model="isResultDialogOpen" max-width="500">
       <v-card>
-        <v-card-title>Quiz Results</v-card-title>
-        <v-card-text>
-          You scored {{ score }} points out of {{ quizExercise.questions.length }}.
+        <v-card-title class="text-h5 d-flex align-center pa-4">
+          <v-icon color="primary" size="large" class="mr-3">mdi-trophy</v-icon>
+          Quiz Results
+        </v-card-title>
+        <v-card-text class="pa-4 pt-0">
+          <v-sheet rounded="lg" elevation="0" class="pa-6 text-center bg-primary-lighten-5 border-card mb-4">
+            <h2 class="text-h4 font-weight-bold text-primary mb-2">{{ quizResult?.score || 0 }} / {{ quizExercise.max_score }}</h2>
+            <p class="text-body-1 mb-0">
+              You scored {{ quizResult?.score || 0 }} points out of {{ quizExercise.max_score }}
+              ({{ Math.round(((quizResult?.score || 0) / quizExercise.max_score) * 100) }}%)
+            </p>
+          </v-sheet>
+          
+          <div class="d-flex justify-space-between mb-4">
+            <v-chip color="success" prepend-icon="mdi-check-circle">
+              {{ quizResult?.correct_answers || 0 }} Correct
+            </v-chip>
+            <v-chip color="error" prepend-icon="mdi-close-circle">
+              {{ quizResult ? (quizResult.total_questions - quizResult.correct_answers) : 0 }} Incorrect
+            </v-chip>
+          </div>
         </v-card-text>
-        <v-card-actions>
-          <v-btn color="primary" @click="finishQuiz" elevation="2">View Results</v-btn>
+        <v-card-actions class="pa-4 pt-0">
+          <v-spacer></v-spacer>
+          <v-btn color="primary" @click="finishQuiz" prepend-icon="mdi-eye">View Detailed Results</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
   </v-container>
 </template>
 
-<script lang="ts" setup>
+<script setup lang="ts">
+import { ref, computed, onMounted, inject } from 'vue';
+import { useRoute } from 'vue-router';
 import { moduleService } from "@/services/module";
-import { QuizExerciseResponse, QuizAnswerRequest, QuizScoreResponse } from "@/types/Exercise";
 import { useBreadcrumbsStore } from "@/stores/breadcrumbs";
+import { 
+  QuizExerciseResponse, 
+  QuizAnswerRequest, 
+  QuizScoreResponse, 
+  QuizQuestionResponse 
+} from "@/types/Exercise";
 import { Breadcrumbs } from "@/types/Breadcrumbs";
 
+// Interfaces and Types
 interface RouteParams {
   quizId: string;
   moduleId: string;
 }
 
+// Reactive State
 const quizExercise = ref<QuizExerciseResponse | null>(null);
-const answers = ref<(number | null)[]>([]);
+const answers = ref<(string | null)[]>([]);
+const multiChoiceAnswers = ref<string[][]>([]);
 const isConfirmDialogOpen = ref(false);
 const isResultDialogOpen = ref(false);
-const score = ref(0);
 const quizResult = ref<QuizScoreResponse | null>(null);
 const showError = inject("showError") as (message: string) => void;
 const showSuccess = inject("showSuccess") as (message: string) => void;  
 
+// Route and Breadcrumbs
 const route = useRoute();
 const { quizId, moduleId } = route.params as RouteParams;
 
@@ -86,6 +270,83 @@ if (routeState?.breadcrumbs) {
 }
 const breadcrumbs = computed(() => breadcrumbsStore.breadcrumbs);
 
+// Computed Properties
+const questionCount = computed(() => {
+  return quizExercise.value?.questions?.length || 0;
+});
+
+const allQuestionsAnswered = computed(() => {
+  if (!quizExercise.value?.questions) return false;
+  
+  // Cho phép submit ngay cả khi không điền hết tất cả câu hỏi
+  return true;
+});
+// Methods
+function getDifficultyColor(difficulty: string): string {
+  switch (difficulty) {
+    case "easy": return "success";
+    case "medium": return "warning";
+    case "hard": return "error";
+    default: return "grey";
+  }
+}
+function isOptionSelected(question: QuizQuestionResponse, option: string): boolean {
+  // Kiểm tra nếu quiz đã hoàn thành hoặc có lựa chọn của người dùng
+  if (quizExercise.value?.status === 'completed' || question.user_choice) {
+    return question.user_choice ? question.user_choice.includes(option) : false;
+  }
+  return false;
+}
+function getOptionClass(question: QuizQuestionResponse, option: string): string {
+  if (quizExercise.value?.status !== 'completed') {
+    return '';
+  }
+  
+  // Ensure type safety by converting arrays to strings for comparison
+  const userChoices = question.user_choice || [];
+  const correctAnswers = question.correct_answer || [];
+
+  switch (question.question_type) {
+    case 'single_choice':
+    case 'true_false':
+      const isUserChoice = userChoices.length > 0 && userChoices[0] === option;
+      const isCorrectAnswer = correctAnswers.length > 0 && correctAnswers[0] === option;
+      
+      if (isUserChoice && isCorrectAnswer) {
+        return 'correct-answer';
+      } else if (isUserChoice && !isCorrectAnswer) {
+        return 'incorrect-answer';
+      } else if (isCorrectAnswer) {
+        return 'correct-answer highlight-correct';
+      }
+      break;
+    
+    case 'multiple_choice':
+      const isCorrect = correctAnswers.includes(option);
+      const isUserSelected = userChoices.includes(option);
+
+      
+      if (isUserSelected && isCorrect) {
+        return 'correct-answer';
+      } else if (isUserSelected && !isCorrect) {
+        return 'incorrect-answer';
+      } else if (isCorrect) {
+        return 'correct-answer highlight-correct';
+      }
+      break;
+  }
+  
+  return '';
+}
+
+function handleAnswer(questionIndex: number, selectedAnswerIndex: string | null) {
+  answers.value[questionIndex] = selectedAnswerIndex;
+}
+
+function handleMultiAnswer(questionIndex: number, selectedAnswers: string[]) {
+  multiChoiceAnswers.value[questionIndex] = selectedAnswers;
+}
+
 function openConfirmDialog() {
   isConfirmDialogOpen.value = true;
 }
@@ -93,49 +354,203 @@ function openConfirmDialog() {
 async function confirmSubmit() {
   isConfirmDialogOpen.value = false;
   await submitQuizAnswers();
-  isResultDialogOpen.value = true;
 }
 
-function handleAnswer(questionIndex: number, selectedAnswerIndex: number) {
-  answers.value[questionIndex] = selectedAnswerIndex;
+async function submitQuizAnswers() {
+  if (!quizExercise.value) return;
+
+  // Xử lý câu trả lời cho các loại câu hỏi khác nhau
+  const processedAnswers = quizExercise.value.questions.map((question, index) => {
+    switch (question.question_type) {
+      case 'single_choice':
+      case 'true_false':
+        // Trả về chuỗi rỗng nếu không chọn gì
+        return answers.value[index] !== null ? String(answers.value[index]) : "";
+      case 'multiple_choice':
+        // Trả về chuỗi rỗng nếu không chọn gì
+        return multiChoiceAnswers.value[index] && multiChoiceAnswers.value[index].length > 0 
+          ? multiChoiceAnswers.value[index].join(",") 
+          : "";
+      default:
+        return "";
+    }
+  });
+
+  const submitQuizAnswersRequest: QuizAnswerRequest = {
+    quizId,
+    answers: processedAnswers,
+  };
+
+  try {
+    const result = await moduleService.submitQuizAnswers(
+      { showError, showSuccess },
+      quizId,
+      submitQuizAnswersRequest
+    );
+
+    if (result) {
+      quizResult.value = result;
+      
+      // Làm mới chi tiết quiz để lấy trạng thái và lựa chọn của người dùng
+      await fetchQuizDetails();
+      
+      showSuccess("Quiz submitted successfully!");
+      isResultDialogOpen.value = true;
+    }
+  } catch (error) {
+    showError("Failed to submit quiz. Please try again.");
+  }
+}
+async function fetchQuizDetails() {
+  try {
+    const response = await moduleService.fetchQuizDetails(
+      { showError, showSuccess }, 
+      quizId
+    );
+    
+    if (response && "data" in response && response.data) {
+      quizExercise.value = response.data as QuizExerciseResponse;
+    }
+
+    if (quizExercise.value?.questions) {
+      // Reset answers arrays
+      answers.value = [];
+      multiChoiceAnswers.value = [];
+
+      // Initialize answers array based on question type
+      quizExercise.value.questions.forEach((question) => {
+        switch (question.question_type) {
+          case 'single_choice':
+          case 'true_false':
+            answers.value.push(
+              question.user_choice && question.user_choice.length > 0 
+                ? question.user_choice[0] 
+                : null
+            );
+            multiChoiceAnswers.value.push([]);
+            break;
+          case 'multiple_choice':
+            answers.value.push(null);
+            multiChoiceAnswers.value.push(
+              // Đảm bảo lấy đúng user_choice cho multiple choice
+              Array.isArray(question.user_choice) ? question.user_choice : []
+            );
+            break;
+        }
+      });
+    }
+  } catch (error) {
+    console.error("Quiz details fetch error:", error);
+    showError("Failed to load quiz details. Please try again.");
+  }
+}
+async function retakeQuiz() {
+  try {
+    await moduleService.clearQuizAnswers(
+      { showError, showSuccess },
+      moduleId,
+      quizId
+    );
+    showSuccess("Quiz reset successfully. You can now retake the quiz.");
+    await fetchQuizDetails();
+  } catch (error) {
+    showError("Failed to reset quiz. Please try again.");
+  }
 }
 
 async function finishQuiz() {
   isResultDialogOpen.value = false;
-  await fetchQuizDetails();
 }
 
-const fetchQuizDetails = async () => {
-  const data = await moduleService.fetchQuizDetails({showError,showSuccess}, moduleId, quizId);
-  quizExercise.value = data;
-
-  if (data?.questions) {
-    answers.value = new Array(data.questions.length).fill(null);
-  }
-};
-
-const submitQuizAnswers = async () => {
-  if (!quizExercise.value) return;
-
-  const submitQuizAnswersRequest: QuizAnswerRequest = {
-    quizId,
-    answers: answers.value,
-  };
-
-  const result = await moduleService.submitQuizAnswers(
-    { showError, showSuccess },
-    moduleId,
-    quizId,
-    submitQuizAnswersRequest
-  );
-
-  if (result) {
-    quizResult.value = result;
-    score.value = result.correct_answers;
-  }
-};
-
+// Lifecycle Hooks
 onMounted(() => {
   fetchQuizDetails();
 });
 </script>
+<style scoped>
+.border-card {
+  border: 1px solid rgba(var(--v-theme-primary), 0.05);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.border-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08) !important;
+}
+
+.card-header {
+  background: linear-gradient(to right, rgba(var(--v-theme-primary), 0.05), transparent);
+  border-bottom: 1px solid rgba(var(--v-theme-primary), 0.05);
+}
+
+.question-header {
+  background: linear-gradient(to right, rgba(var(--v-theme-primary), 0.05), transparent);
+  border-bottom: 1px solid rgba(var(--v-theme-primary), 0.05);
+}
+
+.primary-1 {
+  background-color: var(--v-theme-primary) !important;
+}
+
+.primary-2 {
+  background-color: #6200ea !important;
+}
+
+.primary-3 {
+  background-color: #3949ab !important;
+}
+
+.border-left-primary {
+  border-left: 4px solid var(--v-theme-primary);
+}
+
+.border-left-error {
+  border-left: 4px solid var(--v-theme-error);
+}
+
+.option-radio {
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.option-radio:hover {
+  background-color: rgba(var(--v-theme-primary), 0.05);
+  border-color: rgba(var(--v-theme-primary), 0.1);
+}
+
+.correct-answer {
+  background-color: rgba(var(--v-theme-success), 0.1) !important;
+  border: 1px solid rgba(var(--v-theme-success), 0.3) !important;
+}
+
+.incorrect-answer {
+  background-color: rgba(var(--v-theme-error), 0.1) !important;
+  border: 1px solid rgba(var(--v-theme-error), 0.3) !important;
+}
+
+.question-card {
+  transition: all 0.3s ease;
+}
+
+:deep(.v-selection-control__input) {
+  opacity: 0.9;
+}
+
+:deep(.v-selection-control--disabled) {
+  opacity: 1 !important;
+}
+:deep(.v-input__details){
+  display: none;
+}
+.option-checkbox {
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.option-checkbox:hover {
+  background-color: rgba(var(--v-theme-primary), 0.05);
+  border-color: rgba(var(--v-theme-primary), 0.1);
+}
+</style>

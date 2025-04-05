@@ -2,7 +2,7 @@
   <v-container>
     <v-row v-if="props.courses.length > 0">
       <v-col
-        v-for="(course) in coursesWithProfessors"
+        v-for="course in coursesWithProfessors"
         :key="course.id"
         cols="12"
         class="mb-6"
@@ -14,17 +14,22 @@
         >
           <div class="d-flex p-4 gap-4 course-content">
             <div class="image-container">
-              <v-img
-                class="flex-shrink-0 course-image"
-                width="300px"
-                height="200px"
-                :src="course.image"
-                cover
-              >
-                <template v-slot:error>
-                  <CourseInitialAvatar :course-name="course.name"  />
-                </template>
-              </v-img>
+              <template v-if="course.image">
+                <v-img
+                  class="flex-shrink-0 course-image"
+                  width="150px"
+                  height="150px"
+                  :src="course.image"
+                  cover
+                >
+                  <template v-slot:error>
+                    <CourseInitialAvatar :course-name="course.name" />
+                  </template>
+                </v-img>
+              </template>
+              <template v-else>
+                <CourseInitialAvatar :course-name="course.name" />
+              </template>
             </div>
 
             <div class="flex-grow-1 middle-content">
@@ -91,6 +96,7 @@
               color="secondary"
               :to="`/courselist/course/${course.id}`"
               rounded
+              @click="addActivity(course.name)"
               class="view-button"
             >
               View Course
@@ -112,7 +118,9 @@
 </template>
 
 <script lang="ts" setup>
+import { reloadManager } from "@/modals/manager/reload";
 import { coursesService } from "@/services/courseslistServices";
+import { dashboardService } from "@/services/dashboardService";
 import { CoursesListResponse, ProfessorInformation } from "@/types/Course";
 import { renderStatusLabel } from "@/utils/functions/render";
 import { formatStart_EndDate } from "@/utils/functions/time";
@@ -163,6 +171,23 @@ const fetchProfessorsForCourses = async () => {
     ...course,
     professorInfo: professorResults[index],
   }));
+};
+
+const addActivity = async (courseName: string) => {
+  try {
+    const add_feedback = await dashboardService.addActivity(
+      { showError, showSuccess },
+      {
+        type: "access_course",
+        description: "Accessed Course: " + courseName,
+      }
+    );
+    if (add_feedback) {
+      await reloadManager.trigger("activities");
+    }
+  } catch (error) {
+    showError("Failed to add activity");
+  }
 };
 
 // Fetch professors when component mounts

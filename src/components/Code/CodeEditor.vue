@@ -12,7 +12,6 @@
         width="150"
       ></v-select>
       <v-spacer></v-spacer>
-
       <v-btn variant="tonal" color="warning" class="mr-2" @click="giveHints" :loading="isGettingHints">Give Hints</v-btn>
       <v-btn variant="tonal" color="info" class="mr-2" @click="explainCode" :loading="isExplaining">Explain Code</v-btn>
       <v-btn variant="tonal" color="success" class="mr-2" @click="runCode" :loading="isLoading">Run</v-btn>
@@ -34,15 +33,20 @@ import { indentOnInput, syntaxHighlighting, defaultHighlightStyle, bracketMatchi
 import { closeBrackets, closeBracketsKeymap } from '@codemirror/autocomplete';
 import { lintGutter } from '@codemirror/lint';
 // import { javascript } from '@codemirror/lang-javascript';
+// import { rust } from '@codemirror/lang-rust';
 import { cpp } from '@codemirror/lang-cpp';
 import { python } from '@codemirror/lang-python';
 import { java } from '@codemirror/lang-java';
-// import { rust } from '@codemirror/lang-rust';
 import { LANGUAGES, LANGUAGE_MAP, DEFAULT_CODE } from '@/constants/templateLanguage';
 import { createSubmission, pollSubmission, prepareStdin } from '@/services/Professor/judge0api';
 import { llmCodeServices } from '@/services/llmCodeServices';
-import { TestInput,LineExplanation,CodeAnalysisRequest,LanguageKey } from '@/types/LLM_code';
-// import { SubmissionResult as Judge0SubmissionResult } from '@/types/Judge0API';
+import { TestInput, LineExplanation, CodeAnalysisRequest, LanguageKey } from '@/types/LLM_code';
+
+// Define types for hints
+interface LineHint {
+  line: number;
+  hint: string;
+}
 
 // Define props
 const props = defineProps<{
@@ -61,6 +65,7 @@ const editorContainer = ref<HTMLElement | null>(null);
 const languages = ref(LANGUAGES);
 const isLoading = ref<boolean>(false);
 const isExplaining = ref<boolean>(false);
+const isGettingHints = ref<boolean>(false);
 const lineExplanations = ref<LineExplanation[]>([]);
 const showError = inject("showError") as (message: string) => void;
 const showSuccess = inject("showSuccess") as (message: string) => void;
@@ -147,6 +152,9 @@ const darkTheme = EditorView.theme({
   },
   ".cm-activeLineGutter": {
     backgroundColor: "#222"
+  },
+  ".cm-hint-line": {
+    backgroundColor: "rgba(255, 217, 0, 0.1)"
   }
 }, { dark: true });
 
@@ -186,54 +194,75 @@ const initEditor = (): void => {
   });
 };
 
+// Function to get comment syntax for different languages
+const getCommentSyntax = (language: LanguageKey): { start: string, end: string } => {
+  switch (language) {
+    case 'cpp':
+      return { start: '// HINT: ', end: '' };
+    case 'java':
+      return { start: '// HINT: ', end: '' };
+    case 'python':
+      return { start: '# HINT: ', end: '' };
+    default:
+      return { start: '// HINT: ', end: '' };
+  }
+};
+
+// Function to insert hints directly into the code
+const insertHintsIntoCode = (originalCode: string, hints: LineHint[], language: LanguageKey): string => {
+  const commentSyntax = getCommentSyntax(language);
+  const lines = originalCode.split('\n');
+  
+  // Sort hints by line number in descending order to avoid position shifts
+  const sortedHints = [...hints].sort((a, b) => b.line - a.line);
+  
+  for (const hint of sortedHints) {
+    // Make sure the line index exists in the array
+    if (hint.line > 0 && hint.line <= lines.length) {
+      const hintComment = `${commentSyntax.start}${hint.hint}${commentSyntax.end}`;
+      
+      // Insert hint comment before the code line
+      lines.splice(hint.line - 1, 0, hintComment);
+    }
+  }
+  
+  return lines.join('\n');
+};
+
+// New function to get hints and add them to the code
 const giveHints = async (): Promise<void> => {
   try {
     isGettingHints.value = true;
-    // Prepare the payload.
-    const payload = {
-      problem_statement: PROBLEM_DESCRIPTION,
-      code_context: code.value
-    };
-
-    // Call the coding assistant API.
-    const response = await axios.post(
-      "http://localhost:8080/api/v1/coding-assistant/hint",
-      payload,
-      {
-        headers: {
-          "Content-Type": "application/json",
-          "accept": "application/json"
-        }
-      }
-    );
-
-    // Process the API response.
-    if (response.data.isSuccess) {
-      const hintsData = response.data.data;
-
-      // Display the global hint as a notification.
-      showSuccess(hintsData.global_hint);
-
-      // Map the API's line_hints to the LineHint type.
-      const hints: LineHint[] = hintsData.line_hints.map((item: any) => ({
-        line: item.line,
-        hint: item.hint
-      }));
-
-      // Insert the hints into the code.
-      const codeWithHints = insertHintsIntoCode(code.value, hints, selectedLanguage.value);
-      code.value = codeWithHints;
-
-      // Reinitialize the editor to update the code display.
-      nextTick(() => {
-        initEditor();
-      });
-    } else {
-      showError(response.data.message || "Failed to fetch hints");
-    }
+    
+    // Mock data - in production this would be an API call
+    const mockHintsData: LineHint[] = [
+      { line: 2, hint: "Consider initializing variables here" },
+      { line: 5, hint: "This is where you'll need to iterate through the array" },
+      { line: 10, hint: "Don't forget to check for edge cases" },
+      { line: 15, hint: "Remember to return the correct indices" }
+    ];
+    
+    // const response = await ApiService.getHints({
+    //   code: code.value,
+    //   language: selectedLanguage.value
+    // });
+    // const hints = response.data;
+    
+    // Insert hints directly into the code
+    const codeWithHints = insertHintsIntoCode(code.value, mockHintsData, selectedLanguage.value);
+    
+    // Update the code with hints included
+    code.value = codeWithHints;
+    
+    // Reinitialize editor to show updated code
+    nextTick(() => {
+      initEditor();
+      showSuccess("Hints have been added to your code as comments.");
+    });
+    
   } catch (error) {
-    console.error("Error fetching hints from the API:", error);
-    showError("Error fetching hints from the coding assistant API");
+    console.error('Error getting code hints:', error);
+    showError('Failed to add hints to your code');
   } finally {
     isGettingHints.value = false;
   }
@@ -491,6 +520,7 @@ watch(code, (newCode) => {
   width: 100%;
   height: 100%;
   overflow: auto;
+  background-color: #1e1e1e;
 }
 
 .language-select {
