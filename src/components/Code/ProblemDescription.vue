@@ -7,12 +7,6 @@
     </v-tabs>
 
     <v-card-text v-if="descriptionTab === 'description'" class="problem-description pa-4 flex-grow-1 overflow-y-auto">
-<!--      <h2>Two sum</h2>
-      <div class="problem-tags mb-4">
-        <v-chip size="small" color="grey" class="mr-2">Easy</v-chip>
-        <v-chip size="small" color="grey" class="mr-2">Array</v-chip>
-        <v-chip size="small" color="grey">Hash table</v-chip>
-      </div> -->
 
       <div v-html="problemDescription"></div>
 
@@ -115,6 +109,7 @@ import { PROBLEM_DESCRIPTION, PROBLEM_EXAMPLES, PROBLEM_CONSTRAINTS } from '@/co
 import { streamFromApi } from '@/common/api.service.ts';
 import { useRoute } from 'vue-router';
 import { llmCodeServices } from '@/services/llmCodeServices';
+import { CodeExerciseService } from '@/services/CodeExerciseService';
 import type { ChatMessage } from '@/types/chat';
 
 import axios from 'axios';
@@ -134,7 +129,7 @@ const md = new MarkdownIt({
     if (lang && hljs.getLanguage(lang)) {
       return `<pre class="hljs"><code>${hljs.highlight(code, { language: lang }).value}</code></pre>`;
     }
-    return `<pre class="hljs"><code>${md.utils.escapeHtml(code)}</code></pre>`;
+    return `<pre class="hljs"><code>${md.utils.escapeHtml(code)}</code></pre>`;v
   }
 });
 
@@ -290,7 +285,6 @@ onMounted(async () => {
     console.error('Failed to load exercise', err);
   }
 });
-
 </script>
 
 <style scoped>
@@ -397,4 +391,5 @@ onMounted(async () => {
   background-color: #888;
 }
 </style>
+
 
