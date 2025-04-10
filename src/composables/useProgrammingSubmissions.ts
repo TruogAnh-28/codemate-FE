@@ -6,6 +6,7 @@ import { programmingSubmissionService } from '@/services/programmingSubmissionSe
 export function useProgrammingSubmissions(useMock: boolean = false) {
   const submissions = ref<ProgrammingSubmissionStat[]>([]);
   const submissionDetails = ref<Record<string, ProgrammingSubmission>>({});
+  const pollingTimers = new Map<string, number>();
 
   const fetchSubmissionStats = async (programmingExerciseId: string) => {
     if (useMock) {
@@ -69,14 +70,107 @@ export function useProgrammingSubmissions(useMock: boolean = false) {
     }
 
     const res = await programmingSubmissionService.getSubmissionDetails(id);
-    console.log(res.data);
     return res.data;
   };
+
+  const submitCodeWithPolling = async (
+    programmingExerciseID: string,
+    judge0LangID: number,
+    code: string,
+    {
+      onComplete,
+      onError,
+      pollingInterval = 3000
+    }: {
+      onComplete: (submission: ProgrammingSubmission) => void;
+      onError?: (err: any) => void;
+      pollingInterval?: number;
+    }
+  ) => {
+    try {
+      const res = await programmingSubmissionService.createProgrammingSubmission(
+        programmingExerciseID,
+        judge0LangID,
+        code
+      );
+
+      const { id, status } = res.data;
+
+    const finalizeSubmission = async () => {
+      const detailResponse = await programmingSubmissionService.getSubmissionDetails(id);
+      const statResponse = await programmingSubmissionService.getSubmissionStat(id);
+
+      const newSubmission = detailResponse.data;
+      const newStat = statResponse.data;
+
+      const alreadyExists = submissions.value.some(s => s.id === newStat.id);
+      if (!alreadyExists) {
+        submissions.value.unshift(newStat);
+      }
+
+      onComplete(newSubmission);
+    };
+
+      if (status === 'pending') {
+        const poll = async () => {
+          try {
+            const statusRes = await programmingSubmissionService.getSubmissionStatus(id);
+            const currentStatus = statusRes.data;
+
+            if (currentStatus === 'completed' || currentStatus === 'failed') {
+              await finalizeSubmission();
+            } else {
+              const timer = setTimeout(poll, pollingInterval);
+              pollingTimers.set(id, timer);
+            }
+          } catch (pollErr) {
+            console.error("Polling error:", pollErr);
+            onError?.(pollErr);
+          }
+        };
+
+        poll();
+      } else {
+        await finalizeSubmission();
+      }
+
+    } catch (err) {
+      console.error("Submission error:", err);
+      onError?.(err);
+    }
+  };
+
+
+  const pollSubmissionStatus = async (id: string, interval = 3000) => {
+    if (pollingTimers.has(id)) return; // already polling
+
+    const poll = async () => {
+      const detail = await fetchSubmissionDetail(id);
+
+      if (detail && detail.status === 'completed') {
+        clearTimeout(pollingTimers.get(id));
+        pollingTimers.delete(id);
+        return;
+      }
+
+      const timer = setTimeout(poll, interval);
+      pollingTimers.set(id, timer);
+    };
+
+    poll();
+  };
+
+  onUnmounted(() => {
+    // Clean up all polling on unmount
+    pollingTimers.forEach(timer => clearTimeout(timer));
+    pollingTimers.clear();
+  });
 
   return {
     submissions,
     fetchSubmissionStats,
-    fetchSubmissionDetail
+    fetchSubmissionDetail,
+    submitCodeWithPolling
   };
 }
 

@@ -14,18 +14,6 @@
       <!-- Code Editor Panel -->
       <v-col class="fill-height">
         <div class="d-flex flex-column fill-height">
-          <!-- <CodeEditor
-            :test-input="testInput"
-            @run-result="handleRunResult"
-            @submit-result="handleSubmitResult"
-            @update:loading="isLoading = $event"
-            :style="codeEditorStyle"
-          /> -->
-          <!-- <CodeEditor
-            v-model="code"
-            :language="selectedLanguage"
-            :style="codeEditorStyle"
-          /> -->
           <CodeEditor
             modelValue="// Your code here\n"
             onUpdate:modelValue=fn

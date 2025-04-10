@@ -3,4 +3,5 @@ export interface ProgrammingTestCase {
   id: string;
   input: string;
   expected_output: string;
+  is_public: boolean;
 }

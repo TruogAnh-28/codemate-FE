@@ -45,6 +45,7 @@ import { llmCodeServices } from '@/services/llmCodeServices';
 import { TestInput, LineExplanation, CodeAnalysisRequest, LanguageKey } from '@/types/LLM_code';
 import { LanguageConfigDto } from '@/types/CodingExercise';
 import { JUDGE0_LANG } from '@/constants/judge0_lang';
+import { useProgrammingSubmissions } from '@/composables/useProgrammingSubmissions';
 
 // Define types for hints
 interface LineHint {
@@ -59,6 +60,7 @@ const props = defineProps<{
 
 const route = useRoute();
 const exerciseId = computed(() => route.params.exerciseId as string);
+const { submitCodeWithPolling } = useProgrammingSubmissions();
 
 const emit = defineEmits<{
   (e: 'run-result', result: string): void;
@@ -489,10 +491,36 @@ const runCode = async (): Promise<void> => {
 // };
 
 const submitCode = async (): Promise<void> => {
-  // Print out the code to be submitted
-  console.log('Code to be submitted:', code.value);
-}
+  isLoading.value = true;
+  emit('update:loading', true);
 
+  submitCodeWithPolling(
+    exerciseId.value,
+    selectedLanguage.value,
+    code.value,
+    {
+      onComplete: (submission) => {
+        const passed = submission.test_results.filter(t => t.status === 'Accepted').length;
+        const total = submission.test_results.length;
+
+        const summary = `
+✅ Submission Complete
+- Status: ${submission.status}
+- Passed: ${passed}/${total}
+- Score: ${submission.score ?? 'N/A'}
+        `;
+        emit('submit-result', summary);
+        isLoading.value = false;
+        emit('update:loading', false);
+      },
+      onError: (err) => {
+        emit('submit-result', `❌ Submission failed: ${err.message}`);
+        isLoading.value = false;
+        emit('update:loading', false);
+      }
+    }
+  );
+};
 
 // Initialize editor when component is mounted
 onMounted(() => {
