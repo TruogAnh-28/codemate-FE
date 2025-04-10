@@ -26,6 +26,9 @@
         </ul>
       </div>
     </v-card-text>
+    <v-card-text v-else-if="descriptionTab === 'submission'" class="pa-4">
+      <SubmissionList :programmingExerciseId="exerciseId" :submissions="submissions" />
+    </v-card-text>
 
     <v-card-text v-else class="chat-container d-flex flex-column flex-grow-1 pa-0">
 
@@ -111,7 +114,7 @@ import { useRoute } from 'vue-router';
 import { llmCodeServices } from '@/services/llmCodeServices';
 import { CodeExerciseService } from '@/services/CodeExerciseService';
 import type { ChatMessage } from '@/types/chat';
-
+import SubmissionList from '@/components/Code/SubmissionList.vue';
 import axios from 'axios';
 
 const route = useRoute();
@@ -266,6 +269,8 @@ const tags = ref<string[]>([]);
 const problemDescription = ref('');
 const examples = ref<ProblemExample[]>([]);
 const constraints = ref<string[]>([]);
+
+console.log('Exercise ID:', exerciseId.value);
 
 onMounted(async () => {
   try {

@@ -4,35 +4,37 @@
     <v-card class="mb-4" elevation="1">
       <v-card-title class="text-subtitle-1 font-weight-bold">Submission History</v-card-title>
       <v-divider></v-divider>
-      <v-list density="compact" class="pa-0">
-        <v-list-item
-          v-for="submission in submissions"
-          :key="submission.id"
-          class="hoverable-list-item"
-        >
-          <v-list-item-content>
-            <div class="d-flex justify-space-between align-center">
-              <div class="d-flex flex-column">
-                <div class="text-caption text-grey">{{ formatDate(submission.created_at) }}</div>
-                <div class="d-flex align-center">
-                  <v-chip
-                    :color="getStatusColor(submission.status)"
-                    size="x-small"
-                    class="me-2"
-                    label
-                  >
-                    {{ submission.status }}
-                  </v-chip>
-                  <span class="text-body-2">{{ submission.passed_testcases }} / {{ submission.total_testcases }} testcases</span>
+        <div style="max-height: 400px; overflow-y: auto;">
+          <v-list density="compact" class="pa-0">
+            <v-list-item
+              v-for="submission in submissions"
+              :key="submission.id"
+              class="hoverable-list-item"
+            >
+              <v-list-item-content>
+                <div class="d-flex justify-space-between align-center">
+                  <div class="d-flex flex-column">
+                    <div class="text-caption text-grey">{{ formatDate(submission.created_at) }}</div>
+                    <div class="d-flex align-center">
+                      <v-chip
+                        :color="getStatusColor(submission.status)"
+                        size="x-small"
+                        class="me-2"
+                        label
+                      >
+                        {{ submission.status }}
+                      </v-chip>
+                      <span class="text-body-2">{{ submission.passed_testcases }} / {{ submission.total_testcases }} testcases</span>
+                    </div>
+                  </div>
+                  <v-btn icon size="small" variant="text" @click.stop="openModal(submission)">
+                    <v-icon>mdi-eye</v-icon>
+                  </v-btn>
                 </div>
-              </div>
-              <v-btn icon size="small" variant="text" @click.stop="openModal(submission)">
-                <v-icon>mdi-eye</v-icon>
-              </v-btn>
-            </div>
-          </v-list-item-content>
-        </v-list-item>
-      </v-list>
+              </v-list-item-content>
+            </v-list-item>
+          </v-list>
+        </div>
     </v-card>
 
     <!-- Submission Detail Modal -->
@@ -93,45 +95,15 @@
   </v-container>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { onMounted, ref, computed } from 'vue';
 import { useProgrammingSubmissions } from '@/composables/useProgrammingSubmissions';
-const { submissions, fetchSubmissionStats, fetchSubmissionDetail } = useProgrammingSubmissions(true);
+import { useRouter } from 'vue-router';
+const { submissions, fetchSubmissionStats, fetchSubmissionDetail } = useProgrammingSubmissions(false);
 
-// const submissions = ref([
-//   {
-//     id: '1',
-//     created_at: new Date().toISOString(),
-//     status: 'completed',
-//     code: 'function twoSum(nums, target) {\n  const map = new Map();\n  for (let i = 0; i < nums.length; i++) {\n    const complement = target - nums[i];\n    if (map.has(complement)) return [map.get(complement), i];\n    map.set(nums[i], i);\n  }\n}',
-//     test_results: [
-//       {
-//         id: 't1',
-//         status: 'Accepted',
-//         stdout: '[0,1]',
-//         time: 0.032,
-//         memory: 12345,
-//         testcase: {
-//           input: '2 7 11 15\n9',
-//           expected_output: '[0,1]',
-//           is_public: true
-//         }
-//       },
-//       {
-//         id: 't3',
-//         status: 'Accepted',
-//         stdout: 'a'.repeat(1000),
-//         time: 0.055,
-//         memory: 11000,
-//         testcase: {
-//           input: 'x'.repeat(1000),
-//           expected_output: 'b'.repeat(1000),
-//           is_public: true
-//         }
-//       }
-//     ]
-//   }
-// ]);
+const props = defineProps<{
+  programmingExerciseId: string
+}>()
 
 const dialog = ref(false);
 const selectedSubmission = ref(null);
@@ -139,8 +111,10 @@ const visibleTestResults = computed(() => {
   return selectedSubmission.value?.test_results.filter(t => t.testcase?.is_public) ?? [];
 });
 
+console.log(props.programmingExerciseId);
+
 onMounted(async () => {
-  await fetchSubmissionStats();
+  await fetchSubmissionStats(props.programmingExerciseId);
 });
 
 const openModal = async (submissionBrief) => {

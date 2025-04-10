@@ -1,12 +1,13 @@
 // useSubmissions.ts
 import { ref } from 'vue';
 import type { ProgrammingSubmission, ProgrammingSubmissionStat } from '@/types/ProgrammingSubmission';
+import { programmingSubmissionService } from '@/services/programmingSubmissionService';
 
 export function useProgrammingSubmissions(useMock: boolean = false) {
   const submissions = ref<ProgrammingSubmissionStat[]>([]);
   const submissionDetails = ref<Record<string, ProgrammingSubmission>>({});
 
-  const fetchSubmissionStats = async () => {
+  const fetchSubmissionStats = async (programmingExerciseId: string) => {
     if (useMock) {
       console.log(submissions);
       submissions.value = [
@@ -22,13 +23,17 @@ export function useProgrammingSubmissions(useMock: boolean = false) {
       ];
       return;
     }
-    const res = await fetch('/api/submissions');
-    submissions.value = await res.json();
+    const res = await programmingSubmissionService.getSubmissionsOfACodeExercise(programmingExerciseId);
+    console.log(res);
+
+    if (res.data != null) {
+      console.log(res.data);
+      submissions.value = res.data;
+    }
   };
 
   const fetchSubmissionDetail = async (id: string) => {
     if (useMock) {
-      console.log('Mock submission details');
       submissionDetails.value[id] = {
         id: 'mock-1',
         user_id: 'u1',
@@ -63,11 +68,9 @@ export function useProgrammingSubmissions(useMock: boolean = false) {
       return submissionDetails.value[id];
     }
 
-    if (!submissionDetails.value[id]) {
-      const res = await fetch(`/api/submissions/${id}`);
-      submissionDetails.value[id] = await res.json();
-    }
-    return submissionDetails.value[id];
+    const res = await programmingSubmissionService.getSubmissionDetails(id);
+    console.log(res.data);
+    return res.data;
   };
 
   return {

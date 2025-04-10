@@ -395,98 +395,104 @@ const runCode = async (): Promise<void> => {
   }
 };
 
-// Submit code with similar logic as runCode
+// // Submit code with similar logic as runCode
+// const submitCode = async (): Promise<void> => {
+//   try {
+//     isLoading.value = true;
+//     emit('update:loading', true);
+//
+//     // Prepare stdin
+//     const stdin = prepareStdin(
+//       selectedLanguage.value,
+//       props.testInput.nums,
+//       props.testInput.target
+//     );
+//
+//     try {
+//       // Create submission
+//       const token = await createSubmission(
+//         code.value,
+//         LANGUAGE_MAP[selectedLanguage.value],
+//         stdin,
+//         '[0,1]'
+//       );
+//
+//       // Poll for results
+//       const result = await pollSubmission(token);
+//
+//       // Format and emit results
+//       let resultText = '';
+//       if (result.status.id === 3 && result.stdout && result.stdout.trim() === '[0,1]') {
+//         resultText = `
+// ✅ Solution Accepted!
+// Your solution passed all test cases.
+//
+// Test Result:
+// Input: nums = ${props.testInput.nums}, target = ${props.testInput.target}
+// Expected Output: [0,1]
+// Your Output: ${result.stdout.trim()}
+// Time: ${result.time} seconds
+// Memory: ${result.memory} KB
+//         `;
+//       } else {
+//         resultText = `
+// ❌ Solution Failed!
+// Your solution did not pass all test cases.
+//
+// Test Result:
+// Input: nums = ${props.testInput.nums}, target = ${props.testInput.target}
+// Expected Output: [0,1]
+// Your Output: ${result.stdout || 'No output'}
+// Status: ${result.status.description}
+// ${result.stderr ? 'Error: ' + result.stderr + '\n' : ''}
+// ${result.compile_output ? 'Compiler output: ' + result.compile_output + '\n' : ''}
+//         `;
+//       }
+//
+//       emit('submit-result', resultText);
+//     } catch (apiError: any) {
+//       // Handle API errors
+//       if (apiError.response) {
+//         // Server returned an error with status code
+//         const errorData = apiError.response.data;
+//         let detailedError = `Error (${apiError.response.status}): `;
+//
+//         if (errorData && typeof errorData === 'object') {
+//           if (errorData.error) {
+//             detailedError += errorData.error;
+//           } else if (errorData.message) {
+//             detailedError += errorData.message;
+//           } else {
+//             detailedError += JSON.stringify(errorData);
+//           }
+//         } else if (typeof errorData === 'string') {
+//           detailedError += errorData;
+//         } else {
+//           detailedError += 'Unknown error format';
+//         }
+//
+//         emit('submit-result', detailedError);
+//       } else if (apiError.request) {
+//         // Request was sent but no response received
+//         emit('submit-result', 'Error: No response received from server');
+//       } else {
+//         // Other errors when setting up the request
+//         emit('submit-result', `Error setting up request: ${apiError.message}`);
+//       }
+//     }
+//   } catch (error: any) {
+//     emit('submit-result', `Error submitting code: ${error.message}`);
+//   } finally {
+//     isLoading.value = false;
+//     emit('update:loading', false);
+//   }
+// };
+
 const submitCode = async (): Promise<void> => {
-  try {
-    isLoading.value = true;
-    emit('update:loading', true);
+  // Print out the code to be submitted
+  console.log('Code to be submitted:', code.value);
+}
 
-    // Prepare stdin
-    const stdin = prepareStdin(
-      selectedLanguage.value,
-      props.testInput.nums,
-      props.testInput.target
-    );
-
-    try {
-      // Create submission
-      const token = await createSubmission(
-        code.value,
-        LANGUAGE_MAP[selectedLanguage.value],
-        stdin,
-        '[0,1]'
-      );
-
-      // Poll for results
-      const result = await pollSubmission(token);
-
-      // Format and emit results
-      let resultText = '';
-      if (result.status.id === 3 && result.stdout && result.stdout.trim() === '[0,1]') {
-        resultText = `
-✅ Solution Accepted!
-Your solution passed all test cases.
-
-Test Result:
-Input: nums = ${props.testInput.nums}, target = ${props.testInput.target}
-Expected Output: [0,1]
-Your Output: ${result.stdout.trim()}
-Time: ${result.time} seconds
-Memory: ${result.memory} KB
-        `;
-      } else {
-        resultText = `
-❌ Solution Failed!
-Your solution did not pass all test cases.
-
-Test Result:
-Input: nums = ${props.testInput.nums}, target = ${props.testInput.target}
-Expected Output: [0,1]
-Your Output: ${result.stdout || 'No output'}
-Status: ${result.status.description}
-${result.stderr ? 'Error: ' + result.stderr + '\n' : ''}
-${result.compile_output ? 'Compiler output: ' + result.compile_output + '\n' : ''}
-        `;
-      }
-
-      emit('submit-result', resultText);
-    } catch (apiError: any) {
-      // Handle API errors
-      if (apiError.response) {
-        // Server returned an error with status code
-        const errorData = apiError.response.data;
-        let detailedError = `Error (${apiError.response.status}): `;
-
-        if (errorData && typeof errorData === 'object') {
-          if (errorData.error) {
-            detailedError += errorData.error;
-          } else if (errorData.message) {
-            detailedError += errorData.message;
-          } else {
-            detailedError += JSON.stringify(errorData);
-          }
-        } else if (typeof errorData === 'string') {
-          detailedError += errorData;
-        } else {
-          detailedError += 'Unknown error format';
-        }
-
-        emit('submit-result', detailedError);
-      } else if (apiError.request) {
-        // Request was sent but no response received
-        emit('submit-result', 'Error: No response received from server');
-      } else {
-        // Other errors when setting up the request
-        emit('submit-result', `Error setting up request: ${apiError.message}`);
-      }
-    }
-  } catch (error: any) {
-    emit('submit-result', `Error submitting code: ${error.message}`);
-  } finally {
-    isLoading.value = false;
-    emit('update:loading', false);
-  }
-};
 
 // Initialize editor when component is mounted
 onMounted(() => {
