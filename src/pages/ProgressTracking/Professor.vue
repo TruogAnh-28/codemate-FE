@@ -47,6 +47,7 @@
 
       <ProgressCourseGrade
         v-if="viewMode === 'course' && selectedCourseId"
+        :courseId ="selectedCourseId"
         :course-grades="courseGrades"
         :loading="loading"
       />
