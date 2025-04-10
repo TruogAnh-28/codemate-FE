@@ -154,10 +154,9 @@
     </v-card>
 
     <!-- Modules Section -->
+    <!-- Modules Section -->
     <div class="mb-4 d-flex align-center">
-      <v-icon color="primary" size="large" class="mr-2"
-        >mdi-view-grid-outline</v-icon
-      >
+      <v-icon color="primary" size="large" class="mr-2">mdi-view-grid-outline</v-icon>
       <h2 class="text-h5 font-weight-bold mb-0">Modules</h2>
     </div>
 
@@ -201,9 +200,28 @@
             <h3 class="text-subtitle-1 font-weight-medium mb-2">
               {{ module.title }}
             </h3>
-            <div class="d-flex align-center text-caption text-medium-emphasis">
-              <v-icon size="small" class="mr-1">mdi-clock-outline</v-icon>
-              <span>Estimated time: 30min</span>
+            <div class="d-flex align-center mb-2">
+              <v-progress-linear
+                v-if="module.progress !== undefined"
+                color="primary"
+                :model-value="module.progress"
+                height="6"
+                rounded
+                class="mr-2"
+              ></v-progress-linear>
+              <span class="text-caption text-medium-emphasis">{{ module.progress }}% </span>
+            </div>
+            <!-- Display module objectives if available -->
+            <div v-if="module.objectives && module.objectives.length > 0" class="mt-2">
+              <div class="text-caption font-weight-medium text-primary mb-1">
+                Objectives:
+              </div>
+              <div class="text-caption text-medium-emphasis mb-1" v-for="(objective, objIndex) in module.objectives.slice(0, 3)" :key="objIndex">
+                • {{ objective }}
+              </div>
+              <div v-if="module.objectives.length > 3" class="text-caption text-primary">
+                +{{ module.objectives.length - 3 }} more
+              </div>
             </div>
           </v-card-text>
 
