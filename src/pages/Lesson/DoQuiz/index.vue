@@ -18,6 +18,18 @@
           </p>
         </div>
         <v-spacer></v-spacer>
+        
+        <!-- Timer Display -->
+        <v-chip
+          v-if="quizExercise.status !== 'completed' && quizExercise.time_limit"
+          class="px-4 py-2 mr-2"
+          :color="getRemainingTimeColor()"
+          prepend-icon="mdi-clock-outline"
+          elevation="1"
+        >
+          Time Remaining: {{ formatTime(remainingTime) }}
+        </v-chip>
+        
         <v-chip
           v-if="quizExercise.status === 'completed'"
           class="px-4 py-2 ml-2"
@@ -45,6 +57,7 @@
       </v-card-text>
     </v-card>
 
+    <!-- Rest of your template remains unchanged -->
     <!-- Questions Section -->
     <v-row>
       <v-col
@@ -154,29 +167,21 @@
     <v-row class="mb-6" justify="center">
       <v-col cols="auto" class="d-flex justify-center">
         <v-btn
-          v-if="quizExercise.status === 'completed'"
-          color="primary"
-          variant="outlined"
-          class="mr-4"
-          prepend-icon="mdi-refresh"
-          @click="retakeQuiz"
-        >
-          Retake Quiz
-        </v-btn>
-        <v-btn
           v-if="quizExercise.status !== 'completed'"
           color="primary"
           prepend-icon="mdi-check-circle"
-          :disabled="!allQuestionsAnswered"
+          :disabled="!allQuestionsAnswered || isSubmitting"
+          :loading="isSubmitting"
           @click="openConfirmDialog"
         >
-          Submit Answers
+          <template v-if="!isSubmitting">Submit Answers</template>
+          <template v-else>Submitting...</template>
         </v-btn>
       </v-col>
     </v-row>
 
     <!-- Confirmation Dialog -->
-    <v-dialog v-model="isConfirmDialogOpen" max-width="400">
+    <v-dialog v-model="isConfirmDialogOpen" max-width="400" persistent>
       <v-card class="pa-2">
         <v-card-title class="text-h5 pb-2">
           <v-icon color="primary" class="mr-2">mdi-help-circle</v-icon>
@@ -187,8 +192,50 @@
         </v-card-text>
         <v-card-actions class="pt-0">
           <v-spacer></v-spacer>
-          <v-btn color="grey-darken-1" variant="text" @click="isConfirmDialogOpen = false">Cancel</v-btn>
-          <v-btn color="primary" variant="elevated" @click="confirmSubmit">Confirm & Submit</v-btn>
+          <v-btn 
+            color="grey-darken-1" 
+            variant="text" 
+            @click="isConfirmDialogOpen = false"
+            :disabled="isSubmitting"
+          >
+            Cancel
+          </v-btn>
+          <v-btn 
+            color="primary" 
+            variant="elevated" 
+            @click="confirmSubmit"
+            :loading="isSubmitting"
+            :disabled="isSubmitting"
+          >
+            <template v-if="!isSubmitting">Confirm & Submit</template>
+            <template v-else>Submitting...</template>
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <!-- Time's Up Dialog -->
+    <v-dialog v-model="isTimeUpDialogOpen" max-width="400" persistent>
+      <v-card class="pa-2">
+        <v-card-title class="text-h5 pb-2">
+          <v-icon color="warning" class="mr-2">mdi-clock-alert</v-icon>
+          Time's Up!
+        </v-card-title>
+        <v-card-text class="pt-2">
+          <p class="text-body-1">Your time has expired. Your answers will be submitted automatically.</p>
+        </v-card-text>
+        <v-card-actions class="pt-0">
+          <v-spacer></v-spacer>
+          <v-btn 
+            color="primary" 
+            variant="elevated" 
+            @click="confirmTimeUp"
+            :loading="isSubmitting"
+            :disabled="isSubmitting"
+          >
+            <template v-if="!isSubmitting">OK</template>
+            <template v-else>Submitting...</template>
+          </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -221,6 +268,38 @@
               {{ quizExercise.questions.length - calculateCorrectAnswers() }} Incorrect
             </v-chip>
           </div>
+          
+          <!-- Learning Issues Section -->
+          <div v-if="quizResult && quizResult.identified_issues && quizResult.identified_issues.length > 0" class="mt-4">
+            <v-divider class="my-4"></v-divider>
+            
+            <div class="d-flex align-center mb-3">
+              <v-icon color="warning" class="mr-2">mdi-alert-circle-outline</v-icon>
+              <h3 class="text-subtitle-1 font-weight-bold mb-0">Areas to Improve</h3>
+            </div>
+            
+            <v-list class="bg-grey-lighten-4 rounded-lg pa-0">
+              <v-list-item
+                v-for="(issue, index) in quizResult.identified_issues"
+                :key="index"
+                class="mb-2 rounded-lg border-left-warning"
+              >
+                <template v-slot:prepend>
+                  <v-avatar color="warning" size="36" class="mr-3">
+                    <v-icon color="white">{{ getIssueIcon(issue.type) }}</v-icon>
+                  </v-avatar>
+                </template>
+                
+                <v-list-item-title class="text-subtitle-2 font-weight-medium mb-1">
+                  {{ formatIssueType(issue.type) }}
+                </v-list-item-title>
+                
+                <v-list-item-subtitle class="text-body-2">
+                  {{ issue.description }}
+                </v-list-item-subtitle>
+              </v-list-item>
+            </v-list>
+          </div>
         </v-card-text>
         <v-card-actions class="pa-4 pt-0">
           <v-spacer></v-spacer>
@@ -228,11 +307,39 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+    <!-- Loading Overlay -->
+  <v-overlay
+    v-model="isSubmitting"
+    class="align-center justify-center"
+    persistent
+  >
+    <v-card
+      class="pa-6 rounded-xl"
+      max-width="400"
+      elevation="8"
+    >
+      <div class="text-center">
+        <v-progress-circular
+          indeterminate
+          color="primary"
+          size="64"
+        ></v-progress-circular>
+        
+        <h3 class="text-h6 font-weight-bold mt-6 mb-2">
+          Submitting Your Quiz
+        </h3>
+        
+        <p class="text-body-1 text-medium-emphasis mb-0">
+          Please wait while we process your answers...
+        </p>
+      </div>
+    </v-card>
+  </v-overlay>
   </v-container>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, inject } from 'vue';
+import { ref, computed, onMounted, inject, onBeforeUnmount, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { moduleService } from "@/services/module";
 import { useBreadcrumbsStore } from "@/stores/breadcrumbs";
@@ -256,9 +363,16 @@ const answers = ref<(string | null)[]>([]);
 const multiChoiceAnswers = ref<string[][]>([]);
 const isConfirmDialogOpen = ref(false);
 const isResultDialogOpen = ref(false);
+const isTimeUpDialogOpen = ref(false);
+const isSubmitting = ref(false);
 const quizResult = ref<QuizScoreResponse | null>(null);
 const showError = inject("showError") as (message: string) => void;
 const showSuccess = inject("showSuccess") as (message: string) => void;  
+
+// Timer related state - now we'll track seconds separately from the minutes in time_limit
+const remainingTime = ref(0); // This will be in seconds
+const timerInterval = ref<number | null>(null);
+const quizStartTime = ref<number | null>(null);
 
 // Route and Breadcrumbs
 const route = useRoute();
@@ -283,7 +397,105 @@ const allQuestionsAnswered = computed(() => {
   return true;
 });
 
-// Methods
+const quizDuration = computed(() => {
+  if (!quizExercise.value?.time_limit || !remainingTime.value) return 0;
+  // Convert minutes to seconds for duration calculation
+  return (quizExercise.value.time_limit * 60) - remainingTime.value;
+});
+
+// Timer Methods
+function startTimer() {
+  if (!quizExercise.value?.time_limit) return;
+  
+  // Initialize the remaining time if not already set - CONVERT MINUTES TO SECONDS
+  if (!remainingTime.value) {
+    remainingTime.value = quizExercise.value.time_limit * 60; // Convert minutes to seconds
+  }
+  
+  // Record the start time
+  if (!quizStartTime.value) {
+    quizStartTime.value = Date.now();
+  }
+  
+  // Clear any existing interval
+  if (timerInterval.value !== null) {
+    clearInterval(timerInterval.value);
+  }
+  
+  // Start the interval - countdown every second
+  timerInterval.value = setInterval(() => {
+    if (remainingTime.value <= 0) {
+      // Time's up - handle automatically
+      handleTimeUp();
+    } else {
+      remainingTime.value -= 1;
+    }
+  }, 1000) as unknown as number;
+}
+
+function stopTimer() {
+  if (timerInterval.value !== null) {
+    clearInterval(timerInterval.value);
+    timerInterval.value = null;
+  }
+}
+
+function formatTime(seconds: number): string {
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+  return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
+}
+
+function getRemainingTimeColor(): string {
+  if (!remainingTime.value || !quizExercise.value?.time_limit) return 'primary';
+  
+  // Calculate percentage based on seconds remaining out of total seconds
+  const timePercentage = (remainingTime.value / (quizExercise.value.time_limit * 60)) * 100;
+  
+  if (timePercentage <= 10) return 'error'; // Less than 10% time left
+  if (timePercentage <= 25) return 'warning'; // Less than 25% time left
+  return 'primary';
+}
+function formatIssueType(type: string): string {
+  // Convert snake_case to Title Case with spaces
+  const words = type.split('_');
+  return words.map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+}
+
+function getIssueIcon(type: string): string {
+  // Return appropriate icon based on issue type
+  switch (type) {
+    case 'concept_misunderstanding':
+      return 'mdi-brain';
+    case 'quiz_failure':
+      return 'mdi-close-circle';
+    case 'knowledge_gap':
+      return 'mdi-shape-plus';
+    case 'application_error':
+      return 'mdi-application-brackets-outline';
+    case 'comprehension_issue':
+      return 'mdi-book-open-page-variant';
+    case 'calculation_mistake':
+      return 'mdi-calculator';
+    case 'terminology_confusion':
+      return 'mdi-dictionary';
+    case 'procedural_error':
+      return 'mdi-steps';
+    default:
+      return 'mdi-alert-circle-outline';
+  }
+}
+function handleTimeUp() {
+  stopTimer();
+  isTimeUpDialogOpen.value = true;
+}
+
+function confirmTimeUp() {
+  isTimeUpDialogOpen.value = false;
+  submitQuizAnswers(true);
+}
+
+// Other Methods
 function calculateCorrectAnswers(): number {
   if (!quizExercise.value?.questions) return 0;
   
@@ -379,8 +591,12 @@ async function confirmSubmit() {
   await submitQuizAnswers();
 }
 
-async function submitQuizAnswers() {
+async function submitQuizAnswers(isAutoSubmit: boolean = false) {
   if (!quizExercise.value) return;
+  
+  // Set loading state to true when submission starts
+  isSubmitting.value = true;
+  
   const processedAnswers = quizExercise.value.questions.map((question, index) => {
     switch (question.question_type) {
       case 'single_choice':
@@ -395,27 +611,48 @@ async function submitQuizAnswers() {
     }
   });
 
+  // Calculate the duration in seconds
+  const timeSpent = quizExercise.value.time_limit 
+    ? (quizExercise.value.time_limit * 60) - remainingTime.value 
+    : 0;
+
   const submitQuizAnswersRequest: QuizAnswerRequest = {
     quizId,
     answers: processedAnswers,
   };
 
   try {
+    stopTimer(); // Stop the timer before submission
+    
     const result = await moduleService.submitQuizAnswers(
       { showError, showSuccess },
       quizId,
       submitQuizAnswersRequest
     );
-
+    console.log("Quiz submission result:", result);
     if (result) {
-      quizResult.value = result;
+      quizResult.value = result.data as QuizScoreResponse;
+      console.log("Quiz result:", quizResult.value);
+      console.log("Identified issues:", quizResult.value.identified_issues);
       await fetchQuizDetails(); // Fetch updated quiz data with scores
       
-      showSuccess("Quiz submitted successfully!");
+      if (isAutoSubmit) {
+        showSuccess("Time's up! Your quiz has been submitted automatically.");
+      } else {
+        showSuccess("Quiz submitted successfully!");
+      }
+      
       isResultDialogOpen.value = true;
     }
   } catch (error) {
     showError("Failed to submit quiz. Please try again.");
+    // Restart the timer if submission fails and we still have time left
+    if (remainingTime.value > 0 && quizExercise.value.status !== 'completed') {
+      startTimer();
+    }
+  } finally {
+    // Reset loading state when submission completes (success or failure)
+    isSubmitting.value = false;
   }
 }
 
@@ -428,6 +665,12 @@ async function fetchQuizDetails() {
     
     if (response && "data" in response && response.data) {
       quizExercise.value = response.data as QuizExerciseResponse;
+      
+      // Initialize timer if quiz has a time limit and is not completed
+      if (quizExercise.value.time_limit && quizExercise.value.status !== 'completed') {
+        remainingTime.value = quizExercise.value.time_limit * 60; // Convert minutes to seconds
+        startTimer();
+      }
     }
 
     if (quizExercise.value?.questions) {
@@ -480,10 +723,23 @@ async function finishQuiz() {
   isResultDialogOpen.value = false;
 }
 
+// Watch for quiz completion to stop the timer
+watch(() => quizExercise.value?.status, (newStatus) => {
+  if (newStatus === 'completed') {
+    stopTimer();
+  }
+});
+
 onMounted(() => {
   fetchQuizDetails();
 });
+
+onBeforeUnmount(() => {
+  // Clean up the timer when the component is destroyed
+  stopTimer();
+});
 </script>
+
 <style scoped>
 .border-card {
   border: 1px solid rgba(var(--v-theme-primary), 0.05);
@@ -575,5 +831,17 @@ onMounted(() => {
 .option-checkbox:hover {
   background-color: rgba(var(--v-theme-primary), 0.05);
   border-color: rgba(var(--v-theme-primary), 0.1);
+}
+.border-left-warning {
+  border-left: 4px solid var(--v-theme-warning);
+  background-color: rgba(var(--v-theme-warning), 0.05);
+}
+
+.issue-item {
+  transition: all 0.2s ease;
+}
+
+.issue-item:hover {
+  background-color: rgba(var(--v-theme-warning), 0.1);
 }
 </style>

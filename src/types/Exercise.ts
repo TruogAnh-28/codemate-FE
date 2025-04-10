@@ -68,12 +68,22 @@ export interface QuizQuestionResult {
   isCorrect: boolean;
 }
 
+export interface LearningIssue {
+  type: string;
+  description: string;
+  frequency: number;
+  related_lessons: string[];
+  related_modules: string[];
+  last_occurrence: string;
+}
+
 export interface QuizScoreResponse {
-  quiz_id: UUID;
+  quiz_id: string;
   total_questions: number;
   correct_answers: number;
   score: number;
   results: QuizQuestionResult[];
+  identified_issues?: LearningIssue[];
 }
 export interface ClearAnswerResponse {
   success: boolean;
