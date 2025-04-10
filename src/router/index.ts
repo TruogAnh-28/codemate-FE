@@ -97,7 +97,18 @@ const StudentRoutes = [
     component: () => import("@/pages/Code/index.vue"),
     meta: { requiresAuth: true, role: "student" },
   },
-
+  {
+    path: "/schedule",
+    component: () => import("@/layouts/default.vue"),
+    name: "Schedule",
+    children: [{
+      path: "",
+      name: "ScheduleChild",
+      component: () => import("@/pages/Schedule/index.vue"),
+      props: true,
+      meta: { requiresAuth: true, role: "student" },
+    }],
+  },
   {
     path: "/lessonRecommend/:lessonId",
     component: () => import("@/layouts/default.vue"),
@@ -288,7 +299,14 @@ const ProfessorRoutes = [
       name: "ProfessorProgress",
       component: () => import("@/pages/ProgressTracking/Professor.vue"),
       meta: { requiresAuth: true, role: "professor" },
-    }],
+    },
+    {
+      path: "/professor-progress/:courseId/students/:studentId",
+      name: "ProfessorProgressStudent",
+      component: () => import("@/pages/ProgressTracking/StudentTracking.vue"),
+      meta: { requiresAuth: true, role: "professor" },
+    }
+  ],
   },
   {
     path: "/professor-code",
@@ -297,7 +315,6 @@ const ProfessorRoutes = [
       path: "",
       name: "ProfessorCode",
       component: () => import("@/pages/Code/index.vue"),
-      meta: { requiresAuth: false, role: "professor" },
       meta: { requiresAuth: true, role: "professor" },
     }],
   },
