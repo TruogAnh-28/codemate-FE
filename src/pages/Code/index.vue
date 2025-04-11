@@ -3,7 +3,10 @@
     <v-row no-gutters class="fill-height">
 
       <!-- Problem Description Panel -->
-      <div :style="{ width: sidebarWidth + 'px' }" class="resizable-sidebar fill-height">
+      <div
+        :style="{ width: sidebarWidth + 'px', minWidth: '400px', maxWidth: '50vw' }"
+        class="resizable-sidebar fill-height"
+      >
         <ProblemDescription
           :initial-tab="descriptionTab"
           @update:tab="descriptionTab = $event"
@@ -12,7 +15,7 @@
       </div>
 
       <!-- Code Editor Panel -->
-      <v-col class="fill-height">
+      <v-col class="fill-height d-flex flex-column" style="min-width: 420px;">
         <div class="d-flex flex-column fill-height">
           <CodeEditor
             modelValue="// Your code here\n"
@@ -102,7 +105,7 @@ const handleTestcaseToggle = (expanded: boolean) => {
 };
 
 // Sidebar resize
-const sidebarWidth = ref(320);
+const sidebarWidth = ref(500);
 const startResize = (e: MouseEvent) => {
   const startX = e.clientX;
   const startW = sidebarWidth.value;

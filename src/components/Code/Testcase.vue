@@ -107,10 +107,12 @@ const props = withDefaults(defineProps<{
   initialTab?: string;
   result?: string;
   publicTestcases?: PublicTestcase[];
+  maxVisibleTestcases?: number;
 }>(), {
   initialTab: 'testcase',
   result: '',
   publicTestcases: () => [],
+  maxVisibleTestcases: 2,
 });
 
 const emit = defineEmits<{
@@ -125,10 +127,7 @@ const isExpanded = ref(true);
 const testCasesHeight = ref('300px');
 const activeTestcaseIndex = ref(0);
 
-const customTestcases = ref<CustomTestcase[]>([
-  { input: '2 7 11 15\n9', expected_output: '[0,1]' },
-  { input: '1 2 3\n4', expected_output: '[0,3]' },
-]);
+const customTestcases = ref<CustomTestcase[]>([]);
 
 const combinedTestcases = computed<Testcase[]>(() => [
   ...props.publicTestcases.map(tc => ({ ...tc, isPublic: true as const })),
