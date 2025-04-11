@@ -14,3 +14,12 @@ export interface LanguageConfigDto {
   memory_limit: number;
 }
 
+export interface TestCaseDto {
+  id: string;
+  input: string;
+  expected_output: string;
+  is_public: boolean;
+  score: number;
+}
+
+

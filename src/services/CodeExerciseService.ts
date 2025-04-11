@@ -10,5 +10,9 @@ export const CodeExerciseService = {
 
   async getLanguageConfigsOfAnExercise(exerciseId: string, { showError, showSuccess }: AuthConfig) {
     return ApiService.get<IResponseData<LanguageConfigDto[]>>(`/exercises/${exerciseId}/language-configs`, "", { showError, showSuccess })
+  },
+
+  async getPublicTestcasesOfAnExercise(exerciseId: string, { showError, showSuccess }: AuthConfig) {
+    return ApiService.get<IResponseData<LanguageConfigDto[]>>(`/exercises/${exerciseId}/testcases`, "", { showError, showSuccess })
   }
 }
