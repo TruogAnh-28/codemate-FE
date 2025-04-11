@@ -22,4 +22,11 @@ export interface TestCaseDto {
   score: number;
 }
 
+export interface ProgrammingLanguageConfig {
+  id: string;
+  judge0_language_id: number;
+  boilerplate_code: string;
+  time_limit: number;
+  memory_limit: number;
+}
 

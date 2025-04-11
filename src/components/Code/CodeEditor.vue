@@ -4,8 +4,8 @@
     <v-toolbar dense color="grey-darken-4">
       <v-select
         v-model="selectedLanguage"
-        :items="Object.keys(JUDGE0_LANG).map(Number)"
-        :item-title="(id) => JUDGE0_LANG[id]"
+        :items="availableLanguageIds"
+        :item-title="(id) => JUDGE0_LANG[id] || `Language ${id}`"
         :item-value="(id) => id"
         density="compact"
         hide-details
@@ -46,6 +46,13 @@ import { TestInput, LineExplanation, CodeAnalysisRequest, LanguageKey } from '@/
 import { LanguageConfigDto } from '@/types/CodingExercise';
 import { JUDGE0_LANG } from '@/constants/judge0_lang';
 import { useProgrammingSubmissions } from '@/composables/useProgrammingSubmissions';
+
+// Save user's code for each language
+const codePerLanguage = new Map<number, string>();
+
+const availableLanguageIds = computed(() =>
+  languageConfigs.value.map(config => config.judge0_language_id)
+);
 
 // Define types for hints
 interface LineHint {
@@ -537,11 +544,12 @@ onMounted(async () => {
 
   const config = languageConfigs.value.find(c => c.judge0_language_id === selectedLanguage.value);
   if (config) {
+    // Initialize both ref and cache map
     code.value = config.boilerplate_code;
+    codePerLanguage.set(config.judge0_language_id, config.boilerplate_code);
     nextTick(() => initEditor());
-  } else {
-    code.value = '// No boilerplate code available';
   }
+
 })
 
 // Clean up when component is unmounted
@@ -553,13 +561,26 @@ onUnmounted(() => {
 });
 
 // Watch for language changes
-watch(selectedLanguage, (id) => {
-  // Update boilerplate code based on selected language
-  const config = languageConfigs.value.find(c => c.judge0_language_id === id);
-  code.value = config?.boilerplate_code || '// No boilerplate code available';
+watch(selectedLanguage, (newLangId, oldLangId) => {
+  // Save current code before switching
+  if (oldLangId !== undefined) {
+    codePerLanguage.set(oldLangId, code.value);
+  }
+
+  // Retrieve code for the selected language or default
+  const cached = codePerLanguage.get(newLangId);
+  if (cached !== undefined) {
+    code.value = cached;
+  } else {
+    const config = languageConfigs.value.find(c => c.judge0_language_id === newLangId);
+    code.value = config?.boilerplate_code || '// No boilerplate code available';
+    codePerLanguage.set(newLangId, code.value);
+  }
+
   nextTick(() => initEditor());
   lineExplanations.value = [];
 });
+
 
 // Watch for external code changes
 watch(code, (newCode) => {
