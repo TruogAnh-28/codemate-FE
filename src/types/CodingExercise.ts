@@ -30,3 +30,7 @@ export interface ProgrammingLanguageConfig {
   memory_limit: number;
 }
 
+export interface GeneratedCodeExerciseBrief {
+  id: string;
+  name: string;
+}
