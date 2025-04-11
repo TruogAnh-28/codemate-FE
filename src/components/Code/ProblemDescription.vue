@@ -10,7 +10,7 @@
 
       <div v-html="problemDescription"></div>
 
-      <div v-for="(example, index) in examples" :key="index" class="examples mt-4">
+<!--      <div v-for="(example, index) in examples" :key="index" class="examples mt-4">
         <h3>{{ example.title }}</h3>
         <v-sheet color="grey-darken-3" class="pa-2 rounded">
           <p><strong>Input:</strong> nums = {{ example.input.nums }}, target = {{ example.input.target }}</p>
@@ -24,7 +24,7 @@
         <ul>
           <li v-for="(constraint, index) in constraints" :key="index">{{ constraint }}</li>
         </ul>
-      </div>
+      </div> -->
     </v-card-text>
     <v-card-text v-else-if="descriptionTab === 'submission'" class="pa-4">
       <SubmissionList :programmingExerciseId="exerciseId" :submissions="submissions" />
@@ -160,15 +160,6 @@ const emit = defineEmits<{
 }>();
 
 const descriptionTab = ref<string>(props.initialTab);
-// const problemDescription = ref<string>(PROBLEM_DESCRIPTION);
-// const examples = ref<ProblemExample[]>(PROBLEM_EXAMPLES);
-// const constraints = ref<string[]>(PROBLEM_CONSTRAINTS);
-
-// Watch for tab changes and emit event
-// watch(descriptionTab, (newValue) => {
-//   emit('update:tab', newValue);
-// });
-
 const messages = ref<ChatMessage[]>([]);
 
 watch(descriptionTab, async (newValue) => {
@@ -279,13 +270,10 @@ onMounted(async () => {
     );
 
     let responseBody = response.data;
-    const questionObject = responseBody.data["questions"][0];
-
-    problemDescription.value = questionObject.question;
-    difficulty.value = questionObject.difficulty;
-    tags.value = questionObject.tags;
-    examples.value = questionObject.examples;
-    constraints.value = questionObject.constraints;
+    let exerciseObject = responseBody.data;
+    problemDescription.value = exerciseObject.description;
+    console.log("Exercise object:", exerciseObject);
+    console.log('Problem description:', exerciseObject.value);
   } catch (err) {
     console.error('Failed to load exercise', err);
   }
@@ -394,6 +382,23 @@ onMounted(async () => {
 
 .chat-messages-container::-webkit-scrollbar-thumb:hover {
   background-color: #888;
+}
+
+:deep(.problem-description) h1 {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+:deep(.problem-description) ul {
+  padding-left: 1.5rem;
+  list-style-type: disc;
+  margin-bottom: 1rem;
+}
+
+:deep(.problem-description) li {
+  margin-bottom: 0.5rem;
+  line-height: 1.6;
 }
 </style>
 
