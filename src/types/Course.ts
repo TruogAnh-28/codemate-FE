@@ -84,7 +84,7 @@ export interface CoursesListResponse {
   nCredit: number
   nSemester: number
   courseID: string
-  image: string
+  image_url: string
   percentage_complete?:number
 }
 
@@ -108,7 +108,7 @@ export interface CourseDetailResponse {
   course_end_date: DateString
   course_learning_outcomes: string[]
   course_status: Status
-  course_image_url: string
+  course_image: string
   course_nCredit: number;
   course_nSemester: number;
   course_courseID: string;

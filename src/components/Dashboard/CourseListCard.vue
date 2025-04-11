@@ -23,25 +23,29 @@
           <!-- Avatar and Course Name Section -->
           <div class="flex items-center w-1/3 space-x-3">
             <!-- Course Avatar -->
-            <div class="image-container">
-              <template v-if="course.image">
+            <div class="avatar-container">
+              <template v-if="course.image_url">
                 <v-img
                   class="flex-shrink-0 course-image"
-                  width="300px"
-                  height="200px"
-                  :src="course.image"
+                  :width="120"
+                  :height="80"
+                  :src="course.image_url"
                   cover
                 >
                   <template v-slot:error>
-                    <CourseInitialAvatar :course-name="course.name" />
+                    <div class="h-full w-60 flex items-center justify-center rounded-lg">
+                      <CourseInitialAvatar :course-name="course.name" />
+                    </div>
                   </template>
                 </v-img>
               </template>
               <template v-else>
-                <CourseInitialAvatar :course-name="course.name" />
+                <div class="h-3/4 w-60 flex items-center justify-center rounded-lg">
+                  <CourseInitialAvatar :course-name="course.name" />
+                </div>
               </template>
             </div>
-
+            
             <!-- Course Name -->
             <span class="font-medium text-gray-800">{{ course.name }}</span>
           </div>
@@ -106,6 +110,16 @@ onMounted(() => {
 }
 .image-container {
   width: 300px;
+  overflow: hidden;
+  border-radius: 8px;
+}
+.avatar-container {
+  width: 200px;
+  height: 160px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   overflow: hidden;
   border-radius: 8px;
 }

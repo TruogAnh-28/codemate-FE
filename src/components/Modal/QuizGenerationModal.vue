@@ -27,9 +27,9 @@
       <v-card-text class="pa-6">
         <v-form @submit.prevent="generateCustomQuiz">
           <v-sheet rounded="lg" elevation="1" class="pa-4 mb-4 bg-grey-lighten-4">
-            <p class="text-body-2 mb-4 text-medium-emphasis">
+            <!-- <p class="text-body-2 mb-4 text-medium-emphasis">
               Total questions must not exceed 40. Distribute questions across difficulty levels.
-            </p>
+            </p> -->
 
             <div class="mb-3">
               <div class="d-flex align-center mb-1">
@@ -42,7 +42,7 @@
                 variant="outlined"
                 density="comfortable"
                 min="0"
-                max="40"
+                max="100"
                 class="rounded-lg"
                 hide-details="auto"
               ></v-text-field>
@@ -59,7 +59,7 @@
                 variant="outlined"
                 density="comfortable"
                 min="0"
-                max="40"
+                max="100"
                 class="rounded-lg"
                 hide-details="auto"
               ></v-text-field>
@@ -76,20 +76,12 @@
                 variant="outlined"
                 density="comfortable"
                 min="0"
-                max="40"
+                max="100"
                 class="rounded-lg"
                 hide-details="auto"
               ></v-text-field>
             </div>
 
-            <v-alert 
-              v-if="totalQuestions > 40" 
-              type="error" 
-              variant="outlined"
-              class="mt-4 rounded-lg"
-            >
-              Total questions cannot exceed 40. Current total: {{ totalQuestions }}
-            </v-alert>
           </v-sheet>
         </v-form>
       </v-card-text>
@@ -106,7 +98,7 @@
             color="primary"
             variant="elevated"
             class="rounded-lg"
-            :disabled="totalQuestions > 40 || isGenerating"
+            :disabled="isGenerating"
             @click.stop="generateCustomQuiz"
             >
             <v-progress-circular 
@@ -135,12 +127,9 @@ const emit = defineEmits(['quiz-generated', 'close']);
 
 const dialogVisible = ref(false);
 const easyQuestions = ref(10);
-const mediumQuestions = ref(20);
+const mediumQuestions = ref(10);
 const hardQuestions = ref(10);
 const isGenerating = ref(false);
-const totalQuestions = computed(() => 
-  easyQuestions.value + mediumQuestions.value + hardQuestions.value
-);
 
 const showError = inject("showError") as (message: string) => void;
 const showSuccess = inject("showSuccess") as (message: string) => void;
@@ -152,10 +141,6 @@ const closeDialog = () => {
 
 const generateCustomQuiz = async () => {
   if (isGenerating.value) return;
-  if (totalQuestions.value > 40) {
-    showError("Total questions cannot exceed 40.");
-    return;
-  }
 
   try {
     isGenerating.value = true;
@@ -174,10 +159,8 @@ const generateCustomQuiz = async () => {
     if (response && response.data) {
       showSuccess("Custom quiz generated successfully!");
       
-      // Emit event to trigger quiz list refresh
       emit('quiz-generated');
       
-      // Close the dialog
       closeDialog();
     }
   } catch (error) {
@@ -185,12 +168,10 @@ const generateCustomQuiz = async () => {
     showError("Failed to generate custom quiz. Please try again.");
   }
   finally {
-    // Reset loading state
     isGenerating.value = false;
   }
 };
 
-// Expose methods to parent component
 defineExpose({
   openDialog: () => {
     dialogVisible.value = true;

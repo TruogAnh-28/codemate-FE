@@ -32,7 +32,7 @@ export const moduleService = {
     quizId: string,
     request: QuizAnswerRequest
   ) {
-    return await ApiService.put<QuizScoreResponse>(
+    return await ApiService.put<IResponseData<QuizScoreResponse>>(
       `modules/quizzes/${quizId}/submit`,
       request,
       { showError, showSuccess }
