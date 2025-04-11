@@ -126,6 +126,7 @@
               color="primary"
               variant="text"
               class="transition-all duration-200 hover:bg-gray-100"
+              :to="`/professor-progress/${courseId}/students/${item.student_id}`"
             >
               <v-icon>mdi-view-module</v-icon>
             </v-btn>
@@ -141,12 +142,13 @@ import { ref, computed } from 'vue';
 import type { GetCourseGradesResponse } from "@/types/ProgressTracking";
 
 const props = defineProps<{
+  courseId: string;
   courseGrades: GetCourseGradesResponse | null;
   loading: boolean;
 }>();
 
 const expandedStudents = ref<{ [key: string]: boolean }>({});
-
+const courseId = props.courseId;
 const courseHeaders = [
   { title: "Student ID", key: "student_mssv", align: "center" as const },
   { title: "Student Name", key: "student_name", align: "start" as const },

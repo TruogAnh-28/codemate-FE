@@ -85,7 +85,7 @@ const fetchRecentActivities = async () => {
       "data" in recentActivities &&
       recentActivities.data
     ) {
-      activities.value = recentActivities.data as RecentActivitiesResponse[];
+      activities.value = (recentActivities.data as RecentActivitiesResponse[]).slice(0, 4);
     }
   });
   await reloadManager.trigger("activities");
