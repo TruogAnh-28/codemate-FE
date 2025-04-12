@@ -113,8 +113,8 @@ const fetchProfessorInformation = async () => {
     { showError, showSuccess },
     id
   );
-  if (response) {
-    professor_information.value = response;
+  if (response && "data" in response && response.data) {
+    professor_information.value = response.data;
   }
 };
 

@@ -391,7 +391,6 @@ const submitCode = async (): Promise<void> => {
     isLoading.value = true;
     emit('update:loading', true);
 
-    // Prepare stdin
     const stdin = prepareStdin(
       selectedLanguage.value,
       props.testInput.nums,
@@ -399,7 +398,6 @@ const submitCode = async (): Promise<void> => {
     );
 
     try {
-      // Create submission
       const token = await createSubmission(
         code.value,
         LANGUAGE_MAP[selectedLanguage.value],
@@ -407,10 +405,8 @@ const submitCode = async (): Promise<void> => {
         '[0,1]'
       );
 
-      // Poll for results
       const result = await pollSubmission(token);
 
-      // Format and emit results
       let resultText = '';
       if (result.status.id === 3 && result.stdout && result.stdout.trim() === '[0,1]') {
         resultText = `

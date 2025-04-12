@@ -141,10 +141,12 @@ const handleSubmit = () => {
     .map(outcome => outcome.value);
 
   if (filteredOutcomes.length > 0) {
-    emit('submit', {
+    const data = {
       course_id: props.courseId,
       learning_outcomes: filteredOutcomes
-    });
+    };
+    
+    emit('submit', data);
   }
 };
 </script>

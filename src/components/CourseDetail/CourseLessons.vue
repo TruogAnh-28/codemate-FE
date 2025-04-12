@@ -155,6 +155,7 @@ type CourseProps = {
   course: CourseDetailResponse | GetCourseDetailProfessorResponse;
 };
 const { user } = authStore.getState();
+const emit = defineEmits(['refreshCourse']);
 const props = defineProps<CourseProps>();
 const feedbackCardRef = ref<InstanceType<typeof FeedbackCard> | null>(null);
 
@@ -329,6 +330,7 @@ const submitDocuments = async (): Promise<void> => {
 
       // Refresh documents if needed
       await fetchDocuments(selectedLessonId.value);
+      emit('refreshCourse'); // Emit to parent to refresh course data
     }
   } catch (error) {
     showError("Failed to upload documents");
@@ -356,6 +358,7 @@ const confirmDeleteLesson = async (): Promise<void> => {
       if (response) {
         showSuccess("Lesson deleted successfully");
         await fetchLessons(); // Refresh lesson list
+        emit('refreshCourse'); // Emit to parent to refresh course data
       }
     } catch (error) {
       showError("Failed to delete lesson");
@@ -412,7 +415,6 @@ const getActionButtons = (lesson: any) => {
       color: "error", // Red color for delete
     });
 
-    // Add new button for adding documents (professors only)
     baseButtons.push({
       index: 4,
       icon: "mdi-file-upload",
