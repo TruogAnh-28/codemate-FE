@@ -8,7 +8,6 @@
 import { createRouter, createWebHistory } from "vue-router";
 import { setupLayouts } from "virtual:generated-layouts";
 import { routes as autoRoutes } from "vue-router/auto-routes";
-import { usersService } from "@/services/usersServices";
 import { navigationGuard } from "./navigationGuard";
 
 const LoginRoute = [

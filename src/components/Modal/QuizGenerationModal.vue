@@ -115,7 +115,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed } from 'vue';
+import { ref } from 'vue';
 import { aiGenerateServices } from "@/services/aiGenerateServices";
 
 const props = defineProps<{
