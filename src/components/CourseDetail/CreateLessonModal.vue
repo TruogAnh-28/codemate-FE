@@ -268,6 +268,7 @@ const handleSubmit = async () => {
       );
       
       showSuccess('Lesson updated successfully');
+      emit('update'); // Emit the update event to trigger parent refresh
     } else {
       // Create new lesson first
       const newLessonData = {
@@ -281,7 +282,7 @@ const handleSubmit = async () => {
         { showError, showSuccess },
         newLessonData
       );
-      console.log("response", response);
+      
       // If there are files to upload, add them using addDocuments
       if (files.value.length > 0 && response && response.data && response.data as LessonResponse ) {
         const lessonId = response.data.lessonId;
@@ -295,9 +296,10 @@ const handleSubmit = async () => {
       } else {
         showSuccess('Lesson created successfully');
       }
+      
+      emit('update');
     }
     
-    emit('update');
     emit('close');
   } catch (error) {
     showError(props.lessonId ? 'Failed to update lesson' : 'Failed to create lesson');

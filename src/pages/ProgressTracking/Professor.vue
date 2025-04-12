@@ -51,7 +51,7 @@
         :course-grades="courseGrades"
         :loading="loading"
       />
-
+<!-- 
       <ProgressExerciseGrade
         v-if="viewMode === 'exercise' && selectedCourseId"
         :exercises="exercises"
@@ -59,7 +59,7 @@
         :selected-exercise-id="selectedExerciseId"
         :loading="loading"
         @update:selected-exercise-id="selectedExerciseId = $event"
-      />
+      /> -->
     </main>
   </div>
 </template>

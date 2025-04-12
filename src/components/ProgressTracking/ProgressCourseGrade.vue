@@ -67,12 +67,15 @@
             <span class="font-medium">{{ item.student_mssv }}</span>
           </div>
         </template>
+        
         <template v-slot:item.student_name="{ item }">
-          <div class="flex flex-col">
-            <span class="font-medium">{{ item.student_name }}</span>
-            <span v-if="item.student_email" class="text-sm text-gray-500">{{ item.student_email }}</span>
-          </div>
+          <div class="font-medium">{{ item.student_name }}</div>
         </template>
+        
+        <template v-slot:item.student_email="{ item }">
+          <div class="text-sm text-gray-500">{{ item.student_email || '-' }}</div>
+        </template>
+        
         <template v-slot:item.exercises="{ item }">
           <div v-if="item.exercises?.length" class="space-y-2">
             <div 
@@ -152,6 +155,7 @@ const courseId = props.courseId;
 const courseHeaders = [
   { title: "Student ID", key: "student_mssv", align: "center" as const },
   { title: "Student Name", key: "student_name", align: "start" as const },
+  { title: "Email", key: "student_email", align: "start" as const },
   { title: "Exercises", key: "exercises", align: "start" as const },
   { title: "Average Score", key: "average_score", align: "center" as const, sortable: true },
   { title: "Learning Path Progress", key: "learning_path", align: "center" as const },

@@ -36,7 +36,11 @@
       </v-window-item>
 
       <v-window-item value="lessons">
-        <CourseLessons v-if="course" :course="course" />
+        <CourseLessons 
+          v-if="course" 
+          :course="course" 
+          @refreshCourse="handleCourseRefresh"
+        />
       </v-window-item>
 
       <v-window-item value="exercises">
@@ -47,6 +51,7 @@
         <CourseExercisesProfessor
           v-else-if="isProfessor && !isCourseDetailResponse(course) && course"
           :course="course"
+          @refreshCourse="handleCourseRefresh"
         />
       </v-window-item>
     </v-window>
@@ -70,11 +75,13 @@ defineProps<{
   activeTab: string;
   tabs: Tab[];
 }>();
+
 const authStore = useAuthStore;
 const { user } = authStore.getState();
 const role = computed(() => user?.role);
 const isStudent = computed(() => role.value === "student");
 const isProfessor = computed(() => role.value === "professor");
+
 function isCourseDetailResponse(course: any): course is CourseDetailResponse {
   return (
     course &&
@@ -86,8 +93,10 @@ function isCourseDetailResponse(course: any): course is CourseDetailResponse {
     "assignments_done" in course
   );
 }
+
 const emit = defineEmits<{
   "update:active-tab": [value: string];
+  "refreshCourse": [];
 }>();
 
 const handleTabUpdate = (value: unknown) => {
@@ -95,5 +104,12 @@ const handleTabUpdate = (value: unknown) => {
     emit("update:active-tab", value);
   }
 };
-const handleImageUpload = async () => {};
+
+const handleImageUpload = async () => {
+  emit("refreshCourse"); 
+};
+
+const handleCourseRefresh = () => {
+  emit("refreshCourse");
+};
 </script>
