@@ -6,7 +6,7 @@
     >
       Update Learning Outcomes
     </v-btn>
-    <v-btn 
+    <!-- <v-btn 
       color="primary" 
       :to="`/courses/${courseId}/exercise-quiz`"
     >
@@ -17,7 +17,7 @@
       :to="`/courses/${courseId}/exercise-code`"
     >
       Add Exercise Code
-    </v-btn>
+    </v-btn> -->
     <v-btn 
       color="primary" 
       @click="showCreateLessonModal = true"
