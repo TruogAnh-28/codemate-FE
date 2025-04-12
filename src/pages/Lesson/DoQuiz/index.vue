@@ -37,7 +37,7 @@
           prepend-icon="mdi-check-circle"
           elevation="1"
         >
-          Completed: {{ quizExercise.score }}/{{ quizExercise.max_score }}
+          Completed: {{ quizExercise.score }}/100
         </v-chip>
         <v-chip
           v-else
@@ -252,10 +252,10 @@
         <v-card-text class="pa-4">
           <v-sheet rounded="lg" elevation="0" class="pa-6 text-center bg-primary-lighten-5 border-card mb-4">
             <h2 class="text-h4 font-weight-bold text-primary mb-2">
-              {{ quizExercise.score }} / {{ quizExercise.max_score }}
+              {{ quizExercise.score }} / 100
             </h2>
             <p class="text-body-1 mb-0" v-if="quizExercise.score">
-              You scored {{ quizExercise.score }} points out of {{ quizExercise.max_score }}
+              You scored {{ quizExercise.score }} points out of 100
               ({{ Math.round((quizExercise.score / quizExercise.max_score) * 100) }}%)
             </p>
           </v-sheet>
