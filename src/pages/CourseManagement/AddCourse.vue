@@ -261,17 +261,6 @@ const updateFromCredit = (credit: number) => {
   }
 };
 
-const getFilteredProfessors = () => {
-  if (!professorSearch.value) return professorInformation.value;
-  const search = professorSearch.value.toLowerCase();
-  return professorInformation.value.filter(
-    (prof) =>
-      (prof.fullname?.toLowerCase() || "").includes(search) ||
-      (prof.email?.toLowerCase() || "").includes(search) ||
-      (prof.ms?.toLowerCase() || "").includes(search)
-  );
-};
-
 onMounted(() => {
   // Fetch data on mount
   fetchAvailableCourses();
