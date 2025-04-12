@@ -14,10 +14,14 @@
         width="150"
       ></v-select>
       <v-spacer></v-spacer>
+
+      <v-btn variant="tonal" color="secondary" class="mr-2" @click="onImport">Import</v-btn>
+      <v-btn variant="tonal" color="secondary" class="mr-2" @click="onExport">Export</v-btn>
       <v-btn variant="tonal" color="warning" class="mr-2" @click="giveHints" :loading="isGettingHints">Give Hints</v-btn>
       <v-btn variant="tonal" color="info" class="mr-2" @click="explainCode" :loading="isExplaining">Explain Code</v-btn>
       <v-btn variant="tonal" color="success" class="mr-2" @click="runCode" :loading="isLoading">Run</v-btn>
       <v-btn variant="tonal" color="primary" @click="submitCode" :loading="isLoading">Submit</v-btn>
+
     </v-toolbar>
 
     <!-- CodeMirror Editor -->
@@ -46,6 +50,8 @@ import { TestInput, LineExplanation, CodeAnalysisRequest, LanguageKey } from '@/
 import { LanguageConfigDto } from '@/types/CodingExercise';
 import { JUDGE0_LANG } from '@/constants/judge0_lang';
 import { useProgrammingSubmissions } from '@/composables/useProgrammingSubmissions';
+import { useFileIO } from '@/composables/useFileIO'
+
 
 // Save user's code for each language
 const codePerLanguage = new Map<number, string>();
@@ -593,6 +599,19 @@ watch(code, (newCode) => {
     });
   }
 });
+
+const { importCode, exportCode } = useFileIO()
+
+const onImport = () => {
+  importCode((importedCode) => {
+    code.value = importedCode
+    nextTick(initEditor)
+  })
+}
+
+const onExport = () => {
+  exportCode(code.value, selectedLanguage.value)
+}
 </script>
 <style>
 .editor-container {
