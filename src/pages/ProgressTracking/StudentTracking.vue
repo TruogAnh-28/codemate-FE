@@ -137,8 +137,6 @@ import {
   _GetRecommendedLessonsResponse,
   CourseDetailResponse,
 } from "@/types/Course";
-import { progressTrackingServices } from "@/services/ProgressTracking";
-import { ProgressTrackingStudent } from "@/types/ProgressTracking";
 interface RouteParam {
   courseId: string;
   studentId: string;
@@ -148,7 +146,6 @@ const courseData = ref<CourseDetailResponse | null>(null);
 const learningPathData = ref<_GetRecommendedLessonsResponse | null>(null);
 const loading = ref<boolean>(true);
 const error = ref<string | null>(null);
-const AIassessment = ref<ProgressTrackingStudent | null>(null);
 const route = useRoute();
 const { courseId, studentId } = route.params as RouteParam;
 // --- Mock Data for Performance Metrics Bar Chart (ApexCharts format) ---

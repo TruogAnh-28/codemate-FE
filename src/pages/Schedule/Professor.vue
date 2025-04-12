@@ -206,7 +206,6 @@ const calendarDays = computed(() => {
   const month = currentDate.value.getMonth();
 
   const firstDayOfMonth = new Date(year, month, 1);
-  const lastDayOfMonth = new Date(year, month + 1, 0);
 
   // Adjust for week starting on Monday (0 = Monday, 6 = Sunday)
   let firstDayOfCalendar = new Date(firstDayOfMonth);
