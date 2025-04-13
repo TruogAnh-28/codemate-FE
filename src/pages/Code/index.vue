@@ -9,6 +9,7 @@
       >
         <ProblemDescription
           :initial-tab="descriptionTab"
+          :user-solution="userSolution"
           @update:tab="descriptionTab = $event"
         />
         <div class="resize-handle" @mousedown="startResize" />
@@ -23,6 +24,7 @@
             language="javascript"
             @run-result="handleRunResult"
             @submit-result="handleSubmitResult"
+            @update:solution="userSolution = $event"
             @update:loading="isLoading = $event"
             :testInput="{ nums: JSON.stringify([2, 7, 11, 15]), target: '9' }"
             :style="codeEditorStyle"
@@ -63,11 +65,11 @@ interface PublicTestcase {
   isPublic: true;
 }
 
-
-
 interface RouteParams {
   exerciseId: string;
 }
+
+const userSolution = ref('');
 
 const route = useRoute();
 const { exerciseId } = route.params as RouteParams;
@@ -88,7 +90,7 @@ const fetchPublicTestcases = async () => {
       showError: (message: string) => console.error(message),
       showSuccess: (message: string) => console.log(message),
     });
-    
+
     if (res.data) {
       publicTestcases.value = res.data as TestCaseDto[];
     }
