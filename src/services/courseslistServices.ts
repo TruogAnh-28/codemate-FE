@@ -58,11 +58,22 @@ export const coursesService = {
       { showError, showSuccess }
     );
   },
+  async fetchCourseDetailForProfessor(
+    { showError, showSuccess }: AuthConfig,
+    course_id: string,
+    student_id: string
+  ) {
+    return await ApiService.get<IResponseData<CourseDetailResponse>>(
+      `courses/${course_id}/students/${student_id}`,
+      "",
+      { showError, showSuccess }
+    );
+  },
   async getProfessorForCourse(
     { showError, showSuccess }: AuthConfig,
     course_id: string
   ) {
-    return await ApiService.get<IResponseData<ProfessorInformation[]>>(
+    return await ApiService.get<IResponseData<ProfessorInformation>>(
       `courses/${course_id}/professor`,
       "",
       { showError, showSuccess }
@@ -94,6 +105,18 @@ export const coursesService = {
     expand?: string
   ) {
     const resource = `courses/${course_id}/learning-path/recommended-lessons`;
+    const params = expand ? { expand } : undefined;
+    return await ApiService.query<
+      IResponseData<_GetRecommendedLessonsResponse>
+    >(resource, params, { showError, showSuccess });
+  },
+  async getRecommendedLessonsfromProfessor(
+    { showError, showSuccess }: AuthConfig,
+    course_id: string,
+    student_id: string,
+    expand?: string
+  ) {
+    const resource = `courses/${course_id}/students/${student_id}/learning-path/recommended-lessons`;
     const params = expand ? { expand } : undefined;
     return await ApiService.query<
       IResponseData<_GetRecommendedLessonsResponse>

@@ -1,7 +1,7 @@
 <template>
   <div class="feedback-card-wrapper">
     <v-card
-    v-if="props.type === 'system'"
+      v-if="props.type === 'system'"
       class="feedback-card border-2 border-primary/10 hover:shadow-md transition-shadow"
       elevation="1"
     >
@@ -132,6 +132,7 @@ import { feedbackServices } from "@/services/feedbackServices";
 import { CreateFeedbackRequest } from "@/types/Feedback";
 import { FeedbackCategory } from "@/utils/constant";
 import { useAuthStore } from "@/stores/auth";
+import { coursesService } from "@/services/courseslistServices";
 
 const authStore = useAuthStore;
 const { user } = authStore.getState();
@@ -224,6 +225,19 @@ defineExpose({
 const showError = inject("showError") as (message: string) => void;
 const showSuccess = inject("showSuccess") as (message: string) => void;
 
+const fetchProfessorId = async () => {
+  if (!props.courseId) {
+    return;
+  }
+  const response = await coursesService.getProfessorForCourse(
+    { showError, showSuccess },
+    props.courseId
+  );
+  if (response && "data" in response && response.data) {
+    return response.data.professor_id;
+  }
+};
+
 const submitFeedback = async () => {
   let titlePrefix = "";
   if (props.type === "course") {
@@ -237,6 +251,8 @@ const submitFeedback = async () => {
     }
   }
 
+  const getProfessorId = await fetchProfessorId();
+
   const feedbackData: CreateFeedbackRequest = {
     type: props.type,
     title: titlePrefix + feedbackTitle.value,
@@ -247,7 +263,9 @@ const submitFeedback = async () => {
     status: "pending",
     courseId: props.type === "course" ? props.courseId : undefined,
   };
-
+  if (getProfessorId) {
+    feedbackData.professorId = getProfessorId;
+  }
   const response = await feedbackServices.sendFeedback(
     { showError, showSuccess },
     feedbackData

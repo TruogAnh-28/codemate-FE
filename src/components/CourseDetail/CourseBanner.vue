@@ -2,12 +2,12 @@
   <v-row no-gutters align="center" class="p-6">
     <v-col cols="4" md="4" class="flex justify-center items-center pr-4">
       <div class="image-container">
-        <template v-if="course.course_image_url">
+        <template v-if="course.course_image">
         <v-img
             class="flex-shrink-0 course-image"
            
             height="200px"
-            :src="course.course_image_url"
+            :src="course.course_image"
             cover
             @click="openImageUpload"
             :class="{ 'cursor-pointer': canEditImage }"
@@ -28,7 +28,7 @@
       </template>
         
         <!-- Image Upload Dialog -->
-        <v-dialog v-model="showImageUpload" max-width="500px">
+        <v-dialog v-if="isProfessor" v-model="showImageUpload" max-width="500px">
           <v-card>
             <v-card-title class="d-flex align-center bg-primary text-white py-3 mb-4">
               <v-icon class="mr-2">mdi-image</v-icon>
@@ -90,12 +90,16 @@
 import { computed, ref, watch } from 'vue'
 import { CourseDetailResponse, GetCourseDetailProfessorResponse } from "@/types/Course"
 import { coursesService } from "@/services/Professor/CourseServices"
-
+import { useAuthStore } from "@/stores/auth";
 const props = defineProps<{
   course: CourseDetailResponse | GetCourseDetailProfessorResponse,
   canEditImage?: boolean
 }>()
 
+const authStore = useAuthStore;
+const { user } = authStore.getState();
+const role = computed(() => user?.role);
+const isProfessor = computed(() => role.value === "professor");
 // Set default value for canEditImage if not provided
 const canEditImage = computed(() => props.canEditImage !== undefined ? props.canEditImage : false)
 

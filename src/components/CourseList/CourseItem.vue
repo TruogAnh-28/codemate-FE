@@ -14,12 +14,12 @@
         >
           <div class="d-flex p-4 gap-4 course-content">
             <div class="image-container">
-              <template v-if="course.image">
+              <template v-if="course.image_url">
                 <v-img
                   class="flex-shrink-0 course-image"
-                  width="150px"
-                  height="150px"
-                  :src="course.image"
+                  width="300px"
+                  height="200px"
+                  :src="course.image_url"
                   cover
                 >
                   <template v-slot:error>

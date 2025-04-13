@@ -6,7 +6,7 @@
     >
       Update Learning Outcomes
     </v-btn>
-    <v-btn 
+    <!-- <v-btn 
       color="primary" 
       :to="`/courses/${courseId}/exercise-quiz`"
     >
@@ -17,7 +17,7 @@
       :to="`/courses/${courseId}/exercise-code`"
     >
       Add Exercise Code
-    </v-btn>
+    </v-btn> -->
     <v-btn 
       color="primary" 
       @click="showCreateLessonModal = true"
@@ -41,7 +41,8 @@
         :courseId="courseId"
         :courseName="courseName"
         @close="showCreateLessonModal = false"
-        />
+        @update="handleLessonUpdate"
+      />
     </v-dialog>
   </div>
 </template>
@@ -58,6 +59,8 @@ const props = defineProps<{
   course_outcomes: string[];
 }>();
 
+const emit = defineEmits(['update:course']);
+
 const showCreateLessonModal = ref(false);
 const showLearningOutcomesModal = ref(false);
 const showError = inject('showError') as (message: string) => void;
@@ -72,10 +75,16 @@ const handleLearningOutcomesSubmit = async (data: PutLearningOutcomesCoursesResp
     );
     showLearningOutcomesModal.value = false;
     showSuccess('Learning outcomes updated successfully');
+
+    emit('update:course');
   } catch (error) {
     showError('Failed to update learning outcomes');
   }
 };
 
-
+const handleLessonUpdate = () => {
+  showCreateLessonModal.value = false;
+ 
+  emit('update:course');
+}
 </script>

@@ -15,6 +15,7 @@
           :course="course"
           :active-tab="activeTab"
           @update:active-tab="activeTab = $event"
+          @refreshCourse="fetchCourseDetail"
           :tabs="tabs"
         />
       </v-col>
@@ -65,11 +66,13 @@ const tabs = ref<Tab[]>([
 ]);
 
 const fetchCourseDetail = async () => {
+  console.log("Fetching course details...");
   const response = await professorCoursesService.fetchCourseDetail(
     { showError, showSuccess },
     props.id
   );
   if (response && "data" in response && response.data) {
+    console.log("Course details fetched successfully");
     course.value = response.data as GetCourseDetailProfessorResponse;
   }
 };
@@ -83,6 +86,7 @@ const fetchProfessorInformation = async () => {
     professor_information.value = response;
   }
 };
+
 const fetchStudents = async () => {
   const response = await coursesService.getStudentsForCourse(
     { showError, showSuccess },
@@ -92,6 +96,7 @@ const fetchStudents = async () => {
     students.value = response.data as StudentOfCourseListModal[];
   }
 };
+
 watch(
   () => professor_information.value,
   (professor_information_new: ProfessorInformation | null) => {

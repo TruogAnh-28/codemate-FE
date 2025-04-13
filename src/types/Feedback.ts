@@ -10,6 +10,7 @@ export interface CreateFeedbackRequest {
   rate: number
   status: FeedbackStatusType
   courseId?: string
+  professorId?: string
 }
 
 export interface CreateFeedbackResponse {

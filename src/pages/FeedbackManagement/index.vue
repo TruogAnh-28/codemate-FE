@@ -399,16 +399,6 @@ const MinEndDate = computed(() => {
   }
 });
 
-const getListYear = (
-  rawData: GetListFeedbackResponse[]
-): { title: number; value: number }[] => {
-  const years = rawData.map((feedback) =>
-    new Date(feedback.created_at).getFullYear()
-  );
-  const uniqueYears = Array.from(new Set(years)).sort((a, b) => b - a);
-  return uniqueYears.map((year) => ({ title: year, value: year }));
-};
-
 const statusOptions = [
   { title: "Pending", value: "pending" },
   { title: "In Progress", value: "in_progress" },
