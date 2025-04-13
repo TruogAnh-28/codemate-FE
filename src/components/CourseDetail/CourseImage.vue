@@ -1,6 +1,6 @@
 <template>
   <v-img
-    :src="getAvatarCourseUrl(course?.course_image ?? '')"
+    :src="getAvatarCourseUrl(courseImage ?? '')"
     :alt="course?.course_name"
     class="w-full h-full"
   >
@@ -17,7 +17,11 @@
 <script lang="ts" setup>
 import { getAvatarCourseUrl } from "@/utils/functions/functions";
 import { CourseDetailResponse, GetCourseDetailProfessorResponse } from "@/types/Course";
-defineProps<{
+const props = defineProps<{
   course: CourseDetailResponse | GetCourseDetailProfessorResponse | null;
 }>();
+const courseImage = computed(() => {
+  if (!props.course) return null;
+  return ("course_image" in props.course) ? props.course.course_image : props.course.course_image_url;
+});
 </script>

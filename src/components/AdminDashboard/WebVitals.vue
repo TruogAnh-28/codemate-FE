@@ -1,6 +1,6 @@
 <template>
   <v-row>
-    <v-col v-for="(metric, index) in metrics" :key="metric.name" cols="12" md="4">
+    <v-col v-for="(metric, _) in metrics" :key="metric.name" cols="12" md="4">
       <v-hover v-slot="{ isHovering, props: hoverProps }">
         <v-card
           v-bind="hoverProps"

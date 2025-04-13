@@ -1,8 +1,6 @@
 import { ProgrammingTestCase } from './ProgrammingTestCase';
 type Status = 'pending' | 'completed' | 'failed';
 
-export
-
 export interface ProgrammingSubmissionStat {
   id: string;
   user_id: string;
@@ -11,6 +9,7 @@ export interface ProgrammingSubmissionStat {
   status: Status;
   passed_testcases: number;
   total_testcases: number;
+  created_at: Date;
 }
 
 export interface ProgrammingTestResult {

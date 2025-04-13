@@ -9,7 +9,7 @@ export const useGeneratedCodeExerciseStore = defineStore("generatedCodeExercise"
     error: null as string | null,
   }),
   actions: {
-    async loadExercises(moduleId: string, lessonId: string) {
+    async loadExercises(moduleId: string) {
       this.loading = true;
       try {
         const response = await CodeExerciseService.getListGeneratedCodeExercisesBrief(moduleId, {showError: () => {}, showSuccess: () => {}});

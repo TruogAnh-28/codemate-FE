@@ -37,7 +37,7 @@
           prepend-icon="mdi-check-circle"
           elevation="1"
         >
-          Completed: {{ quizExercise.score }}/{{ quizExercise.max_score }}
+          Completed: {{ quizExercise.score }}/100
         </v-chip>
         <v-chip
           v-else
@@ -252,10 +252,10 @@
         <v-card-text class="pa-4">
           <v-sheet rounded="lg" elevation="0" class="pa-6 text-center bg-primary-lighten-5 border-card mb-4">
             <h2 class="text-h4 font-weight-bold text-primary mb-2">
-              {{ quizExercise.score }} / {{ quizExercise.max_score }}
+              {{ quizExercise.score }} / 100
             </h2>
             <p class="text-body-1 mb-0" v-if="quizExercise.score">
-              You scored {{ quizExercise.score }} points out of {{ quizExercise.max_score }}
+              You scored {{ quizExercise.score }} points out of 100
               ({{ Math.round((quizExercise.score / quizExercise.max_score) * 100) }}%)
             </p>
           </v-sheet>
@@ -376,7 +376,7 @@ const quizStartTime = ref<number | null>(null);
 
 // Route and Breadcrumbs
 const route = useRoute();
-const { quizId, moduleId } = route.params as RouteParams;
+const { quizId } = route.params as RouteParams;
 
 const breadcrumbsStore = useBreadcrumbsStore();
 const routeState = (route as any).state as { breadcrumbs?: Breadcrumbs[] } | undefined;
@@ -395,12 +395,6 @@ const allQuestionsAnswered = computed(() => {
   
   // Allow submission even if not all questions are answered
   return true;
-});
-
-const quizDuration = computed(() => {
-  if (!quizExercise.value?.time_limit || !remainingTime.value) return 0;
-  // Convert minutes to seconds for duration calculation
-  return (quizExercise.value.time_limit * 60) - remainingTime.value;
 });
 
 // Timer Methods
@@ -525,13 +519,13 @@ function getDifficultyColor(difficulty: string): string {
   }
 }
 
-function isOptionSelected(question: QuizQuestionResponse, option: string): boolean {
-  // Check if quiz is completed or has user choices
-  if (quizExercise.value?.status === 'completed' || question.user_choice) {
-    return question.user_choice ? question.user_choice.includes(option) : false;
-  }
-  return false;
-}
+// function isOptionSelected(question: QuizQuestionResponse, option: string): boolean {
+//   // Check if quiz is completed or has user choices
+//   if (quizExercise.value?.status === 'completed' || question.user_choice) {
+//     return question.user_choice ? question.user_choice.includes(option) : false;
+//   }
+//   return false;
+// }
 
 function getOptionClass(question: QuizQuestionResponse, option: string): string {
   if (quizExercise.value?.status !== 'completed') {
@@ -612,9 +606,9 @@ async function submitQuizAnswers(isAutoSubmit: boolean = false) {
   });
 
   // Calculate the duration in seconds
-  const timeSpent = quizExercise.value.time_limit 
-    ? (quizExercise.value.time_limit * 60) - remainingTime.value 
-    : 0;
+  // const timeSpent = quizExercise.value.time_limit 
+  //   ? (quizExercise.value.time_limit * 60) - remainingTime.value 
+  //   : 0;
 
   const submitQuizAnswersRequest: QuizAnswerRequest = {
     quizId,
@@ -705,19 +699,19 @@ async function fetchQuizDetails() {
   }
 }
 
-async function retakeQuiz() {
-  try {
-    await moduleService.clearQuizAnswers(
-      { showError, showSuccess },
-      moduleId,
-      quizId
-    );
-    showSuccess("Quiz reset successfully. You can now retake the quiz.");
-    await fetchQuizDetails();
-  } catch (error) {
-    showError("Failed to reset quiz. Please try again.");
-  }
-}
+// async function retakeQuiz() {
+//   try {
+//     await moduleService.clearQuizAnswers(
+//       { showError, showSuccess },
+//       moduleId,
+//       quizId
+//     );
+//     showSuccess("Quiz reset successfully. You can now retake the quiz.");
+//     await fetchQuizDetails();
+//   } catch (error) {
+//     showError("Failed to reset quiz. Please try again.");
+//   }
+// }
 
 async function finishQuiz() {
   isResultDialogOpen.value = false;

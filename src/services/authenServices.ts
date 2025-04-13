@@ -48,7 +48,7 @@ export const authenService = {
     { showError, showSuccess }: AuthConfig,
     request: VerifyEmailRequest
   ) {
-    return ApiService.post<VerifyEmailResponse>("auth/verify-email", request, {
+    return ApiService.post<IResponseData<VerifyEmailResponse>>("auth/verify-email", request, {
       showError,
       showSuccess,
     });
@@ -58,7 +58,7 @@ export const authenService = {
     { showError, showSuccess }: AuthConfig,
     email: string
   ) {
-    return ApiService.post<VerifyEmailResponse>(
+    return ApiService.post<IResponseData<VerifyEmailResponse>>(
       "auth/resend-verification-code",
       { email },
       { showError, showSuccess }
@@ -66,7 +66,7 @@ export const authenService = {
   },
 
   async forgotPassword({ showError, showSuccess }: AuthConfig, email: string) {
-    return ApiService.post<ForgotPasswordResponse>(
+    return ApiService.post<IResponseData<ForgotPasswordResponse>>(
       "auth/forgot-password",
       { email },
       { showError, showSuccess }
@@ -77,7 +77,7 @@ export const authenService = {
     { showError, showSuccess }: AuthConfig,
     request: ResetPasswordRequest
   ) {
-    return ApiService.post<ResetPasswordResponse>(
+    return ApiService.post<IResponseData<ResetPasswordResponse>>(
       "auth/reset-password",
       request,
       { showError, showSuccess }
