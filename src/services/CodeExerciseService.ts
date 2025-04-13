@@ -1,6 +1,6 @@
 import ApiService from "@/common/api.service";
 import { AuthConfig } from "./authenServices";
-import { GeneratedCodeExerciseBrief, LanguageConfigDto, SubmissionDto } from "@/types/CodingExercise";
+import { GeneratedCodeExerciseBrief, LanguageConfigDto, SubmissionDto, TestCaseDto } from "@/types/CodingExercise";
 import { IResponseData } from "@/modals/apis/response";
 import { ProgrammingLanguageConfig } from "@/types/CodingExercise";
 import { ExerciseCodeResponse } from "@/types/Exercise";
@@ -23,7 +23,7 @@ export const CodeExerciseService = {
   },
 
   async getPublicTestcasesOfAnExercise(exerciseId: string, { showError, showSuccess }: AuthConfig) {
-    return ApiService.get<IResponseData<LanguageConfigDto[]>>(`/exercises/${exerciseId}/testcases`, "", { showError, showSuccess })
+    return ApiService.get<IResponseData<TestCaseDto[]>>(`/exercises/${exerciseId}/testcases`, "", { showError, showSuccess })
   },
 
   // New

@@ -1,6 +1,6 @@
 export interface CodeAnalysisRequest {
   code: string;
-  language: string;
+  language: number;
 }
 export interface CodeExplanation {
     line: number;
@@ -17,11 +17,6 @@ export interface LineExplanation {
   line: number;
   explanation: string;
   code: string;
-}
-
-export interface CodeAnalysisRequest {
-  code: string;
-  language: string;
 }
 
 // Define a type for the language mapping

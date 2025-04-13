@@ -19,20 +19,20 @@
         <div class="d-flex flex-column fill-height">
           <CodeEditor
             modelValue="// Your code here\n"
-            onUpdate:modelValue=fn
+            onUpdate:modelValue="fn"
             language="javascript"
             @run-result="handleRunResult"
             @submit-result="handleSubmitResult"
             @update:loading="isLoading = $event"
-            :testInput="{ nums: [2, 7, 11, 15], target: 9 }"
+            :testInput="{ nums: JSON.stringify([2, 7, 11, 15]), target: '9' }"
             :style="codeEditorStyle"
           />
           <Testcase
             :initial-tab="testTab"
             :result="testResult"
-            :public-testcases="publicTestcases"
+            :public-testcases="mappedPublicTestcases"
             @update:tab="testTab = $event"
-            @update:input="testInput = $event"
+            @update:input="handleTestInputUpdate"
             @toggle="handleTestcaseToggle"
           />
         </div>
@@ -45,35 +45,66 @@
 import { onMounted, ref, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import { CodeExerciseService } from '@/services/CodeExerciseService';
-import { DEFAULT_TEST_INPUT } from '@/constants/templateProblem';
 import ProblemDescription from '@/components/Code/ProblemDescription.vue';
 import CodeEditor from '@/components/Code/CodeEditor.vue';
 import Testcase from '@/components/Code/Testcase.vue';
+import { TestCaseDto } from '@/types/CodingExercise';
+
+// Define the interfaces needed for the component
+interface CustomTestcase {
+  input: string;
+  expected_output: string;
+  isPublic?: false;
+}
+
+interface PublicTestcase {
+  input: string;
+  expected_output: string;
+  isPublic: true;
+}
+
+
+
+interface RouteParams {
+  exerciseId: string;
+}
 
 const route = useRoute();
-const exerciseId = route.params.exerciseId as string;
+const { exerciseId } = route.params as RouteParams;
 
 // UI States
 const descriptionTab = ref('description');
 const testTab = ref('testcase');
 const testResult = ref('');
-const testInput = ref({ ...DEFAULT_TEST_INPUT });
 const isLoading = ref(false);
 const testcaseExpanded = ref(true);
-const publicTestcases = ref([]);
+const publicTestcases = ref<TestCaseDto[]>([]);
+
 
 // Fetch public testcases
 const fetchPublicTestcases = async () => {
   try {
     const res = await CodeExerciseService.getPublicTestcasesOfAnExercise(exerciseId, {
-      showError: true,
-      showSuccess: false,
+      showError: (message: string) => console.error(message),
+      showSuccess: (message: string) => console.log(message),
     });
-    publicTestcases.value = res.data;
+    
+    if (res.data) {
+      publicTestcases.value = res.data as TestCaseDto[];
+    }
   } catch (err) {
     console.error('Failed to fetch public testcases:', err);
   }
 };
+
+// Map public testcases to the format expected by Testcase component
+const mappedPublicTestcases = computed<PublicTestcase[]>(() => {
+  return publicTestcases.value.map(tc => ({
+    input: typeof tc.input === 'string' ? tc.input : '',
+    expected_output: typeof tc.expected_output === 'string' ? tc.expected_output : '',
+    isPublic: true as const
+  }));
+});
 
 onMounted(fetchPublicTestcases);
 
@@ -104,6 +135,14 @@ const handleTestcaseToggle = (expanded: boolean) => {
   testcaseExpanded.value = expanded;
 };
 
+// Handle test input updates from the Testcase component
+const handleTestInputUpdate = (customTestcases: CustomTestcase[]) => {
+  // We could convert these custom testcases to TestInput format if needed
+  console.log('Custom testcases updated:', customTestcases);
+  // This is just a placeholder implementation since we're not actually using
+  // the custom testcases in this component
+};
+
 // Sidebar resize
 const sidebarWidth = ref(500);
 const startResize = (e: MouseEvent) => {
@@ -120,7 +159,6 @@ const startResize = (e: MouseEvent) => {
   document.addEventListener('mouseup', onMouseUp);
 };
 </script>
-
 
 <style>
 html, body {

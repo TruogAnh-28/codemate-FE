@@ -5,7 +5,7 @@
       <v-select
         v-model="selectedLanguage"
         :items="availableLanguageIds"
-        :item-title="(id) => JUDGE0_LANG[id] || `Language ${id}`"
+        :item-title="(id) => getLanguageName(id)"
         :item-value="(id) => id"
         density="compact"
         hide-details
@@ -43,22 +43,26 @@ import { javascript } from '@codemirror/lang-javascript';
 import { cpp } from '@codemirror/lang-cpp';
 import { python } from '@codemirror/lang-python';
 import { java } from '@codemirror/lang-java';
-import { LANGUAGES, LANGUAGE_MAP, DEFAULT_CODE } from '@/constants/templateLanguage';
 import { createSubmission, pollSubmission, prepareStdin } from '@/services/Professor/judge0api';
 import { llmCodeServices } from '@/services/llmCodeServices';
 import { TestInput, LineExplanation, CodeAnalysisRequest, LanguageKey } from '@/types/LLM_code';
 import { LanguageConfigDto } from '@/types/CodingExercise';
 import { JUDGE0_LANG } from '@/constants/judge0_lang';
 import { useProgrammingSubmissions } from '@/composables/useProgrammingSubmissions';
-import { useFileIO } from '@/composables/useFileIO'
-
+import { useFileIO } from '@/composables/useFileIO';
+import { ref, watch, computed, onMounted, onUnmounted, nextTick, inject } from 'vue';
+import { useRoute } from 'vue-router';
 
 // Save user's code for each language
 const codePerLanguage = new Map<number, string>();
+interface RouteParam {
+  exerciseId: string;
 
-const availableLanguageIds = computed(() =>
-  languageConfigs.value.map(config => config.judge0_language_id)
-);
+}
+// Define props
+const props = defineProps<{
+  testInput: TestInput;
+}>();
 
 // Define types for hints
 interface LineHint {
@@ -66,13 +70,19 @@ interface LineHint {
   hint: string;
 }
 
-// Define props
-const props = defineProps<{
-  testInput: TestInput;
-}>();
+// Helper function to safely get language name
+const getLanguageName = (id: number): string => {
+  if (typeof id !== 'number') return `Language ${id}`;
+  // Type assertion here is safe because we're checking if the id exists in the object
+  return JUDGE0_LANG[id as keyof typeof JUDGE0_LANG] || `Language ${id}`;
+};
+
+const availableLanguageIds = computed(() =>
+  languageConfigs.value.map(config => config.judge0_language_id)
+);
 
 const route = useRoute();
-const exerciseId = computed(() => route.params.exerciseId as string);
+const param = route.params as RouteParam;
 const { submitCodeWithPolling } = useProgrammingSubmissions();
 
 const emit = defineEmits<{
@@ -82,9 +92,8 @@ const emit = defineEmits<{
 }>();
 
 const selectedLanguage = ref<number>(54);
-const code = ref<string>(DEFAULT_CODE[selectedLanguage.value]);
+const code = ref<string>('// Loading code...');
 const editorContainer = ref<HTMLElement | null>(null);
-const languages = ref(LANGUAGES);
 const isLoading = ref<boolean>(false);
 const isExplaining = ref<boolean>(false);
 const isGettingHints = ref<boolean>(false);
@@ -120,7 +129,7 @@ const createBasicSetup = () => [
   indentUnit.of("  ")
 ];
 
-// Language mapping for CodeMirror with proper typing
+// Language mapping for CodeMirror
 const cmLanguages: Record<number, any> = {
   54: cpp(),     // C++
   62: java(),    // Java
@@ -192,7 +201,9 @@ const initEditor = (): void => {
     editor.destroy();
   }
 
-  const languageSupport = cmLanguages[selectedLanguage.value];
+  // Get the correct language support or default to JavaScript
+  const languageId = selectedLanguage.value;
+  const languageSupport = cmLanguages[languageId] || javascript();
 
   const startState = EditorState.create({
     doc: code.value,
@@ -217,6 +228,17 @@ const initEditor = (): void => {
     state: startState,
     parent: editorContainer.value
   });
+};
+
+// Map numeric language ID to LanguageKey for type safety
+const mapLanguageIdToKey = (id: number): LanguageKey => {
+  switch(id) {
+    case 54: return 'cpp';
+    case 62: return 'java';
+    case 71: return 'python';
+    // Add more mappings as needed
+    default: return 'cpp'; // Default fallback
+  }
 };
 
 // Function to get comment syntax for different languages
@@ -267,14 +289,11 @@ const giveHints = async (): Promise<void> => {
       { line: 15, hint: "Remember to return the correct indices" }
     ];
 
-    // const response = await ApiService.getHints({
-    //   code: code.value,
-    //   language: selectedLanguage.value
-    // });
-    // const hints = response.data;
+    // Convert numeric language ID to LanguageKey for type safety
+    const languageKey = mapLanguageIdToKey(selectedLanguage.value);
 
     // Insert hints directly into the code
-    const codeWithHints = insertHintsIntoCode(code.value, mockHintsData, selectedLanguage.value);
+    const codeWithHints = insertHintsIntoCode(code.value, mockHintsData, languageKey);
 
     // Update the code with hints included
     code.value = codeWithHints;
@@ -304,7 +323,7 @@ const explainCode = async (): Promise<void> => {
     // Prepare request payload
     const codeAnalysisRequest: CodeAnalysisRequest = {
       code: code.value,
-      language: selectedLanguage.value
+      language: selectedLanguage.value // Use the mapped string value
     };
 
     // Call the service to get explanations
@@ -329,6 +348,21 @@ const explainCode = async (): Promise<void> => {
   }
 };
 
+// Helper function to get Judge0 language ID for the current language
+const getJudge0LanguageId = (languageId: number): number => {
+  // Map from our language IDs to Judge0 language IDs
+  // This is safer than directly using LANGUAGE_MAP
+  const languageMap: Record<number, number> = {
+    54: 54, // C++
+    62: 62, // Java
+    63: 63, // JavaScript
+    71: 71, // Python
+    // Add more mappings as needed
+  };
+  
+  return languageMap[languageId] || 54; // Default to C++ if not found
+};
+
 // Run code with test case
 const runCode = async (): Promise<void> => {
   try {
@@ -337,16 +371,19 @@ const runCode = async (): Promise<void> => {
 
     // Prepare stdin
     const stdin = prepareStdin(
-      selectedLanguage.value,
+      mapLanguageIdToKey(selectedLanguage.value),
       props.testInput.nums,
       props.testInput.target
     );
 
     try {
+      // Get Judge0 language ID
+      const judge0LanguageId = getJudge0LanguageId(selectedLanguage.value);
+      
       // Create submission
       const token = await createSubmission(
         code.value,
-        LANGUAGE_MAP[selectedLanguage.value],
+        judge0LanguageId,
         stdin,
         '[0,1]'
       );
@@ -410,105 +447,12 @@ const runCode = async (): Promise<void> => {
   }
 };
 
-// // Submit code with similar logic as runCode
-// const submitCode = async (): Promise<void> => {
-//   try {
-//     isLoading.value = true;
-//     emit('update:loading', true);
-//
-//     // Prepare stdin
-//     const stdin = prepareStdin(
-//       selectedLanguage.value,
-//       props.testInput.nums,
-//       props.testInput.target
-//     );
-//
-//     try {
-//       // Create submission
-//       const token = await createSubmission(
-//         code.value,
-//         LANGUAGE_MAP[selectedLanguage.value],
-//         stdin,
-//         '[0,1]'
-//       );
-//
-//       // Poll for results
-//       const result = await pollSubmission(token);
-//
-//       // Format and emit results
-//       let resultText = '';
-//       if (result.status.id === 3 && result.stdout && result.stdout.trim() === '[0,1]') {
-//         resultText = `
-// ✅ Solution Accepted!
-// Your solution passed all test cases.
-//
-// Test Result:
-// Input: nums = ${props.testInput.nums}, target = ${props.testInput.target}
-// Expected Output: [0,1]
-// Your Output: ${result.stdout.trim()}
-// Time: ${result.time} seconds
-// Memory: ${result.memory} KB
-//         `;
-//       } else {
-//         resultText = `
-// ❌ Solution Failed!
-// Your solution did not pass all test cases.
-//
-// Test Result:
-// Input: nums = ${props.testInput.nums}, target = ${props.testInput.target}
-// Expected Output: [0,1]
-// Your Output: ${result.stdout || 'No output'}
-// Status: ${result.status.description}
-// ${result.stderr ? 'Error: ' + result.stderr + '\n' : ''}
-// ${result.compile_output ? 'Compiler output: ' + result.compile_output + '\n' : ''}
-//         `;
-//       }
-//
-//       emit('submit-result', resultText);
-//     } catch (apiError: any) {
-//       // Handle API errors
-//       if (apiError.response) {
-//         // Server returned an error with status code
-//         const errorData = apiError.response.data;
-//         let detailedError = `Error (${apiError.response.status}): `;
-//
-//         if (errorData && typeof errorData === 'object') {
-//           if (errorData.error) {
-//             detailedError += errorData.error;
-//           } else if (errorData.message) {
-//             detailedError += errorData.message;
-//           } else {
-//             detailedError += JSON.stringify(errorData);
-//           }
-//         } else if (typeof errorData === 'string') {
-//           detailedError += errorData;
-//         } else {
-//           detailedError += 'Unknown error format';
-//         }
-//
-//         emit('submit-result', detailedError);
-//       } else if (apiError.request) {
-//         // Request was sent but no response received
-//         emit('submit-result', 'Error: No response received from server');
-//       } else {
-//         // Other errors when setting up the request
-//         emit('submit-result', `Error setting up request: ${apiError.message}`);
-//       }
-//     }
-//   } catch (error: any) {
-//     emit('submit-result', `Error submitting code: ${error.message}`);
-//   } finally {
-//     isLoading.value = false;
-//     emit('update:loading', false);
-//   }
-// };
-
 const submitCode = async (): Promise<void> => {
   isLoading.value = true;
   emit('update:loading', true);
 
   submitCodeWithPolling(
-    exerciseId.value,
+    param.exerciseId,
     selectedLanguage.value,
     code.value,
     {
@@ -535,28 +479,49 @@ const submitCode = async (): Promise<void> => {
   );
 };
 
+// Set default code based on selected language
+const setDefaultCodeForLanguage = (languageId: number) => {
+  const defaultCodeMap: Record<number, string> = {
+    54: "// C++ code\n#include <iostream>\n\nint main() {\n  // Your code here\n  return 0;\n}",
+    62: "// Java code\npublic class Solution {\n  public static void main(String[] args) {\n    // Your code here\n  }\n}",
+    63: "// JavaScript code\n\nfunction main() {\n  // Your code here\n}\n\nmain();",
+    71: "# Python code\n\ndef main():\n    # Your code here\n    pass\n\nif __name__ == '__main__':\n    main()"
+  };
+  
+  return defaultCodeMap[languageId] || "// Your code here";
+};
+
 // Initialize editor when component is mounted
 onMounted(() => {
+  // Set initial default code
+  code.value = setDefaultCodeForLanguage(selectedLanguage.value);
   initEditor();
 });
 
 // Fetch language configurations for the coding exercise
 onMounted(async () => {
-  let response = await CodeExerciseService.getLanguageConfigsOfAnExercise(
-    exerciseId.value, {showError: () => {}, showSuccess: () => {}}
-  );
-
-  languageConfigs.value = response.data;
-
-  const config = languageConfigs.value.find(c => c.judge0_language_id === selectedLanguage.value);
-  if (config) {
-    // Initialize both ref and cache map
-    code.value = config.boilerplate_code;
-    codePerLanguage.set(config.judge0_language_id, config.boilerplate_code);
-    nextTick(() => initEditor());
+  try {
+    const response = await CodeExerciseService.getLanguageConfigsOfAnExercise(
+      param.exerciseId, {showError, showSuccess}
+    );
+    
+    if (response && response.data) {
+      languageConfigs.value = response.data;
+      
+      // Set initial language if available
+      const config = languageConfigs.value.find(c => c.judge0_language_id === selectedLanguage.value);
+      if (config) {
+        // Initialize both ref and cache map
+        code.value = config.boilerplate_code;
+        codePerLanguage.set(config.judge0_language_id, config.boilerplate_code);
+        nextTick(() => initEditor());
+      }
+    }
+  } catch (error) {
+    console.error("Failed to fetch language configs:", error);
+    showError("Failed to load language configurations");
   }
-
-})
+});
 
 // Clean up when component is unmounted
 onUnmounted(() => {
@@ -579,14 +544,13 @@ watch(selectedLanguage, (newLangId, oldLangId) => {
     code.value = cached;
   } else {
     const config = languageConfigs.value.find(c => c.judge0_language_id === newLangId);
-    code.value = config?.boilerplate_code || '// No boilerplate code available';
+    code.value = config?.boilerplate_code || setDefaultCodeForLanguage(newLangId);
     codePerLanguage.set(newLangId, code.value);
   }
 
   nextTick(() => initEditor());
   lineExplanations.value = [];
 });
-
 
 // Watch for external code changes
 watch(code, (newCode) => {
@@ -600,19 +564,20 @@ watch(code, (newCode) => {
   }
 });
 
-const { importCode, exportCode } = useFileIO()
+const { importCode, exportCode } = useFileIO();
 
 const onImport = () => {
   importCode((importedCode) => {
-    code.value = importedCode
-    nextTick(initEditor)
-  })
-}
+    code.value = importedCode;
+    nextTick(initEditor);
+  });
+};
 
 const onExport = () => {
-  exportCode(code.value, selectedLanguage.value)
-}
+  exportCode(code.value, selectedLanguage.value);
+};
 </script>
+
 <style>
 .editor-container {
   width: 100%;
