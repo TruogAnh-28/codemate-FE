@@ -9,7 +9,7 @@
     <v-card-text v-if="descriptionTab === 'description'" class="problem-description pa-4 flex-grow-1 overflow-y-auto">
       <div v-html="problemDescription"></div>
     </v-card-text>
-    
+
     <v-card-text v-else-if="descriptionTab === 'submission'" class="pa-4">
       <!-- Use the SubmissionList component without passing submissions prop -->
       <SubmissionList :programmingExerciseId="exerciseId" />
@@ -98,12 +98,37 @@ import axios from 'axios';
 import MarkdownIt from 'markdown-it';
 import hljs from 'highlight.js';
 import 'highlight.js/styles/github-dark.css';
+import { useProblemAssistant } from '@/composables/useProblemAssistant';
+
 
 interface RouteParams {
   exerciseId: string;
 }
+
+interface ProblemDescriptionProps {
+  initialTab?: string;
+  userSolution?: string;
+}
+
+const props = withDefaults(defineProps<ProblemDescriptionProps>(), {
+  initialTab: 'description'
+});
+
+
 const route = useRoute();
 const {exerciseId} = route.params as RouteParams;
+
+const {
+  messages,
+  inputMessage,
+  isThinking,
+  streamingBuffer,
+  renderMarkdown,
+  sendMessage,
+  fetchHistory
+} = useProblemAssistant(route.params.exerciseId as string, props.userSolution);
+
+
 
 // Create MarkdownIt instance with proper typing
 const md: MarkdownIt = new MarkdownIt({
@@ -128,10 +153,6 @@ interface ProblemExample {
   explanation?: string;
 }
 
-interface ProblemDescriptionProps {
-  initialTab?: string;
-}
-
 interface ExerciseCodeResponseForStudent {
   question: string;
   difficulty: string;
@@ -141,104 +162,17 @@ interface ExerciseCodeResponseForStudent {
   constraints: string[];
 }
 
-const props = withDefaults(defineProps<ProblemDescriptionProps>(), {
-  initialTab: 'description'
-});
-
 const emit = defineEmits<{
   (e: 'update:tab', tab: string): void;
 }>();
 
 const descriptionTab = ref<string>(props.initialTab);
-const messages = ref<ChatMessage[]>([]);
-
-watch(descriptionTab, async (newValue) => {
-  emit('update:tab', newValue);
-  if (newValue === 'coding-assistant' && messages.value.length === 0) {
-    try {
-      const res = await llmCodeServices.getMessageHistory(
-        { 
-          showError: (msg: string) => console.error(msg), 
-          showSuccess: (msg: string) => console.log(msg) 
-        }, 
-        exerciseId
-      );
-      
-      if (res && res.data) {
-        messages.value = res.data;
-        nextTick(scrollToBottom);
-      }
-    } catch (err) {
-      console.error("Failed to load chat history:", err);
-    }
+watch(descriptionTab, async (tab) => {
+  emit('update:tab', tab);
+  if (tab === 'coding-assistant' && messages.value.length === 0) {
+    await fetchHistory();
   }
 });
-
-const inputMessage = ref('');
-
-function renderMarkdown(text: string): string {
-  return md.render(text);
-}
-
-const isThinking = ref(false);
-const streamingBuffer = ref('');
-
-async function sendMessage() {
-  const content = inputMessage.value.trim();
-  if (!content) return;
-
-  // Add user's message and clear input
-  messages.value.push({ 
-    id: 1, // Generate a temporary ID
-    role: 'user', 
-    content 
-  });
-  
-  inputMessage.value = '';
-  scrollToBottom();
-
-  // Show thinking indicator
-  isThinking.value = true;
-  streamingBuffer.value = '';
-
-  try {
-    // Call the streamFromApi function. This will handle chunked responses.
-    await streamFromApi(
-      `exercises/code/${exerciseId}/conversation:invokeAssistant`,
-      (chunk: string) => {
-        streamingBuffer.value += chunk;
-        scrollToBottom();
-      },
-      {
-        method: "POST",
-        body: {
-          content: content,
-          user_solution: "" // Pass along any existing user solution if needed.
-        }
-      }
-    );
-    
-    // After the stream is complete, add the full response as an assistant message.
-    messages.value.push({ 
-      id: 1, // Generate a temporary ID
-      role: 'assistant', 
-      content: streamingBuffer.value 
-    });
-  } catch (error) {
-    // Handle any errors from the API call.
-    messages.value.push({
-      id: 1, // Generate a temporary ID
-      role: 'assistant',
-      content: "An error occurred while fetching the response. Please try again."
-    });
-    console.error("Error invoking API:", error);
-  } finally {
-    // Clear indicators regardless of success or failure.
-    isThinking.value = false;
-    streamingBuffer.value = '';
-    scrollToBottom();
-  }
-}
 
 const chatBottom = ref<null | HTMLElement>(null);
 const chatContainer = ref<null | HTMLElement>(null);
