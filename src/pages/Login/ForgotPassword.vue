@@ -66,7 +66,10 @@ const showSuccess = inject("showSuccess") as (message: string) => void;
 const sendEmail = async () => {
   loading.value = true;
   const sendRequestEmail = await authenService.forgotPassword(
-    showError,
+    {
+      showError,
+      showSuccess,
+    },
     email.value
   );
   if (sendRequestEmail?.isSuccess) {

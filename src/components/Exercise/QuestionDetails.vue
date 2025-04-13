@@ -128,7 +128,7 @@ watch(() => props.question, (newVal) => {
 
     if (quill && quill.root) {
       // Use setContents instead of directly modifying innerHTML
-      const delta = quill.clipboard.convert(newVal.question || '');
+      const delta = quill.clipboard.convert({ html: newVal.question || '' });
       quill.setContents(delta, 'api');
     }
   }
@@ -157,7 +157,7 @@ onMounted(() => {
     });
 
     // Set initial content using delta
-    const delta = quill.clipboard.convert(localQuestion.value.question || '');
+    const delta = quill.clipboard.convert({ html: localQuestion.value.question || '' });
     quill.setContents(delta);
 
     quill.on('text-change', (delta, oldContents, source) => {

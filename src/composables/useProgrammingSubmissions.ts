@@ -1,176 +1,184 @@
-// useSubmissions.ts
 import { ref } from 'vue';
-import type { ProgrammingSubmission, ProgrammingSubmissionStat } from '@/types/ProgrammingSubmission';
 import { programmingSubmissionService } from '@/services/programmingSubmissionService';
+import { ProgrammingSubmission, ProgrammingSubmissionStat } from '@/types/ProgrammingSubmission';
 
-export function useProgrammingSubmissions(useMock: boolean = false) {
+// Composable for managing programming submissions
+export function useProgrammingSubmissions(useMockData = false) {
   const submissions = ref<ProgrammingSubmissionStat[]>([]);
-  const submissionDetails = ref<Record<string, ProgrammingSubmission>>({});
-  const pollingTimers = new Map<string, number>();
+  const isLoading = ref(false);
 
-  const fetchSubmissionStats = async (programmingExerciseId: string) => {
-    if (useMock) {
-      console.log(submissions);
-      submissions.value = [
-        {
-          id: 'mock-1',
-          user_id: 'u1',
-          exercise_id: 'ex1',
-          judge0_language_id: 63,
-          status: 'completed',
-          passed_testcases: 2,
-          total_testcases: 2
-        }
-      ];
-      return;
+  // Mock data for development and testing
+  const mockSubmissions: ProgrammingSubmissionStat[] = [
+    {
+      id: 'mock-1',
+      user_id: 'user-1',
+      exercise_id: 'ex-123',
+      judge0_language_id: 71,
+      status: 'completed',
+      passed_testcases: 1,
+      total_testcases: 2,
+      created_at: new Date()
     }
-    const res = await programmingSubmissionService.getSubmissionsOfACodeExercise(programmingExerciseId);
-    console.log(res);
+  ];
 
-    if (res.data != null) {
-      console.log(res.data);
-      submissions.value = res.data;
+  // Function to fetch submission statistics for an exercise
+  const fetchSubmissionStats = async (exerciseId: string) => {
+    if (useMockData) {
+      submissions.value = mockSubmissions;
+      return mockSubmissions;
+    }
+
+    isLoading.value = true;
+    try {
+      const response = await programmingSubmissionService.getSubmissionsOfACodeExercise(exerciseId);
+      if (response.data) {
+        submissions.value = response.data;
+        return response.data;
+      }
+      return [];
+    } catch (error) {
+      console.error('Error fetching submission stats:', error);
+      return [];
+    } finally {
+      isLoading.value = false;
     }
   };
 
-  const fetchSubmissionDetail = async (id: string) => {
-    if (useMock) {
-      submissionDetails.value[id] = {
-        id: 'mock-1',
-        user_id: 'u1',
-        exercise_id: 'ex1',
-        judge0_language_id: 63,
-        status: 'completed',
-        code: 'console.log("hello world")',
-        score: 100,
-        test_results: [
-          {
-            id: 't1',
-            submission_id: 'mock-1',
-            testcase_id: 'tc1',
-            judge0_token: 'abc123',
-            status: 'Accepted',
-            stdout: 'Hello',
-            stderr: null,
-            time: 0.1,
-            memory: 1000,
-            testcase: {
-              input: 'input 1',
-              expected_output: 'Hello',
-              is_public: true,
-            },
-            created_at: new Date(),
-            updated_at: new Date()
-          }
-        ],
+  // Mock detailed submission with test results
+  const mockDetailedSubmission: ProgrammingSubmission = {
+    id: 'mock-1',
+    user_id: 'user-1',
+    exercise_id: 'ex-123',
+    judge0_language_id: 71,
+    status: 'completed',
+    code: 'function twoSum(nums, target) {\n  const map = new Map();\n  for (let i = 0; i < nums.length; i++) {\n    const complement = target - nums[i];\n    if (map.has(complement)) return [map.get(complement), i];\n    map.set(nums[i], i);\n  }\n}',
+    score: 50,
+    test_results: [
+      {
+        id: 'tr-1',
+        submission_id: 'mock-1',
+        testcase_id: 'tc-1',
+        judge0_token: 'token-1',
+        status: 'Accepted',
+        stdout: '[0,1]',
+        stderr: null,
+        time: 0.032,
+        memory: 12345,
+        testcase: {
+          id: 'tc-1',
+          input: '2 7 11 15\n9',
+          expected_output: '[0,1]',
+          is_public: true
+        },
         created_at: new Date(),
         updated_at: new Date()
-      };
-      return submissionDetails.value[id];
-    }
-
-    const res = await programmingSubmissionService.getSubmissionDetails(id);
-    return res.data;
+      },
+      {
+        id: 'tr-2',
+        submission_id: 'mock-1',
+        testcase_id: 'tc-2',
+        judge0_token: 'token-2',
+        status: 'Wrong Answer',
+        stdout: 'null',
+        stderr: null,
+        time: 0.035,
+        memory: 12400,
+        testcase: {
+          id: 'tc-2',
+          input: '3 2 4\n6',
+          expected_output: '[1,2]',
+          is_public: true
+        },
+        created_at: new Date(),
+        updated_at: new Date()
+      }
+    ],
+    created_at: new Date(),
+    updated_at: new Date()
   };
 
+  // Fetch detailed submission data
+  const fetchSubmissionDetail = async (submissionId: string): Promise<ProgrammingSubmission | null> => {
+    if (useMockData) {
+      return mockDetailedSubmission;
+    }
+
+    isLoading.value = true;
+    try {
+      const response = await programmingSubmissionService.getSubmissionDetails(submissionId);
+      if (response.data) {
+        return response.data;
+      }
+      return null;
+    } catch (error) {
+      console.error('Error fetching submission details:', error);
+      return null;
+    } finally {
+      isLoading.value = false;
+    }
+  };
+
+  // Submit code for a programming exercise
   const submitCodeWithPolling = async (
-    programmingExerciseID: string,
-    judge0LangID: number,
+    exerciseId: string,
+    languageId: number,
     code: string,
-    {
-      onComplete,
-      onError,
-      pollingInterval = 3000
-    }: {
+    callbacks: {
       onComplete: (submission: ProgrammingSubmission) => void;
-      onError?: (err: any) => void;
-      pollingInterval?: number;
+      onError: (error: Error) => void;
     }
   ) => {
     try {
+      // Create submission
       const res = await programmingSubmissionService.createProgrammingSubmission(
-        programmingExerciseID,
-        judge0LangID,
+        exerciseId,
+        languageId,
         code
       );
 
-      const { id, status } = res.data;
-
-    const finalizeSubmission = async () => {
-      const detailResponse = await programmingSubmissionService.getSubmissionDetails(id);
-      const statResponse = await programmingSubmissionService.getSubmissionStat(id);
-
-      const newSubmission = detailResponse.data;
-      const newStat = statResponse.data;
-
-      const alreadyExists = submissions.value.some(s => s.id === newStat.id);
-      if (!alreadyExists) {
-        submissions.value.unshift(newStat);
+      if (!res.data) {
+        throw new Error('Failed to create submission: No data returned');
       }
 
-      onComplete(newSubmission);
-    };
+      const { id } = res.data;
 
-      if (status === 'pending') {
-        const poll = async () => {
-          try {
-            const statusRes = await programmingSubmissionService.getSubmissionStatus(id);
-            const currentStatus = statusRes.data;
+      if (!id) {
+        throw new Error('Failed to create submission: No ID returned');
+      }
 
-            if (currentStatus === 'completed' || currentStatus === 'failed') {
-              await finalizeSubmission();
-            } else {
-              const timer = setTimeout(poll, pollingInterval);
-              pollingTimers.set(id, timer);
-            }
-          } catch (pollErr) {
-            console.error("Polling error:", pollErr);
-            onError?.(pollErr);
-          }
-        };
-
-        poll();
+      // Add to the list of submissions
+      // const newStat = await fetchSubmissionStats(exerciseId);
+      
+      // Get the detailed submission
+      const newSubmission = await fetchSubmissionDetail(id);
+      
+      if (newSubmission) {
+        callbacks.onComplete(newSubmission);
       } else {
-        await finalizeSubmission();
+        throw new Error('Failed to retrieve submission details');
       }
-
-    } catch (err) {
-      console.error("Submission error:", err);
-      onError?.(err);
+    } catch (error) {
+      console.error('Error in submission process:', error);
+      callbacks.onError(error instanceof Error ? error : new Error('Unknown error during submission'));
     }
   };
 
-
-  const pollSubmissionStatus = async (id: string, interval = 3000) => {
-    if (pollingTimers.has(id)) return; // already polling
-
-    const poll = async () => {
-      const detail = await fetchSubmissionDetail(id);
-
-      if (detail && detail.status === 'completed') {
-        clearTimeout(pollingTimers.get(id));
-        pollingTimers.delete(id);
-        return;
-      }
-
-      const timer = setTimeout(poll, interval);
-      pollingTimers.set(id, timer);
-    };
-
-    poll();
-  };
-
-  onUnmounted(() => {
-    // Clean up all polling on unmount
-    pollingTimers.forEach(timer => clearTimeout(timer));
-    pollingTimers.clear();
-  });
+  // Poll for submission status - Utility function for more complex workflows
+  // const pollSubmissionStatus = async (id: string, interval = 3000): Promise<string | null> => {
+  //   try {
+  //     const response = await programmingSubmissionService.getSubmissionStatus(id);
+  //     return response.data;
+  //   } catch (error) {
+  //     console.error(`Error polling submission status for ${id}:`, error);
+  //     return null;
+  //   }
+  // };
 
   return {
     submissions,
+    isLoading,
     fetchSubmissionStats,
     fetchSubmissionDetail,
-    submitCodeWithPolling
+    submitCodeWithPolling,
   };
 }
-

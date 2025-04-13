@@ -2,12 +2,12 @@
   <v-row no-gutters align="center" class="p-6">
     <v-col cols="4" md="4" class="flex justify-center items-center pr-4">
       <div class="image-container">
-        <template v-if="course.course_image">
+        <template v-if="courseImage">
         <v-img
             class="flex-shrink-0 course-image"
            
             height="200px"
-            :src="course.course_image"
+            :src="courseImage"
             cover
             @click="openImageUpload"
             :class="{ 'cursor-pointer': canEditImage }"
@@ -118,7 +118,9 @@ const openImageUpload = () => {
   if (!canEditImage.value) return
   showImageUpload.value = true
 }
-
+const courseImage = computed(()=>{
+  return ('course_image' in props.course) ? props.course.course_image : props.course.course_image_url
+})
 // Generate image preview when file is selected
 watch(imageFile, (newFile) => {
   if (newFile) {

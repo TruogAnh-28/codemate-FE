@@ -70,8 +70,8 @@
 </template>
 
 <script lang="ts" setup>
-const props = defineProps<{
-  question: any, // Sử dụng kiểu cụ thể thay cho any
+defineProps<{
+  question: any,
   index: number
 }>();
 

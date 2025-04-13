@@ -14,7 +14,7 @@
               <v-list-item-content>
                 <div class="d-flex justify-space-between align-center">
                   <div class="d-flex flex-column">
-                    <div class="text-caption text-grey">{{ formatDate(submission.created_at) }}</div>
+                    <div class="text-caption text-grey">{{ formatDate(submission.created_at || new Date()) }}</div>
                     <div class="d-flex align-center">
                       <v-chip
                         :color="getStatusColor(submission.status)"
@@ -51,7 +51,7 @@
             <v-expansion-panel title="📄 Submitted Code">
               <v-expansion-panel-text>
                 <v-sheet color="grey-darken-4" class="pa-3 rounded">
-                  <pre class="code-block">{{ selectedSubmission?.code || '// Code not available' }}</pre>
+                  <pre class="code-block">{{ detailsCodeContent }}</pre>
                 </v-sheet>
               </v-expansion-panel-text>
             </v-expansion-panel>
@@ -67,24 +67,24 @@
                   <v-col cols="12" md="6">
                     <strong class="text-caption">🧪 Input:</strong>
                     <v-sheet color="grey-darken-3" class="pa-2 rounded mb-2 scroll-box">
-                      <pre>{{ result.testcase.input }}</pre>
+                      <pre>{{ result.testcase?.input || 'No input available' }}</pre>
                     </v-sheet>
                   </v-col>
                   <v-col cols="12" md="6">
                     <strong class="text-caption">🎯 Expected Output:</strong>
                     <v-sheet color="grey-darken-3" class="pa-2 rounded mb-2 scroll-box">
-                      <pre>{{ result.testcase.expected_output }}</pre>
+                      <pre>{{ result.testcase?.expected_output || 'No expected output available' }}</pre>
                     </v-sheet>
                   </v-col>
                 </v-row>
 
                 <strong class="text-caption">📤 Your Output:</strong>
                 <v-sheet color="grey-darken-3" class="pa-2 rounded mb-2 scroll-box">
-                  <pre>{{ result.stdout }}</pre>
+                  <pre>{{ result.stdout || 'No output available' }}</pre>
                 </v-sheet>
 
                 <div class="text-caption text-grey">
-                  ⏱ {{ result.time ?? '-' }}s  📦 {{ result.memory ?? '-' }} KB
+                  ⏱ {{ result.time ?? '-' }}s  📦 {{ result.memory ?? '-' }} KB
                 </div>
               </v-expansion-panel-text>
             </v-expansion-panel>
@@ -98,38 +98,97 @@
 <script setup lang="ts">
 import { onMounted, ref, computed } from 'vue';
 import { useProgrammingSubmissions } from '@/composables/useProgrammingSubmissions';
-import { useRouter } from 'vue-router';
-const { submissions, fetchSubmissionStats, fetchSubmissionDetail } = useProgrammingSubmissions(false);
+
+interface TestCase {
+  id?: string;
+  input?: string;
+  expected_output?: string;
+  is_public?: boolean;
+}
+
+interface TestResult {
+  id: string;
+  status: string;
+  stdout?: string | null;
+  stderr?: string | null;
+  time?: number | null;
+  memory?: number | null;
+  testcase?: TestCase;
+}
+
+interface ProgrammingSubmission {
+  id: string;
+  user_id: string;
+  exercise_id: string;
+  judge0_language_id: number;
+  status: string;
+  code?: string;
+  test_results: TestResult[];
+  created_at?: string | Date;
+  updated_at?: string | Date;
+  passed_testcases?: number;
+  total_testcases?: number;
+}
+
+interface SubmissionStat {
+  id: string;
+  user_id: string;
+  exercise_id: string;
+  judge0_language_id: number;
+  status: string;
+  passed_testcases: number;
+  total_testcases: number;
+  created_at?: string | Date;
+}
 
 const props = defineProps<{
   programmingExerciseId: string
-}>()
+}>();
 
 const dialog = ref(false);
-const selectedSubmission = ref(null);
-const visibleTestResults = computed(() => {
-  return selectedSubmission.value?.test_results.filter(t => t.testcase?.is_public) ?? [];
+const selectedSubmission = ref<ProgrammingSubmission | null>(null);
+
+const { submissions, fetchSubmissionStats, fetchSubmissionDetail } = useProgrammingSubmissions(false);
+
+// Computed property for visible test results
+const visibleTestResults = computed<TestResult[]>(() => {
+  if (!selectedSubmission.value || !selectedSubmission.value.test_results) {
+    return [];
+  }
+  
+  return selectedSubmission.value.test_results.filter(t => t.testcase?.is_public);
 });
 
-console.log(props.programmingExerciseId);
+// Computed property to safely access code content
+const detailsCodeContent = computed<string>(() => {
+  return selectedSubmission.value?.code || '// Code not available';
+});
 
 onMounted(async () => {
   await fetchSubmissionStats(props.programmingExerciseId);
 });
 
-const openModal = async (submissionBrief) => {
-  const fullData = await fetchSubmissionDetail(submissionBrief.id);
-  selectedSubmission.value = fullData;
-  dialog.value = true;
+const openModal = async (submissionBrief: SubmissionStat) => {
+  try {
+    const fullData = await fetchSubmissionDetail(submissionBrief.id);
+    if (fullData) {
+      selectedSubmission.value = fullData as ProgrammingSubmission;
+      dialog.value = true;
+    }
+  } catch (error) {
+    console.error('Error fetching submission details:', error);
+  }
 };
 
-const formatDate = (date) => new Date(date).toLocaleString();
-
-const getStatusClass = (status) => {
-  return status === 'Accepted' ? 'text-success' : 'text-error';
+const formatDate = (date: string | Date): string => {
+  try {
+    return new Date(date).toLocaleString();
+  } catch (e) {
+    return 'Invalid date';
+  }
 };
 
-const getStatusColor = (status) => {
+const getStatusColor = (status: string): string => {
   return status === 'completed' ? 'green' : status === 'failed' ? 'red' : 'grey';
 };
 </script>
@@ -163,5 +222,3 @@ pre {
   background-color: #2c2c2c;
 }
 </style>
-
-

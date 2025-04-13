@@ -220,7 +220,10 @@ const submitForm = async () => {
     loading.value = true;
     useResetPasswordEmailStore().setPassword(password.value);
     try {
-      const response = await authenService.resetPassword(showError, {
+      const response = await authenService.resetPassword({
+        showError,
+        showSuccess,
+      }, {
         email: useResetPasswordEmailStore().email,
         code: useResetPasswordEmailStore().code,
         new_password: useResetPasswordEmailStore().password,
