@@ -2,7 +2,6 @@ import ApiService from "@/common/api.service";
 import {
   CoursesListPaginatedResponse,
   CourseDetailResponse,
-  GetRecommendedLessonsResponse,
   ProfessorInformation,
   LessonOriginalResponse,
   StudentOfCourseListModal,

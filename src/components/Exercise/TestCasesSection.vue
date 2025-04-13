@@ -73,7 +73,7 @@
           <div class="mb-3">
             <div class="text-subtitle-2 font-weight-medium mb-2">Inputs</div>
             
-            <div v-for="(input, inputIndex) in getInputsArray(testcase)" :key="`input-${inputIndex}`" class="mb-2">
+            <div v-for="(_, inputIndex) in getInputsArray(testcase)" :key="`input-${inputIndex}`" class="mb-2">
               <v-text-field
                 v-model="testcase.inputs[inputIndex]"
                 :label="`Input ${inputIndex + 1}`"
