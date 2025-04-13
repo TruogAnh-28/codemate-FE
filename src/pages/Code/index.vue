@@ -10,6 +10,7 @@
         <ProblemDescription
           :initial-tab="descriptionTab"
           :user-solution="userSolution"
+          :problem-description="problemDescription"
           @update:tab="descriptionTab = $event"
         />
         <div class="resize-handle" @mousedown="startResize" />
@@ -19,6 +20,7 @@
       <v-col class="fill-height d-flex flex-column" style="min-width: 420px;">
         <div class="d-flex flex-column fill-height">
           <CodeEditor
+            v-if="exerciseDetail"
             modelValue="// Your code here\n"
             onUpdate:modelValue="fn"
             language="javascript"
@@ -27,6 +29,7 @@
             @update:solution="userSolution = $event"
             @update:loading="isLoading = $event"
             :testInput="{ nums: JSON.stringify([2, 7, 11, 15]), target: '9' }"
+            :problemDescription="problemDescription"
             :style="codeEditorStyle"
           />
           <Testcase
@@ -81,7 +84,22 @@ const testResult = ref('');
 const isLoading = ref(false);
 const testcaseExpanded = ref(true);
 const publicTestcases = ref<TestCaseDto[]>([]);
+const exerciseDetail = ref<ExerciseCodeResponseForStudent | null>(null);
+const problemDescription = computed(() => exerciseDetail.value?.description ?? '');
 
+onMounted(async () => {
+  try {
+    const response = await CodeExerciseService.getCodingExerciseDetail(exerciseId, {
+      showError: (message: string) => console.error(message),
+      showSuccess: (message: string) => console.log(message),
+    });
+
+    const exerciseObject = response.data;
+    exerciseDetail.value = exerciseObject;
+  } catch (err) {
+    console.error('Failed to load exercise', err);
+  }
+})
 
 // Fetch public testcases
 const fetchPublicTestcases = async () => {

@@ -44,7 +44,6 @@ import { cpp } from '@codemirror/lang-cpp';
 import { python } from '@codemirror/lang-python';
 import { java } from '@codemirror/lang-java';
 import { createSubmission, pollSubmission, prepareStdin } from '@/services/Professor/judge0api';
-import { llmCodeServices } from '@/services/llmCodeServices';
 import { TestInput, LineExplanation, CodeAnalysisRequest, LanguageKey } from '@/types/LLM_code';
 import { LanguageConfigDto } from '@/types/CodingExercise';
 import { JUDGE0_LANG } from '@/constants/judge0_lang';
@@ -52,6 +51,7 @@ import { useProgrammingSubmissions } from '@/composables/useProgrammingSubmissio
 import { useFileIO } from '@/composables/useFileIO';
 import { ref, watch, computed, onMounted, onUnmounted, nextTick, inject } from 'vue';
 import { useRoute } from 'vue-router';
+import { llmCodeServices } from '@/services/llmCodeServices';
 
 // Save user's code for each language
 const codePerLanguage = new Map<number, string>();
@@ -62,6 +62,7 @@ interface RouteParam {
 // Define props
 const props = defineProps<{
   testInput: TestInput;
+  problemDescription: string;
 }>();
 
 // Define types for hints
@@ -244,59 +245,71 @@ const mapLanguageIdToKey = (id: number): LanguageKey => {
   }
 };
 
-// Function to get comment syntax for different languages
-const getCommentSyntax = (language: LanguageKey): { start: string, end: string } => {
-  switch (language) {
-    case 'cpp':
-      return { start: '// HINT: ', end: '' };
-    case 'java':
-      return { start: '// HINT: ', end: '' };
-    case 'python':
-      return { start: '# HINT: ', end: '' };
-    default:
-      return { start: '// HINT: ', end: '' };
-  }
+const getCommentSyntax = (judge0LangId: number): { start: string; end: string } => {
+  // Map Judge0 language IDs to comment prefixes
+  const lineCommentMap: Record<number, string> = {
+    50: '//', // C
+    54: '//', // C++
+    59: '//', // C++17
+    76: '//', // C++20
+    51: '//', // C#
+    62: '//', // Java
+    63: '//', // JavaScript
+    70: '#',  // Python2
+    71: '#',  // Python3
+    60: '//', // Go
+    72: '#',  // Ruby
+    73: '//', // Rust
+    74: '//', // TypeScript
+    78: '//', // Kotlin
+    68: '//', // PHP
+    85: '#',  // Perl
+    81: '//', // Scala
+    61: '--', // Haskell
+    64: '--', // Lua
+    80: '#',  // R
+  };
+
+  const commentPrefix = lineCommentMap[judge0LangId] || '//';
+  return { start: `${commentPrefix} HINT: `, end: '' };
 };
 
+
 // Function to insert hints directly into the code
-const insertHintsIntoCode = (originalCode: string, hints: LineHint[], language: LanguageKey): string => {
-  const commentSyntax = getCommentSyntax(language);
+const insertHintsIntoCode = (
+  originalCode: string,
+  hints: LineHint[],
+  judge0LangId: number
+): string => {
+  const commentSyntax = getCommentSyntax(judge0LangId);
   const lines = originalCode.split('\n');
 
-  // Sort hints by line number in descending order to avoid position shifts
   const sortedHints = [...hints].sort((a, b) => b.line - a.line);
-
   for (const hint of sortedHints) {
-    // Make sure the line index exists in the array
     if (hint.line > 0 && hint.line <= lines.length) {
       const hintComment = `${commentSyntax.start}${hint.hint}${commentSyntax.end}`;
-
-      // Insert hint comment before the code line
       lines.splice(hint.line - 1, 0, hintComment);
     }
   }
-
   return lines.join('\n');
 };
+
 
 // New function to get hints and add them to the code
 const giveHints = async (): Promise<void> => {
   try {
     isGettingHints.value = true;
 
-    // Mock data - in production this would be an API call
-    const mockHintsData: LineHint[] = [
-      { line: 2, hint: "Consider initializing variables here" },
-      { line: 5, hint: "This is where you'll need to iterate through the array" },
-      { line: 10, hint: "Don't forget to check for edge cases" },
-      { line: 15, hint: "Remember to return the correct indices" }
-    ];
-
     // Convert numeric language ID to LanguageKey for type safety
     const languageKey = mapLanguageIdToKey(selectedLanguage.value);
 
+    const responseBody = await llmCodeServices.getHints({ problem_statement: props.problemDescription, code_context: code.value });
+    console.log("Response body:", responseBody);
+
+    const hints = responseBody.data.line_hints;
+
     // Insert hints directly into the code
-    const codeWithHints = insertHintsIntoCode(code.value, mockHintsData, languageKey);
+    const codeWithHints = insertHintsIntoCode(code.value, hints, selectedLanguage.value);
 
     // Update the code with hints included
     code.value = codeWithHints;

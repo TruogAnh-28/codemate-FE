@@ -7,7 +7,7 @@
     </v-tabs>
 
     <v-card-text v-if="descriptionTab === 'description'" class="problem-description pa-4 flex-grow-1 overflow-y-auto">
-      <div v-html="problemDescription"></div>
+      <div v-html="props.problemDescription"></div>
     </v-card-text>
 
     <v-card-text v-else-if="descriptionTab === 'submission'" class="pa-4">
@@ -107,6 +107,7 @@ interface RouteParams {
 
 interface ProblemDescriptionProps {
   initialTab?: string;
+  problemDescription?: string;
   userSolution?: string;
 }
 
@@ -127,6 +128,10 @@ const {
   sendMessage,
   fetchHistory
 } = useProblemAssistant(route.params.exerciseId as string, props.userSolution);
+
+onMounted(() => {
+  console.log(props.problemDescription);
+});
 
 
 
@@ -185,24 +190,6 @@ function scrollToBottom() {
     }
   });
 }
-
-const problemDescription = ref('');
-
-onMounted(async () => {
-  try {
-    const response = await axios.get<{ data: ExerciseCodeResponseForStudent }>(
-      `exercises/${exerciseId}/code`
-    );
-
-    if (response.data && response.data.data) {
-      const exerciseObject = response.data.data;
-      problemDescription.value = exerciseObject.description;
-      console.log("Exercise object:", exerciseObject);
-    }
-  } catch (err) {
-    console.error('Failed to load exercise', err);
-  }
-});
 </script>
 
 <style scoped>

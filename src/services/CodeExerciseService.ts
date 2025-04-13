@@ -7,7 +7,7 @@ import { ExerciseCodeResponse } from "@/types/Exercise";
 
 export const CodeExerciseService = {
   async getCodingExerciseDetail(exerciseId: string, { showError, showSuccess }: AuthConfig) {
-    return ApiService.get<IResponseData<ExerciseCodeResponse>>(`/exercises/${exerciseId}`, "", { showError, showSuccess })
+    return ApiService.get<IResponseData<ExerciseCodeResponse>>(`/exercises/${exerciseId}/code`, "", { showError, showSuccess })
   },
 
   async getListGeneratedCodeExercisesBrief(moduleId: string, { showError, showSuccess }: AuthConfig) {

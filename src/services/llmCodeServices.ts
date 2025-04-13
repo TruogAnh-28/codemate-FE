@@ -1,7 +1,7 @@
 import ApiService from "@/common/api.service";
 import { AuthConfig } from "@/services/authenServices";
 import { IResponseData } from "@/modals/apis/response";
-import {CodeAnalysisRequest, CodeExplanation} from "@/types/LLM_code";
+import {CodeAnalysisRequest, CodeExplanation, HintOutput} from "@/types/LLM_code";
 import { ChatMessage } from "@/types/chat";
 
 export const llmCodeServices = {
@@ -29,6 +29,9 @@ export const llmCodeServices = {
             "",
             { showError, showSuccess }
         );
-  }
+  },
 
+  async getHints(payload: { problem_statement: string; code_context: string }) {
+    return await ApiService.post<IResponseData<HintOutput>>('/coding-assistant/hint', payload);
+  }
 };
