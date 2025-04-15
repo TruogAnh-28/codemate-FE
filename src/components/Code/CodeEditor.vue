@@ -17,11 +17,64 @@
 
       <v-btn variant="tonal" color="secondary" class="mr-2" @click="onImport">Import</v-btn>
       <v-btn variant="tonal" color="secondary" class="mr-2" @click="onExport">Export</v-btn>
-      <v-btn variant="tonal" color="warning" class="mr-2" @click="giveHints" :loading="isGettingHints">Give Hints</v-btn>
-      <v-btn variant="tonal" color="info" class="mr-2" @click="explainCode" :loading="isExplaining">Explain Code</v-btn>
+      
+      <!-- Solution Actions Dropdown -->
+      <v-menu>
+        <template v-slot:activator="{ props }">
+          <v-btn
+            variant="tonal"
+            color="primary"
+            class="mr-2"
+            v-bind="props"
+            :loading="codeSolutionStore.isLoading"
+          >
+            <v-icon left>mdi-code-braces</v-icon>
+            Solutions
+            <v-icon right>mdi-chevron-down</v-icon>
+          </v-btn>
+        </template>
+
+        <v-list>
+          <v-list-item
+            @click="codeSolutionStore.toggleSolution"
+            :disabled="codeSolutionStore.isLoading"
+          >
+            <template v-slot:prepend>
+              <v-icon :color="codeSolutionStore.showAISolution ? 'success' : 'primary'">
+                {{ codeSolutionStore.showAISolution ? 'mdi-eye-off' : 'mdi-eye' }}
+              </v-icon>
+            </template>
+            <v-list-item-title>
+              {{ codeSolutionStore.showAISolution ? 'Show My Solution' : 'Show AI Solution' }}
+            </v-list-item-title>
+          </v-list-item>
+
+          <v-divider></v-divider>
+
+          <v-list-item
+            @click="explainCode"
+            :disabled="isExplaining"
+          >
+            <template v-slot:prepend>
+              <v-icon color="info">mdi-information</v-icon>
+            </template>
+            <v-list-item-title>Explain Code</v-list-item-title>
+          </v-list-item>
+
+          <v-list-item
+            @click="giveHints"
+            :disabled="isGettingHints"
+          >
+            <template v-slot:prepend>
+              <v-icon color="warning">mdi-lightbulb-on</v-icon>
+            </template>
+            <v-list-item-title>Get Hints</v-list-item-title>
+          </v-list-item>
+        </v-list>
+      </v-menu>
+
       <v-btn variant="tonal" color="success" class="mr-2" @click="runCode" :loading="isLoading">Run</v-btn>
       <v-btn variant="tonal" color="primary" @click="submitCode" :loading="isLoading">Submit</v-btn>
-
     </v-toolbar>
 
     <!-- CodeMirror Editor -->
@@ -52,6 +105,7 @@ import { useFileIO } from '@/composables/useFileIO';
 import { ref, watch, computed, onMounted, onUnmounted, nextTick, inject } from 'vue';
 import { useRoute } from 'vue-router';
 import { llmCodeServices } from '@/services/llmCodeServices';
+import { useCodeSolutionStore } from "@/stores/codeSolutionStore";
 
 // Save user's code for each language
 const codePerLanguage = new Map<number, string>();
@@ -105,6 +159,8 @@ const showSuccess = inject("showSuccess") as (message: string) => void;
 const languageConfigs = ref<LanguageConfigDto[]>([]);
 
 let editor: EditorView | null = null;
+
+const codeSolutionStore = useCodeSolutionStore();
 
 // Create a basic setup configuration since there's no basicSetup in CM6
 const createBasicSetup = () => [
@@ -548,24 +604,42 @@ onUnmounted(() => {
 });
 
 // Watch for language changes
-watch(selectedLanguage, (newLangId, oldLangId) => {
+watch(selectedLanguage, async (id) => {
   // Save current code before switching
-  if (oldLangId !== undefined) {
-    codePerLanguage.set(oldLangId, code.value);
+  if (id !== undefined) {
+    codePerLanguage.set(id, code.value);
   }
 
   // Retrieve code for the selected language or default
-  const cached = codePerLanguage.get(newLangId);
+  const cached = codePerLanguage.get(id);
   if (cached !== undefined) {
     code.value = cached;
   } else {
-    const config = languageConfigs.value.find(c => c.judge0_language_id === newLangId);
-    code.value = config?.boilerplate_code || setDefaultCodeForLanguage(newLangId);
-    codePerLanguage.set(newLangId, code.value);
+    const config = languageConfigs.value.find(c => c.judge0_language_id === id);
+    code.value = config?.boilerplate_code || setDefaultCodeForLanguage(id);
+    codePerLanguage.set(id, code.value);
   }
 
   nextTick(() => initEditor());
   lineExplanations.value = [];
+  
+  // Reset solution store when language changes
+  codeSolutionStore.reset();
+});
+
+// Watch for solution toggle
+watch(() => codeSolutionStore.showAISolution, async (show) => {
+  if (show && !codeSolutionStore.aiSolution) {
+    await codeSolutionStore.fetchAISolution(param.exerciseId, selectedLanguage.value);
+  }
+  if (show && codeSolutionStore.aiSolution) {
+    code.value = codeSolutionStore.aiSolution;
+    nextTick(() => initEditor());
+  } else {
+    const config = languageConfigs.value.find(c => c.judge0_language_id === selectedLanguage.value);
+    code.value = config?.boilerplate_code || '// No boilerplate code available';
+    nextTick(() => initEditor());
+  }
 });
 
 // Watch for external code changes
@@ -616,5 +690,14 @@ const onExport = () => {
   font-size: 14px;
   max-width: 300px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+/* Solution dropdown styling */
+.v-list-item {
+  min-height: 40px;
+}
+
+.v-list-item__prepend {
+  margin-right: 12px;
 }
 </style>

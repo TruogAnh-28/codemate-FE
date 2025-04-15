@@ -4,6 +4,7 @@ import { GeneratedCodeExerciseBrief, LanguageConfigDto, SubmissionDto, TestCaseD
 import { IResponseData } from "@/modals/apis/response";
 import { ProgrammingLanguageConfig } from "@/types/CodingExercise";
 import { ExerciseCodeResponse } from "@/types/Exercise";
+import { CodeSolution } from "@/types/CodeSolution";
 
 export const CodeExerciseService = {
   async getCodingExerciseDetail(exerciseId: string, { showError, showSuccess }: AuthConfig) {
@@ -37,6 +38,14 @@ export const CodeExerciseService = {
     // the ID is used to redirect to the exercise detail page
     return ApiService.post<IResponseData<GeneratedCodeExerciseBrief>>(
       `/ai/generate-code-exercise`, { "module_id": moduleID }, { showError, showSuccess }
+    )
+  },
+
+  async getAIGeneratedSolution(exerciseId: string, languageId: number, { showError, showSuccess }: AuthConfig) {
+    return ApiService.post<IResponseData<CodeSolution>>(
+      `/exercises/${exerciseId}/code-solution/${languageId}`, 
+      {}, 
+      { showError, showSuccess }
     )
   }
 }
