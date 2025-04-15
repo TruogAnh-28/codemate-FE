@@ -10,6 +10,7 @@
         <ProblemDescription
           :initial-tab="descriptionTab"
           :user-solution="userSolution"
+          :problem-description="problemDescription"
           @update:tab="descriptionTab = $event"
         />
         <div class="resize-handle" @mousedown="startResize" />
@@ -19,6 +20,7 @@
       <v-col class="fill-height d-flex flex-column" style="min-width: 420px;">
         <div class="d-flex flex-column fill-height">
           <CodeEditor
+            v-if="exerciseDetail"
             modelValue="// Your code here\n"
             onUpdate:modelValue="fn"
             language="javascript"
@@ -27,15 +29,18 @@
             @update:solution="userSolution = $event"
             @update:loading="isLoading = $event"
             :testInput="{ nums: JSON.stringify([2, 7, 11, 15]), target: '9' }"
+            :problemDescription="problemDescription"
             :style="codeEditorStyle"
           />
           <Testcase
+            :testcases="testcases"
             :initial-tab="testTab"
             :result="testResult"
-            :public-testcases="mappedPublicTestcases"
             @update:tab="testTab = $event"
             @update:input="handleTestInputUpdate"
             @toggle="handleTestcaseToggle"
+            @add-custom="handleAddCustomTestcase"
+            @remove-testcase="handleRemoveTestcase"
           />
         </div>
       </v-col>
@@ -51,6 +56,7 @@ import ProblemDescription from '@/components/Code/ProblemDescription.vue';
 import CodeEditor from '@/components/Code/CodeEditor.vue';
 import Testcase from '@/components/Code/Testcase.vue';
 import { TestCaseDto } from '@/types/CodingExercise';
+import { useTestcaseManager } from '@/composables/useTestcaseManager';
 
 // Define the interfaces needed for the component
 interface CustomTestcase {
@@ -77,38 +83,44 @@ const { exerciseId } = route.params as RouteParams;
 // UI States
 const descriptionTab = ref('description');
 const testTab = ref('testcase');
-const testResult = ref('');
 const isLoading = ref(false);
-const testcaseExpanded = ref(true);
-const publicTestcases = ref<TestCaseDto[]>([]);
+const exerciseDetail = ref<ExerciseCodeResponseForStudent | null>(null);
+const problemDescription = computed(() => exerciseDetail.value?.description ?? '');
 
+const {
+  testResult,
+  isExpanded: testcaseExpanded,
+  testcases,
+  addTestcase,
+  removeTestcase,
+  onInputChange,
+} = useTestcaseManager(exerciseId);
 
-// Fetch public testcases
-const fetchPublicTestcases = async () => {
+const handleAddCustomTestcase = () => {
+  addTestcase();
+};
+
+const handleRemoveTestcase = (index: number) => {
+  removeTestcase(index);
+};
+
+onMounted(async () => {
   try {
-    const res = await CodeExerciseService.getPublicTestcasesOfAnExercise(exerciseId, {
+    const response = await CodeExerciseService.getCodingExerciseDetail(exerciseId, {
       showError: (message: string) => console.error(message),
       showSuccess: (message: string) => console.log(message),
     });
 
-    if (res.data) {
-      publicTestcases.value = res.data as TestCaseDto[];
-    }
+    const exerciseObject = response.data;
+    exerciseDetail.value = exerciseObject;
   } catch (err) {
-    console.error('Failed to fetch public testcases:', err);
+    console.error('Failed to load exercise', err);
   }
+})
+
+const handleTestInputUpdate = (index: number, field: 'input' | 'expected_output', value: string) => {
+  onInputChange(index, field, value);
 };
-
-// Map public testcases to the format expected by Testcase component
-const mappedPublicTestcases = computed<PublicTestcase[]>(() => {
-  return publicTestcases.value.map(tc => ({
-    input: typeof tc.input === 'string' ? tc.input : '',
-    expected_output: typeof tc.expected_output === 'string' ? tc.expected_output : '',
-    isPublic: true as const
-  }));
-});
-
-onMounted(fetchPublicTestcases);
 
 // Computed dynamic height for CodeEditor
 const codeEditorStyle = computed(() => ({
@@ -135,14 +147,6 @@ const handleSubmitResult = (result: string) => {
 
 const handleTestcaseToggle = (expanded: boolean) => {
   testcaseExpanded.value = expanded;
-};
-
-// Handle test input updates from the Testcase component
-const handleTestInputUpdate = (customTestcases: CustomTestcase[]) => {
-  // We could convert these custom testcases to TestInput format if needed
-  console.log('Custom testcases updated:', customTestcases);
-  // This is just a placeholder implementation since we're not actually using
-  // the custom testcases in this component
 };
 
 // Sidebar resize

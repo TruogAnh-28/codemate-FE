@@ -17,11 +17,64 @@
 
       <v-btn variant="tonal" color="secondary" class="mr-2" @click="onImport">Import</v-btn>
       <v-btn variant="tonal" color="secondary" class="mr-2" @click="onExport">Export</v-btn>
-      <v-btn variant="tonal" color="warning" class="mr-2" @click="giveHints" :loading="isGettingHints">Give Hints</v-btn>
-      <v-btn variant="tonal" color="info" class="mr-2" @click="explainCode" :loading="isExplaining">Explain Code</v-btn>
+      
+      <!-- Solution Actions Dropdown -->
+      <v-menu>
+        <template v-slot:activator="{ props }">
+          <v-btn
+            variant="tonal"
+            color="primary"
+            class="mr-2"
+            v-bind="props"
+            :loading="codeSolutionStore.isLoading"
+          >
+            <v-icon left>mdi-code-braces</v-icon>
+            Solutions
+            <v-icon right>mdi-chevron-down</v-icon>
+          </v-btn>
+        </template>
+
+        <v-list>
+          <v-list-item
+            @click="codeSolutionStore.toggleSolution"
+            :disabled="codeSolutionStore.isLoading"
+          >
+            <template v-slot:prepend>
+              <v-icon :color="codeSolutionStore.showAISolution ? 'success' : 'primary'">
+                {{ codeSolutionStore.showAISolution ? 'mdi-eye-off' : 'mdi-eye' }}
+              </v-icon>
+            </template>
+            <v-list-item-title>
+              {{ codeSolutionStore.showAISolution ? 'Show My Solution' : 'Show AI Solution' }}
+            </v-list-item-title>
+          </v-list-item>
+
+          <v-divider></v-divider>
+
+          <v-list-item
+            @click="explainCode"
+            :disabled="isExplaining"
+          >
+            <template v-slot:prepend>
+              <v-icon color="info">mdi-information</v-icon>
+            </template>
+            <v-list-item-title>Explain Code</v-list-item-title>
+          </v-list-item>
+
+          <v-list-item
+            @click="giveHints"
+            :disabled="isGettingHints"
+          >
+            <template v-slot:prepend>
+              <v-icon color="warning">mdi-lightbulb-on</v-icon>
+            </template>
+            <v-list-item-title>Get Hints</v-list-item-title>
+          </v-list-item>
+        </v-list>
+      </v-menu>
+
       <v-btn variant="tonal" color="success" class="mr-2" @click="runCode" :loading="isLoading">Run</v-btn>
       <v-btn variant="tonal" color="primary" @click="submitCode" :loading="isLoading">Submit</v-btn>
-
     </v-toolbar>
 
     <!-- CodeMirror Editor -->
@@ -44,7 +97,6 @@ import { cpp } from '@codemirror/lang-cpp';
 import { python } from '@codemirror/lang-python';
 import { java } from '@codemirror/lang-java';
 import { createSubmission, pollSubmission, prepareStdin } from '@/services/Professor/judge0api';
-import { llmCodeServices } from '@/services/llmCodeServices';
 import { TestInput, LineExplanation, CodeAnalysisRequest, LanguageKey } from '@/types/LLM_code';
 import { LanguageConfigDto } from '@/types/CodingExercise';
 import { JUDGE0_LANG } from '@/constants/judge0_lang';
@@ -52,6 +104,8 @@ import { useProgrammingSubmissions } from '@/composables/useProgrammingSubmissio
 import { useFileIO } from '@/composables/useFileIO';
 import { ref, watch, computed, onMounted, onUnmounted, nextTick, inject } from 'vue';
 import { useRoute } from 'vue-router';
+import { llmCodeServices } from '@/services/llmCodeServices';
+import { useCodeSolutionStore } from "@/stores/codeSolutionStore";
 
 // Save user's code for each language
 const codePerLanguage = new Map<number, string>();
@@ -62,6 +116,7 @@ interface RouteParam {
 // Define props
 const props = defineProps<{
   testInput: TestInput;
+  problemDescription: string;
 }>();
 
 // Define types for hints
@@ -104,6 +159,8 @@ const showSuccess = inject("showSuccess") as (message: string) => void;
 const languageConfigs = ref<LanguageConfigDto[]>([]);
 
 let editor: EditorView | null = null;
+
+const codeSolutionStore = useCodeSolutionStore();
 
 // Create a basic setup configuration since there's no basicSetup in CM6
 const createBasicSetup = () => [
@@ -244,59 +301,71 @@ const mapLanguageIdToKey = (id: number): LanguageKey => {
   }
 };
 
-// Function to get comment syntax for different languages
-const getCommentSyntax = (language: LanguageKey): { start: string, end: string } => {
-  switch (language) {
-    case 'cpp':
-      return { start: '// HINT: ', end: '' };
-    case 'java':
-      return { start: '// HINT: ', end: '' };
-    case 'python':
-      return { start: '# HINT: ', end: '' };
-    default:
-      return { start: '// HINT: ', end: '' };
-  }
+const getCommentSyntax = (judge0LangId: number): { start: string; end: string } => {
+  // Map Judge0 language IDs to comment prefixes
+  const lineCommentMap: Record<number, string> = {
+    50: '//', // C
+    54: '//', // C++
+    59: '//', // C++17
+    76: '//', // C++20
+    51: '//', // C#
+    62: '//', // Java
+    63: '//', // JavaScript
+    70: '#',  // Python2
+    71: '#',  // Python3
+    60: '//', // Go
+    72: '#',  // Ruby
+    73: '//', // Rust
+    74: '//', // TypeScript
+    78: '//', // Kotlin
+    68: '//', // PHP
+    85: '#',  // Perl
+    81: '//', // Scala
+    61: '--', // Haskell
+    64: '--', // Lua
+    80: '#',  // R
+  };
+
+  const commentPrefix = lineCommentMap[judge0LangId] || '//';
+  return { start: `${commentPrefix} HINT: `, end: '' };
 };
 
+
 // Function to insert hints directly into the code
-const insertHintsIntoCode = (originalCode: string, hints: LineHint[], language: LanguageKey): string => {
-  const commentSyntax = getCommentSyntax(language);
+const insertHintsIntoCode = (
+  originalCode: string,
+  hints: LineHint[],
+  judge0LangId: number
+): string => {
+  const commentSyntax = getCommentSyntax(judge0LangId);
   const lines = originalCode.split('\n');
 
-  // Sort hints by line number in descending order to avoid position shifts
   const sortedHints = [...hints].sort((a, b) => b.line - a.line);
-
   for (const hint of sortedHints) {
-    // Make sure the line index exists in the array
     if (hint.line > 0 && hint.line <= lines.length) {
       const hintComment = `${commentSyntax.start}${hint.hint}${commentSyntax.end}`;
-
-      // Insert hint comment before the code line
       lines.splice(hint.line - 1, 0, hintComment);
     }
   }
-
   return lines.join('\n');
 };
+
 
 // New function to get hints and add them to the code
 const giveHints = async (): Promise<void> => {
   try {
     isGettingHints.value = true;
 
-    // Mock data - in production this would be an API call
-    const mockHintsData: LineHint[] = [
-      { line: 2, hint: "Consider initializing variables here" },
-      { line: 5, hint: "This is where you'll need to iterate through the array" },
-      { line: 10, hint: "Don't forget to check for edge cases" },
-      { line: 15, hint: "Remember to return the correct indices" }
-    ];
-
     // Convert numeric language ID to LanguageKey for type safety
     const languageKey = mapLanguageIdToKey(selectedLanguage.value);
 
+    const responseBody = await llmCodeServices.getHints({ problem_statement: props.problemDescription, code_context: code.value });
+    console.log("Response body:", responseBody);
+
+    const hints = responseBody.data.line_hints;
+
     // Insert hints directly into the code
-    const codeWithHints = insertHintsIntoCode(code.value, mockHintsData, languageKey);
+    const codeWithHints = insertHintsIntoCode(code.value, hints, selectedLanguage.value);
 
     // Update the code with hints included
     code.value = codeWithHints;
@@ -535,24 +604,42 @@ onUnmounted(() => {
 });
 
 // Watch for language changes
-watch(selectedLanguage, (newLangId, oldLangId) => {
+watch(selectedLanguage, async (id) => {
   // Save current code before switching
-  if (oldLangId !== undefined) {
-    codePerLanguage.set(oldLangId, code.value);
+  if (id !== undefined) {
+    codePerLanguage.set(id, code.value);
   }
 
   // Retrieve code for the selected language or default
-  const cached = codePerLanguage.get(newLangId);
+  const cached = codePerLanguage.get(id);
   if (cached !== undefined) {
     code.value = cached;
   } else {
-    const config = languageConfigs.value.find(c => c.judge0_language_id === newLangId);
-    code.value = config?.boilerplate_code || setDefaultCodeForLanguage(newLangId);
-    codePerLanguage.set(newLangId, code.value);
+    const config = languageConfigs.value.find(c => c.judge0_language_id === id);
+    code.value = config?.boilerplate_code || setDefaultCodeForLanguage(id);
+    codePerLanguage.set(id, code.value);
   }
 
   nextTick(() => initEditor());
   lineExplanations.value = [];
+  
+  // Reset solution store when language changes
+  codeSolutionStore.reset();
+});
+
+// Watch for solution toggle
+watch(() => codeSolutionStore.showAISolution, async (show) => {
+  if (show && !codeSolutionStore.aiSolution) {
+    await codeSolutionStore.fetchAISolution(param.exerciseId, selectedLanguage.value);
+  }
+  if (show && codeSolutionStore.aiSolution) {
+    code.value = codeSolutionStore.aiSolution;
+    nextTick(() => initEditor());
+  } else {
+    const config = languageConfigs.value.find(c => c.judge0_language_id === selectedLanguage.value);
+    code.value = config?.boilerplate_code || '// No boilerplate code available';
+    nextTick(() => initEditor());
+  }
 });
 
 // Watch for external code changes
@@ -603,5 +690,14 @@ const onExport = () => {
   font-size: 14px;
   max-width: 300px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+/* Solution dropdown styling */
+.v-list-item {
+  min-height: 40px;
+}
+
+.v-list-item__prepend {
+  margin-right: 12px;
 }
 </style>
