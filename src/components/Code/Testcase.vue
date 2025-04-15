@@ -12,6 +12,7 @@ const emit = defineEmits<{
   (e: 'update:input', index: number, field: 'input' | 'expected_output', value: string): void;
   (e: 'toggle', expanded: boolean): void;
   (e: 'add-custom'): void;
+  (e: 'remove-testcase', index: number): void; // ✅ ADD THIS
 }>();
 
 const testTab = ref(props.initialTab ?? 'testcase');
@@ -57,6 +58,17 @@ watch(() => props.result, newVal => {
                 <v-btn size="small" variant="outlined" color="primary" @click="emit('add-custom')">
                   <v-icon start>mdi-plus</v-icon> Add Custom Testcase
                 </v-btn>
+
+                <v-btn
+                  size="small"
+                  variant="outlined"
+                  color="error"
+                  class="ml-2"
+                  :disabled="props.testcases.length === 0"
+                  @click="emit('remove-testcase', activeTestcaseIndex)"
+                >
+                  <v-icon start>mdi-delete</v-icon> Remove testcase
+                </v-btn>
                 <v-spacer />
               </div>
 
@@ -68,7 +80,7 @@ watch(() => props.result, newVal => {
 
               <v-window v-model="activeTestcaseIndex" class="overflow-auto flex-grow-1">
                 <v-window-item v-for="(tc, index) in props.testcases" :key="index" :value="index">
-                  <v-row class="mt-2">
+                  <v-row class="mt-2 align-start">
                     <v-col cols="12" md="6">
                       <v-textarea
                         :model-value="tc.input"
@@ -79,10 +91,11 @@ watch(() => props.result, newVal => {
                         class="monospace scroll-box"
                         rows="4"
                         max-rows="10"
-                        :readonly=false
+                        :readonly="false"
                         @update:model-value="emit('update:input', index, 'input', $event)"
                       />
                     </v-col>
+
                     <v-col cols="12" md="6">
                       <v-textarea
                         :model-value="tc.expected_output"
@@ -93,8 +106,18 @@ watch(() => props.result, newVal => {
                         class="monospace scroll-box"
                         rows="4"
                         max-rows="10"
-                        :readonly=false
+                        :readonly="false"
                         @update:model-value="emit('update:input', index, 'expected_output', $event)"
+                      />
+                    </v-col>
+
+                    <v-col cols="12" class="text-right">
+                      <v-btn
+                        icon="mdi-delete"
+                        size="small"
+                        color="error"
+                        variant="text"
+                        @click="emit('remove-testcase', index)"
                       />
                     </v-col>
                   </v-row>

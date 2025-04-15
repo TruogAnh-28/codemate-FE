@@ -40,6 +40,11 @@ export function useTestcaseManager(exerciseId: string, initialResult = '') {
     ];
   };
 
+  const removeTestcase = (index: number) => {
+    if (index >= 0 && index < testcases.value.length) {
+      testcases.value.splice(index, 1);
+    }
+  };
 
   const onInputChange = (index: number, field: 'input' | 'expected_output', value: string) => {
     testcases.value[index][field] = value;
@@ -62,6 +67,7 @@ export function useTestcaseManager(exerciseId: string, initialResult = '') {
     isExpanded,
     testcases,
     addTestcase,
+    removeTestcase,
     onInputChange,
     fetchTestcases,
   };

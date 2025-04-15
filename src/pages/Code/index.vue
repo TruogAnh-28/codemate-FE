@@ -40,6 +40,7 @@
             @update:input="handleTestInputUpdate"
             @toggle="handleTestcaseToggle"
             @add-custom="handleAddCustomTestcase"
+            @remove-testcase="handleRemoveTestcase"
           />
         </div>
       </v-col>
@@ -91,11 +92,16 @@ const {
   isExpanded: testcaseExpanded,
   testcases,
   addTestcase,
+  removeTestcase,
   onInputChange,
 } = useTestcaseManager(exerciseId);
 
 const handleAddCustomTestcase = () => {
   addTestcase();
+};
+
+const handleRemoveTestcase = (index: number) => {
+  removeTestcase(index);
 };
 
 onMounted(async () => {
