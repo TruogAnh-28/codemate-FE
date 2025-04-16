@@ -86,6 +86,7 @@ const param = route.params as RouteParam;
 const { submitCodeWithPolling } = useProgrammingSubmissions();
 
 const emit = defineEmits<{
+  (e: 'update:solution', value: string): void;
   (e: 'run-result', result: string): void;
   (e: 'submit-result', result: string): void;
   (e: 'update:loading', isLoading: boolean): void;
@@ -217,6 +218,8 @@ const initEditor = (): void => {
       EditorView.updateListener.of((update) => {
         if (update.docChanged) {
           code.value = update.state.doc.toString();
+          emit('update:solution', code.value);
+
           // Clear explanations when code changes
           lineExplanations.value = [];
         }
@@ -359,7 +362,7 @@ const getJudge0LanguageId = (languageId: number): number => {
     71: 71, // Python
     // Add more mappings as needed
   };
-  
+
   return languageMap[languageId] || 54; // Default to C++ if not found
 };
 
@@ -379,7 +382,7 @@ const runCode = async (): Promise<void> => {
     try {
       // Get Judge0 language ID
       const judge0LanguageId = getJudge0LanguageId(selectedLanguage.value);
-      
+
       // Create submission
       const token = await createSubmission(
         code.value,
@@ -487,7 +490,7 @@ const setDefaultCodeForLanguage = (languageId: number) => {
     63: "// JavaScript code\n\nfunction main() {\n  // Your code here\n}\n\nmain();",
     71: "# Python code\n\ndef main():\n    # Your code here\n    pass\n\nif __name__ == '__main__':\n    main()"
   };
-  
+
   return defaultCodeMap[languageId] || "// Your code here";
 };
 
@@ -504,10 +507,10 @@ onMounted(async () => {
     const response = await CodeExerciseService.getLanguageConfigsOfAnExercise(
       param.exerciseId, {showError, showSuccess}
     );
-    
+
     if (response && response.data) {
       languageConfigs.value = response.data;
-      
+
       // Set initial language if available
       const config = languageConfigs.value.find(c => c.judge0_language_id === selectedLanguage.value);
       if (config) {
