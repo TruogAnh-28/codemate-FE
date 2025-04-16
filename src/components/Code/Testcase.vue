@@ -148,6 +148,9 @@ watch(() => props.result, newVal => {
 .test-cases {
   border-top: 1px solid rgba(255, 255, 255, 0.12);
   overflow: hidden;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .test-cases-header {
@@ -155,6 +158,7 @@ watch(() => props.result, newVal => {
   height: 36px;
   background-color: rgba(66, 66, 66, 0.8);
   border-top: 1px solid rgba(255, 255, 255, 0.12);
+  flex-shrink: 0;
 }
 
 :deep(.v-field__input) {
@@ -166,6 +170,7 @@ watch(() => props.result, newVal => {
   word-break: break-word;
   max-height: 100%;
   overflow: auto;
+  flex-grow: 1;
 }
 
 .monospace {
@@ -173,8 +178,34 @@ watch(() => props.result, newVal => {
 }
 
 .scroll-box {
-  max-height: 240px;
+  max-height: 100%;
   overflow: auto;
+  flex-grow: 1;
+}
+
+:deep(.v-window) {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+:deep(.v-window__container) {
+  height: 100%;
+  flex-grow: 1;
+}
+
+:deep(.v-window-item) {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+:deep(.v-card-text) {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+  flex-grow: 1;
 }
 </style>
 

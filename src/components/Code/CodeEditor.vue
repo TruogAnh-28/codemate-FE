@@ -17,7 +17,7 @@
 
       <v-btn variant="tonal" color="secondary" class="mr-2" @click="onImport">Import</v-btn>
       <v-btn variant="tonal" color="secondary" class="mr-2" @click="onExport">Export</v-btn>
-      
+
       <!-- Solution Actions Dropdown -->
       <v-menu>
         <template v-slot:activator="{ props }">
@@ -106,6 +106,7 @@ import { ref, watch, computed, onMounted, onUnmounted, nextTick, inject } from '
 import { useRoute } from 'vue-router';
 import { llmCodeServices } from '@/services/llmCodeServices';
 import { useCodeSolutionStore } from "@/stores/codeSolutionStore";
+import { useCodeExecution } from '@/composables/useCodeExecution';
 
 // Save user's code for each language
 const codePerLanguage = new Map<number, string>();
@@ -117,6 +118,11 @@ interface RouteParam {
 const props = defineProps<{
   testInput: TestInput;
   problemDescription: string;
+  testcases: Array<{
+    input: string;
+    expected_output: string;
+    isPublic?: boolean;
+  }>;
 }>();
 
 // Define types for hints
@@ -161,6 +167,13 @@ const languageConfigs = ref<LanguageConfigDto[]>([]);
 let editor: EditorView | null = null;
 
 const codeSolutionStore = useCodeSolutionStore();
+
+const {
+  isExecuting,
+  executionResult,
+  executionError,
+  executeCode
+} = useCodeExecution();
 
 // Create a basic setup configuration since there's no basicSetup in CM6
 const createBasicSetup = () => [
@@ -436,83 +449,39 @@ const getJudge0LanguageId = (languageId: number): number => {
 };
 
 // Run code with test case
-const runCode = async (): Promise<void> => {
-  try {
-    isLoading.value = true;
-    emit('update:loading', true);
+const runCode = async () => {
+  isLoading.value = true;
+  emit('update:loading', true);
 
-    // Prepare stdin
-    const stdin = prepareStdin(
-      mapLanguageIdToKey(selectedLanguage.value),
-      props.testInput.nums,
-      props.testInput.target
+  try {
+    if (!props.testcases || props.testcases.length === 0) {
+      throw new Error('No test cases available');
+    }
+
+    // Execute the code with all test cases
+    const { executionResults, executionError } = await executeCode(
+      code.value,
+      selectedLanguage.value,
+      props.testcases
     );
 
-    try {
-      // Get Judge0 language ID
-      const judge0LanguageId = getJudge0LanguageId(selectedLanguage.value);
-
-      // Create submission
-      const token = await createSubmission(
-        code.value,
-        judge0LanguageId,
-        stdin,
-        '[0,1]'
-      );
-
-      // Poll for results
-      const result = await pollSubmission(token);
-
-      // Format and emit results
-      let resultText = '';
-      if (result.status.id === 3) { // Accepted
-        resultText = `Status: ${result.status.description}\n`;
-        resultText += `Output: ${result.stdout || 'No output'}\n`;
-        resultText += `Time: ${result.time} seconds\n`;
-        resultText += `Memory: ${result.memory} KB`;
-      } else {
-        resultText = `Status: ${result.status.description}\n`;
-        if (result.stderr) {
-          resultText += `Error: ${result.stderr}\n`;
-        }
-        if (result.compile_output) {
-          resultText += `Compiler output: ${result.compile_output}\n`;
-        }
-      }
-
-      emit('run-result', resultText);
-    } catch (apiError: any) {
-      // Handle API errors
-      if (apiError.response) {
-        // Server returned an error with status code
-        const errorData = apiError.response.data;
-        let detailedError = `Error (${apiError.response.status}): `;
-
-        if (errorData && typeof errorData === 'object') {
-          if (errorData.error) {
-            detailedError += errorData.error;
-          } else if (errorData.message) {
-            detailedError += errorData.message;
-          } else {
-            detailedError += JSON.stringify(errorData);
-          }
-        } else if (typeof errorData === 'string') {
-          detailedError += errorData;
+    if (executionError) {
+      emit('run-result', `❌ ${executionError}`);
+    } else {
+      // Format results for all test cases
+      const formattedResults = executionResults.map((result, index) => {
+        const testcase = props.testcases[index];
+        if (result.error) {
+          return `Test Case ${index + 1}:\nInput: ${testcase.input}\nExpected: ${testcase.expected_output}\n❌ ${result.error}\n`;
         } else {
-          detailedError += 'Unknown error format';
+          return `Test Case ${index + 1}:\nInput: ${testcase.input}\nExpected: ${testcase.expected_output}\n✅ Output: ${result.result}\n`;
         }
+      }).join('\n');
 
-        emit('run-result', detailedError);
-      } else if (apiError.request) {
-        // Request was sent but no response received
-        emit('run-result', 'Error: No response received from server');
-      } else {
-        // Other errors when setting up the request
-        emit('run-result', `Error setting up request: ${apiError.message}`);
-      }
+      emit('run-result', formattedResults);
     }
-  } catch (error: any) {
-    emit('run-result', `Error running code: ${error.message}`);
+  } catch (error) {
+    emit('run-result', `❌ Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
   } finally {
     isLoading.value = false;
     emit('update:loading', false);
@@ -622,7 +591,7 @@ watch(selectedLanguage, async (id) => {
 
   nextTick(() => initEditor());
   lineExplanations.value = [];
-  
+
   // Reset solution store when language changes
   codeSolutionStore.reset();
 });

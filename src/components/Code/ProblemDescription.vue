@@ -90,11 +90,7 @@
 <script setup lang="ts">
 import { ref, watch, nextTick, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
-import { llmCodeServices } from '@/services/llmCodeServices';
-import type { ChatMessage } from '@/types/chat';
 import SubmissionList from '@/components/Code/SubmissionList.vue';
-import { streamFromApi } from '@/common/api.service';
-import axios from 'axios';
 import MarkdownIt from 'markdown-it';
 import hljs from 'highlight.js';
 import 'highlight.js/styles/github-dark.css';
