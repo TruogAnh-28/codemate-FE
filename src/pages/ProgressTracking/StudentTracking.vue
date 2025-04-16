@@ -77,7 +77,7 @@
         </v-col>
       </v-row>
 
-
+      <HorizontalLearningPath v-if="courseData" :course="courseData" />
       <v-row>
         <v-col cols="12" md="6">
           <v-card class="chart-card">
@@ -328,7 +328,6 @@ onMounted(async () => {
     const [courseResult, learningPathResult] = await Promise.all([
       fetchCourseData(),
       fetchLearningPathData(),
-
     ]);
 
     if (!courseResult || !learningPathResult) {
@@ -381,7 +380,6 @@ const getStatusColor = (status: string): string => {
   };
   return statusColors[normalizedStatus] || "grey";
 };
-
 </script>
 
 <style scoped>

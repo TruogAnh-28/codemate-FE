@@ -13,7 +13,7 @@
 
     <!-- Content Area -->
     <template v-if="!loading && courseData && learningPathData">
-      <v-row>
+      <!-- <v-row>
         <v-col cols="12">
           <v-card class="mb-6 gradient-border">
             <v-card-item>
@@ -75,15 +75,16 @@
             </v-card-item>
           </v-card>
         </v-col>
-      </v-row>
+      </v-row> -->
+
+      <HorizontalLearningPath v-if="courseData" :course="courseData" />
 
       <!-- AI Assessment Button -->
-<!-- AI Assessment Button -->
-<v-row class="mb-4">
-  <v-col cols="12" class="d-flex justify-center">
-    <AIAssessmentButton :fetch-assessment="fetchAIAssessment" />
-  </v-col>
-</v-row>
+      <v-row class="mb-4">
+        <v-col cols="12" class="d-flex justify-center">
+          <AIAssessmentButton :fetch-assessment="fetchAIAssessment" />
+        </v-col>
+      </v-row>
 
       <v-row>
         <v-col cols="12" md="6">
@@ -335,7 +336,6 @@ onMounted(async () => {
     const [courseResult, learningPathResult] = await Promise.all([
       fetchCourseData(),
       fetchLearningPathData(),
-
     ]);
 
     if (!courseResult || !learningPathResult) {

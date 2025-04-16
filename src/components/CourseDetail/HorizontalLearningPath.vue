@@ -11,11 +11,11 @@
           </h2>
           <div>
             <v-btn
-              v-if="orderedLessons.length > 0 && course?.course_id"
+              v-if="checkViewButton()"
               class="ml-2"
               color="primary"
               variant="outlined"
-              @click="navigateToProgressTracking(course.course_id)"
+              @click="course && navigateToProgressTracking(course.course_id)"
             >
               View Your Progress
             </v-btn>
@@ -72,7 +72,7 @@
                       size="small"
                       class="ml-2"
                     >
-                      {{ getStatusText(lesson) }}
+                      {{ renderStatusLabel(lesson.status) }}
                     </v-chip>
                   </div>
                   <div>
@@ -215,6 +215,7 @@ import {
 import { coursesService } from "@/services/courseslistServices";
 import { dashboardService } from "@/services/dashboardService";
 import { reloadManager } from "@/modals/manager/reload";
+import { renderStatusLabel } from "@/utils/functions/render";
 
 const props = defineProps<{
   course: CourseDetailResponse | null;
@@ -230,6 +231,19 @@ const recommendedLessons = ref<GetRecommendedLessonsResponse[]>([]);
 const student_goal = ref<string | null>(null);
 const scrollPosition = ref(0);
 const maxScroll = ref(0);
+
+const checkViewButton = () => {
+  if (
+    orderedLessons.value.length > 0 &&
+    props.course?.course_id &&
+    !router.currentRoute.value.name.includes("ProgressTracking")
+  ) {
+    console.log("checkViewButton", orderedLessons.value.length, props.course?.course_id, router.currentRoute.value.name);
+    return true;
+  } else {
+    return false;
+  }
+};
 
 const orderedLessons = computed(() => {
   return [...recommendedLessons.value].sort((a, b) => a.order - b.order);
