@@ -239,7 +239,7 @@ const visibleTestResults = computed<TestResult[]>(() => {
   if (!selectedSubmission.value || !selectedSubmission.value.test_results) {
     return [];
   }
-  
+
   return selectedSubmission.value.test_results.filter(t => t.testcase?.is_public);
 });
 

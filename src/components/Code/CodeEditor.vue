@@ -36,16 +36,16 @@
 
         <v-list>
           <v-list-item
-            @click="codeSolutionStore.toggleSolution"
+            @click="codeSolutionStore.toggleSolution(selectedLanguage)"
             :disabled="codeSolutionStore.isLoading"
           >
             <template v-slot:prepend>
-              <v-icon :color="codeSolutionStore.showAISolution ? 'success' : 'primary'">
-                {{ codeSolutionStore.showAISolution ? 'mdi-eye-off' : 'mdi-eye' }}
+              <v-icon :color="codeSolutionStore.isShowingAISolution(selectedLanguage) ? 'success' : 'primary'">
+                {{ codeSolutionStore.isShowingAISolution(selectedLanguage) ? 'mdi-eye-off' : 'mdi-eye' }}
               </v-icon>
             </template>
             <v-list-item-title>
-              {{ codeSolutionStore.showAISolution ? 'Show My Solution' : 'Show AI Solution' }}
+              {{ codeSolutionStore.isShowingAISolution(selectedLanguage) ? 'Show My Solution' : 'Show AI Solution' }}
             </v-list-item-title>
           </v-list-item>
 
@@ -96,13 +96,12 @@ import { javascript } from '@codemirror/lang-javascript';
 import { cpp } from '@codemirror/lang-cpp';
 import { python } from '@codemirror/lang-python';
 import { java } from '@codemirror/lang-java';
-import { createSubmission, pollSubmission, prepareStdin } from '@/services/Professor/judge0api';
 import { TestInput, LineExplanation, CodeAnalysisRequest, LanguageKey } from '@/types/LLM_code';
 import { LanguageConfigDto } from '@/types/CodingExercise';
 import { JUDGE0_LANG } from '@/constants/judge0_lang';
 import { useProgrammingSubmissions } from '@/composables/useProgrammingSubmissions';
 import { useFileIO } from '@/composables/useFileIO';
-import { ref, watch, computed, onMounted, onUnmounted, nextTick, inject } from 'vue';
+import { ref, watch, computed, onMounted, nextTick, inject } from 'vue';
 import { useRoute } from 'vue-router';
 import { llmCodeServices } from '@/services/llmCodeServices';
 import { useCodeSolutionStore } from "@/stores/codeSolutionStore";
@@ -110,6 +109,7 @@ import { useCodeExecution } from '@/composables/useCodeExecution';
 
 // Save user's code for each language
 const codePerLanguage = new Map<number, string>();
+
 interface RouteParam {
   exerciseId: string;
 
@@ -170,7 +170,7 @@ const codeSolutionStore = useCodeSolutionStore();
 
 const {
   isExecuting,
-  executionResult,
+  executionResults,
   executionError,
   executeCode
 } = useCodeExecution();
@@ -433,21 +433,6 @@ const explainCode = async (): Promise<void> => {
   }
 };
 
-// Helper function to get Judge0 language ID for the current language
-const getJudge0LanguageId = (languageId: number): number => {
-  // Map from our language IDs to Judge0 language IDs
-  // This is safer than directly using LANGUAGE_MAP
-  const languageMap: Record<number, number> = {
-    54: 54, // C++
-    62: 62, // Java
-    63: 63, // JavaScript
-    71: 71, // Python
-    // Add more mappings as needed
-  };
-
-  return languageMap[languageId] || 54; // Default to C++ if not found
-};
-
 // Run code with test case
 const runCode = async () => {
   isLoading.value = true;
@@ -534,9 +519,7 @@ const setDefaultCodeForLanguage = (languageId: number) => {
 
 // Initialize editor when component is mounted
 onMounted(() => {
-  // Set initial default code
-  code.value = setDefaultCodeForLanguage(selectedLanguage.value);
-  initEditor();
+  // Don't set initial default code here, wait for language configs
 });
 
 // Fetch language configurations for the coding exercise
@@ -549,12 +532,12 @@ onMounted(async () => {
     if (response && response.data) {
       languageConfigs.value = response.data;
 
-      // Set initial language if available
-      const config = languageConfigs.value.find(c => c.judge0_language_id === selectedLanguage.value);
-      if (config) {
-        // Initialize both ref and cache map
-        code.value = config.boilerplate_code;
-        codePerLanguage.set(config.judge0_language_id, config.boilerplate_code);
+      // Set the first available language as default if none is selected
+      if (languageConfigs.value.length > 0) {
+        const firstConfig = languageConfigs.value[0];
+        selectedLanguage.value = firstConfig.judge0_language_id;
+        code.value = firstConfig.boilerplate_code;
+        codePerLanguage.set(firstConfig.judge0_language_id, firstConfig.boilerplate_code);
         nextTick(() => initEditor());
       }
     }
@@ -564,51 +547,89 @@ onMounted(async () => {
   }
 });
 
-// Clean up when component is unmounted
-onUnmounted(() => {
-  if (editor) {
-    editor.destroy();
-    editor = null;
+// Helper function to get the appropriate code for a language
+const getCodeForLanguage = (langId: number, isAISolution: boolean): string => {
+  if (isAISolution) {
+    return codeSolutionStore.solutionCache.get(langId) || '';
   }
-});
+  return codePerLanguage.get(langId) || '';
+};
+
+// Helper function to set code for a language
+const setCodeForLanguage = (langId: number, newCode: string, isAISolution: boolean): void => {
+  if (isAISolution) {
+    codeSolutionStore.solutionCache.set(langId, newCode);
+  } else {
+    codePerLanguage.set(langId, newCode);
+  }
+};
 
 // Watch for language changes
-watch(selectedLanguage, async (id) => {
-  // Save current code before switching
-  if (id !== undefined) {
-    codePerLanguage.set(id, code.value);
-  }
+watch(selectedLanguage, async (newId, oldId) => {
+  if (newId === undefined) return;
 
-  // Retrieve code for the selected language or default
-  const cached = codePerLanguage.get(id);
-  if (cached !== undefined) {
-    code.value = cached;
+  // Save current code for the previous language
+  setCodeForLanguage(oldId, code.value, codeSolutionStore.isShowingAISolution(oldId));
+
+  // Reset solution state for the new language
+  codeSolutionStore.reset(newId);
+
+  // Get code associated with the new language
+  const newCode = getCodeForLanguage(newId, codeSolutionStore.isShowingAISolution(newId));
+
+  if (newCode) {
+    code.value = newCode;
   } else {
-    const config = languageConfigs.value.find(c => c.judge0_language_id === id);
-    code.value = config?.boilerplate_code || setDefaultCodeForLanguage(id);
-    codePerLanguage.set(id, code.value);
+    const config = languageConfigs.value.find(c => c.judge0_language_id === newId);
+    if (config?.boilerplate_code) {
+      code.value = config.boilerplate_code;
+    } else {
+      code.value = setDefaultCodeForLanguage(newId);
+    }
+    setCodeForLanguage(newId, code.value, codeSolutionStore.isShowingAISolution(newId));
   }
 
   nextTick(() => initEditor());
   lineExplanations.value = [];
-
-  // Reset solution store when language changes
-  codeSolutionStore.reset();
 });
 
 // Watch for solution toggle
-watch(() => codeSolutionStore.showAISolution, async (show) => {
-  if (show && !codeSolutionStore.aiSolution) {
+watch(() => codeSolutionStore.isShowingAISolution(selectedLanguage.value), async (show) => {
+  if (show) {
+    // Try to fetch solution if showing AI solution
     await codeSolutionStore.fetchAISolution(param.exerciseId, selectedLanguage.value);
+    
+    // If we have a solution in the cache, use it
+    if (codeSolutionStore.hasCachedSolution(selectedLanguage.value)) {
+      const cachedSolution = codeSolutionStore.solutionCache.get(selectedLanguage.value);
+      if (cachedSolution) {
+        code.value = cachedSolution;
+        nextTick(() => initEditor());
+        return;
+      }
+    }
   }
-  if (show && codeSolutionStore.aiSolution) {
-    code.value = codeSolutionStore.aiSolution;
-    nextTick(() => initEditor());
+
+  // Save current code before switching
+  setCodeForLanguage(selectedLanguage.value, code.value, !show);
+
+  // Get the appropriate code for the current state
+  const newCode = getCodeForLanguage(selectedLanguage.value, show);
+  if (newCode) {
+    code.value = newCode;
   } else {
     const config = languageConfigs.value.find(c => c.judge0_language_id === selectedLanguage.value);
-    code.value = config?.boilerplate_code || '// No boilerplate code available';
-    nextTick(() => initEditor());
+    if (show) {
+      // If showing AI solution but no solution exists, use boilerplate
+      code.value = config?.boilerplate_code || setDefaultCodeForLanguage(selectedLanguage.value);
+    } else {
+      // If showing user solution but no code exists, use boilerplate
+      code.value = config?.boilerplate_code || setDefaultCodeForLanguage(selectedLanguage.value);
+    }
+    setCodeForLanguage(selectedLanguage.value, code.value, show);
   }
+
+  nextTick(() => initEditor());
 });
 
 // Watch for external code changes

@@ -86,11 +86,9 @@ watch(() => props.result, newVal => {
                         :model-value="tc.input"
                         label="Input"
                         bg-color="grey-darken-3"
-                        auto-grow
                         density="compact"
-                        class="monospace scroll-box"
+                        class="monospace fixed-textarea"
                         rows="4"
-                        max-rows="10"
                         :readonly="false"
                         @update:model-value="emit('update:input', index, 'input', $event)"
                       />
@@ -101,23 +99,11 @@ watch(() => props.result, newVal => {
                         :model-value="tc.expected_output"
                         label="Expected Output"
                         bg-color="grey-darken-3"
-                        auto-grow
                         density="compact"
-                        class="monospace scroll-box"
+                        class="monospace fixed-textarea"
                         rows="4"
-                        max-rows="10"
                         :readonly="false"
                         @update:model-value="emit('update:input', index, 'expected_output', $event)"
-                      />
-                    </v-col>
-
-                    <v-col cols="12" class="text-right">
-                      <v-btn
-                        icon="mdi-delete"
-                        size="small"
-                        color="error"
-                        variant="text"
-                        @click="emit('remove-testcase', index)"
                       />
                     </v-col>
                   </v-row>
@@ -177,10 +163,17 @@ watch(() => props.result, newVal => {
   font-family: monospace;
 }
 
-.scroll-box {
-  max-height: 100%;
-  overflow: auto;
-  flex-grow: 1;
+.fixed-textarea {
+  height: 150px;
+}
+
+:deep(.v-textarea .v-field__input) {
+  height: 150px;
+  overflow-y: auto;
+}
+
+:deep(.v-textarea .v-field) {
+  height: 150px;
 }
 
 :deep(.v-window) {
@@ -206,6 +199,7 @@ watch(() => props.result, newVal => {
   flex-direction: column;
   overflow: auto;
   flex-grow: 1;
+  padding-bottom: 0;
 }
 </style>
 

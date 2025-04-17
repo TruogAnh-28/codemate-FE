@@ -10,11 +10,18 @@ export const useCodeSolutionStore = defineStore("codeSolution", {
     aiSolution: null as string | null,
     isLoading: false,
     error: null as string | null,
-    showAISolution: false
+    showAISolutionMap: new Map<number, boolean>(), // Track show/hide state per language
+    solutionCache: new Map<number, string>(), // Cache solutions per language
+    lastFetchedLanguage: null as number | null // Track the last language we fetched a solution for
   }),
 
   actions: {
     async fetchAISolution(exerciseId: string, languageId: number) {
+      // Only fetch if we haven't fetched for this language yet
+      if (this.lastFetchedLanguage === languageId) {
+        return;
+      }
+
       this.isLoading = true;
       this.error = null;
       try {
@@ -26,6 +33,9 @@ export const useCodeSolutionStore = defineStore("codeSolution", {
         
         if (response.data) {
           this.aiSolution = response.data.solution;
+          // Cache the solution
+          this.solutionCache.set(languageId, response.data.solution);
+          this.lastFetchedLanguage = languageId;
         }
       } catch (err) {
         this.error = "Failed to fetch AI solution";
@@ -35,15 +45,36 @@ export const useCodeSolutionStore = defineStore("codeSolution", {
       }
     },
 
-    toggleSolution() {
-      this.showAISolution = !this.showAISolution;
+    toggleSolution(languageId: number) {
+      const currentState = this.showAISolutionMap.get(languageId) || false;
+      this.showAISolutionMap.set(languageId, !currentState);
+      // Reset lastFetchedLanguage when toggling to allow fetching again
+      this.lastFetchedLanguage = null;
     },
 
-    reset() {
+    isShowingAISolution(languageId: number): boolean {
+      return this.showAISolutionMap.get(languageId) || false;
+    },
+
+    reset(languageId?: number) {
       this.aiSolution = null;
       this.isLoading = false;
       this.error = null;
-      this.showAISolution = false;
+      this.lastFetchedLanguage = null;
+      if (languageId !== undefined) {
+        // Reset only the specified language
+        this.showAISolutionMap.delete(languageId);
+        this.solutionCache.delete(languageId);
+      } else {
+        // Reset all languages
+        this.showAISolutionMap.clear();
+        this.solutionCache.clear();
+      }
+    },
+
+    // Helper method to check if a solution exists in cache
+    hasCachedSolution(languageId: number): boolean {
+      return this.solutionCache.has(languageId);
     }
   }
 }); 
