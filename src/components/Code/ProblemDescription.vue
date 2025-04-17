@@ -10,7 +10,7 @@
       <div v-html="props.problemDescription"></div>
     </v-card-text>
 
-    <v-card-text v-else-if="descriptionTab === 'submission'" class="pa-4">
+    <v-card-text v-else-if="descriptionTab === 'submission'" class="pa-4 flex-grow-1 overflow-y-auto">
       <!-- Use the SubmissionList component without passing submissions prop -->
       <SubmissionList :programmingExerciseId="exerciseId" />
     </v-card-text>
