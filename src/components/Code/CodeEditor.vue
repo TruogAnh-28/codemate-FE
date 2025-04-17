@@ -1,5 +1,5 @@
 <template>
-  <v-sheet class="d-flex flex-column overflow-hidden h-70">
+  <v-sheet class="d-flex flex-column h-70">
     <!-- Language selector and actions -->
     <v-toolbar dense color="grey-darken-4">
       <v-select
@@ -78,7 +78,7 @@
     </v-toolbar>
 
     <!-- CodeMirror Editor -->
-    <div class="flex-grow-1 overflow-hidden">
+    <div class="flex-grow-1 overflow-auto">
       <div ref="editorContainer" class="editor-container"></div>
     </div>
   </v-sheet>
