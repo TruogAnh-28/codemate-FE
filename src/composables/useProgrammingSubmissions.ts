@@ -146,17 +146,40 @@ export function useProgrammingSubmissions(useMockData = false) {
         throw new Error('Failed to create submission: No ID returned');
       }
 
-      // Add to the list of submissions
-      // const newStat = await fetchSubmissionStats(exerciseId);
-      
-      // Get the detailed submission
-      const newSubmission = await fetchSubmissionDetail(id);
-      
-      if (newSubmission) {
-        callbacks.onComplete(newSubmission);
-      } else {
-        throw new Error('Failed to retrieve submission details');
-      }
+      // Poll for submission status with exponential backoff
+      const pollSubmission = async (
+        attempt = 1,
+        maxAttempts = 10,
+        baseDelay = 1000
+      ): Promise<ProgrammingSubmission> => {
+        const submission = await fetchSubmissionDetail(id);
+        
+        if (!submission) {
+          throw new Error('Failed to retrieve submission details');
+        }
+
+        // Check if submission is still processing
+        if (submission.status === 'pending') {
+          if (attempt >= maxAttempts) {
+            throw new Error('Maximum polling attempts reached');
+          }
+
+          // Calculate delay with exponential backoff and jitter
+          const delay = Math.min(
+            baseDelay * Math.pow(2, attempt - 1) + Math.random() * 1000,
+            10000 // Max delay of 10 seconds
+          );
+
+          await new Promise(resolve => setTimeout(resolve, delay));
+          return pollSubmission(attempt + 1, maxAttempts, baseDelay);
+        }
+
+        return submission;
+      };
+
+      // Start polling with initial 1 second delay
+      const finalSubmission = await pollSubmission();
+      callbacks.onComplete(finalSubmission);
     } catch (error) {
       console.error('Error in submission process:', error);
       callbacks.onError(error instanceof Error ? error : new Error('Unknown error during submission'));

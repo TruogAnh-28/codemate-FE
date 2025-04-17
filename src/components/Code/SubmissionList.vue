@@ -87,8 +87,10 @@
                           <span class="text-caption">{{ criterion.score }}</span>
                         </v-progress-circular>
                       </template>
-                      <v-list-item-title class="text-body-2">{{ criterion.name }}</v-list-item-title>
-                      <v-list-item-subtitle class="text-caption">{{ criterion.comment }}</v-list-item-subtitle>
+                      <div class="d-flex flex-column">
+                        <v-list-item-title class="text-body-2 text-wrap">{{ criterion.name }}</v-list-item-title>
+                        <div class="text-caption mt-1">{{ criterion.comment }}</div>
+                      </div>
                     </v-list-item>
                   </v-list>
                 </div>
@@ -101,11 +103,14 @@
                     <v-list-item
                       v-for="(suggestion, index) in evaluation.improvement_suggestions"
                       :key="index"
+                      class="mb-2"
                     >
                       <template v-slot:prepend>
-                        <v-icon color="primary" size="small">mdi-lightbulb-outline</v-icon>
+                        <v-icon color="primary" size="small" class="me-2 mt-1">mdi-lightbulb-outline</v-icon>
                       </template>
-                      <v-list-item-title class="text-body-2">{{ suggestion }}</v-list-item-title>
+                      <div class="d-flex flex-column">
+                        <div class="text-body-2 text-wrap">{{ suggestion }}</div>
+                      </div>
                     </v-list-item>
                   </v-list>
                 </div>
@@ -345,5 +350,54 @@ pre {
 }
 .hoverable-list-item:hover {
   background-color: #2c2c2c;
+}
+
+/* New styles for list items */
+:deep(.v-list-item__content) {
+  min-width: 0;
+  padding-right: 8px;
+  width: 100%;
+}
+
+:deep(.v-list-item__title) {
+  white-space: normal !important;
+  word-break: break-word;
+  overflow: visible;
+  text-overflow: unset;
+}
+
+:deep(.v-list-item__subtitle) {
+  white-space: normal !important;
+  word-break: break-word !important;
+  overflow: visible !important;
+  text-overflow: unset !important;
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin-top: 4px !important;
+}
+
+:deep(.v-list-item__prepend) {
+  align-self: flex-start;
+  margin-top: 4px;
+  margin-right: 8px !important;
+}
+
+:deep(.v-icon) {
+  margin-top: 2px;
+}
+
+
+/* Specific styles for evaluation criteria */
+:deep(.v-list-item) {
+  align-items: flex-start !important;
+  padding: 8px 16px !important;
+  min-height: auto !important;
+}
+
+:deep(.v-list-item__content) {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  padding-right: 16px !important;
 }
 </style>
