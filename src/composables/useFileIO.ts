@@ -22,8 +22,23 @@ const EXTENSIONS: Record<number, string> = {
   80: 'r'
 }
 
+// Create reverse mapping of extensions to language IDs
+const LANGUAGE_IDS: Record<string, number[]> = {};
+Object.entries(EXTENSIONS).forEach(([langId, ext]) => {
+  if (!LANGUAGE_IDS[ext]) {
+    LANGUAGE_IDS[ext] = [];
+  }
+  LANGUAGE_IDS[ext].push(Number(langId));
+});
+
+// Prefer newer versions of languages when multiple options exist
+const PREFERRED_LANGUAGE_IDS: Record<string, number> = {
+  'py': 71,  // Prefer Python 3 over Python 2
+  'cpp': 76, // Prefer C++20 over older versions
+};
+
 export function useFileIO() {
-  const importCode = (callback: (code: string) => void) => {
+  const importCode = (callback: (code: string, detectedLangId?: number) => void) => {
     const input = document.createElement('input')
     input.type = 'file'
     input.accept = '.c,.cpp,.cs,.java,.js,.py,.go,.rb,.rs,.swift,.kt,.ts,.php,.pl,.scala,.hs,.lua,.r'
@@ -31,7 +46,20 @@ export function useFileIO() {
       if (input.files && input.files[0]) {
         const file = input.files[0]
         const text = await file.text()
-        callback(text)
+        
+        // Detect language from file extension
+        const extension = file.name.split('.').pop()?.toLowerCase() || ''
+        console.log('Detected extension:', extension)
+        
+        // Get possible language IDs for this extension
+        const possibleLangIds = LANGUAGE_IDS[extension] || []
+        console.log('Possible language IDs:', possibleLangIds)
+        
+        // Use preferred language ID if available, otherwise use the first one
+        const detectedLangId = PREFERRED_LANGUAGE_IDS[extension] || possibleLangIds[0]
+        console.log('Selected language ID:', detectedLangId)
+        
+        callback(text, detectedLangId)
       }
     }
     input.click()

@@ -47,6 +47,76 @@
 
         <v-card-text>
           <v-expansion-panels multiple variant="accordion">
+            <!-- LLM Evaluation Panel -->
+            <v-expansion-panel title="🤖 Coding Assistant Evaluation" value="evaluation">
+              <v-expansion-panel-text>
+                <div class="d-flex align-center mb-4">
+                  <v-progress-circular
+                    :model-value="(evaluation.score / evaluation.max_score) * 100"
+                    :size="80"
+                    :width="8"
+                    color="primary"
+                    class="me-4"
+                  >
+                    <span class="text-h6">{{ evaluation.score }}</span>
+                  </v-progress-circular>
+                  <div>
+                    <div class="text-subtitle-1 font-weight-bold">Overall Score</div>
+                    <div class="text-caption text-grey">{{ evaluation.summary }}</div>
+                  </div>
+                </div>
+
+                <v-divider class="my-4"></v-divider>
+
+                <div class="mb-4">
+                  <div class="text-subtitle-2 mb-2">Evaluation Criteria</div>
+                  <v-list density="compact" class="bg-grey-darken-3 rounded">
+                    <v-list-item
+                      v-for="criterion in evaluation.criteria"
+                      :key="criterion.name"
+                      class="mb-2"
+                    >
+                      <template v-slot:prepend>
+                        <v-progress-circular
+                          :model-value="(criterion.score / 10) * 100"
+                          :size="24"
+                          :width="2"
+                          color="primary"
+                          class="me-2"
+                        >
+                          <span class="text-caption">{{ criterion.score }}</span>
+                        </v-progress-circular>
+                      </template>
+                      <div class="d-flex flex-column">
+                        <v-list-item-title class="text-body-2 text-wrap">{{ criterion.name }}</v-list-item-title>
+                        <div class="text-caption mt-1">{{ criterion.comment }}</div>
+                      </div>
+                    </v-list-item>
+                  </v-list>
+                </div>
+
+                <v-divider class="my-4"></v-divider>
+
+                <div>
+                  <div class="text-subtitle-2 mb-2">Improvement Suggestions</div>
+                  <v-list density="compact" class="bg-grey-darken-3 rounded">
+                    <v-list-item
+                      v-for="(suggestion, index) in evaluation.improvement_suggestions"
+                      :key="index"
+                      class="mb-2"
+                    >
+                      <template v-slot:prepend>
+                        <v-icon color="primary" size="small" class="me-2 mt-1">mdi-lightbulb-outline</v-icon>
+                      </template>
+                      <div class="d-flex flex-column">
+                        <div class="text-body-2 text-wrap">{{ suggestion }}</div>
+                      </div>
+                    </v-list-item>
+                  </v-list>
+                </div>
+              </v-expansion-panel-text>
+            </v-expansion-panel>
+
             <!-- Submission Code Panel -->
             <v-expansion-panel title="📄 Submitted Code">
               <v-expansion-panel-text>
@@ -63,28 +133,32 @@
               :title="`#${index + 1} - ${result.status}`"
             >
               <v-expansion-panel-text>
-                <v-row>
-                  <v-col cols="12" md="6">
-                    <strong class="text-caption">🧪 Input:</strong>
-                    <v-sheet color="grey-darken-3" class="pa-2 rounded mb-2 scroll-box">
-                      <pre>{{ result.testcase?.input || 'No input available' }}</pre>
-                    </v-sheet>
-                  </v-col>
-                  <v-col cols="12" md="6">
-                    <strong class="text-caption">🎯 Expected Output:</strong>
-                    <v-sheet color="grey-darken-3" class="pa-2 rounded mb-2 scroll-box">
-                      <pre>{{ result.testcase?.expected_output || 'No expected output available' }}</pre>
-                    </v-sheet>
-                  </v-col>
-                </v-row>
+                <div class="d-flex flex-column gap-4">
+                  <div class="d-flex flex-column flex-md-row gap-4">
+                    <div class="flex-grow-1">
+                      <div class="text-caption mb-2">🧪 Input:</div>
+                      <v-sheet color="grey-darken-3" class="pa-2 rounded scroll-box" style="max-height: 200px;">
+                        <pre class="text-body-2">{{ result.testcase?.input || 'No input available' }}</pre>
+                      </v-sheet>
+                    </div>
+                    <div class="flex-grow-1">
+                      <div class="text-caption mb-2">🎯 Expected Output:</div>
+                      <v-sheet color="grey-darken-3" class="pa-2 rounded scroll-box" style="max-height: 200px;">
+                        <pre class="text-body-2">{{ result.testcase?.expected_output || 'No expected output available' }}</pre>
+                      </v-sheet>
+                    </div>
+                  </div>
 
-                <strong class="text-caption">📤 Your Output:</strong>
-                <v-sheet color="grey-darken-3" class="pa-2 rounded mb-2 scroll-box">
-                  <pre>{{ result.stdout || 'No output available' }}</pre>
-                </v-sheet>
+                  <div>
+                    <div class="text-caption mb-2">📤 Your Output:</div>
+                    <v-sheet color="grey-darken-3" class="pa-2 rounded scroll-box" style="max-height: 200px;">
+                      <pre class="text-body-2">{{ result.stdout || 'No output available' }}</pre>
+                    </v-sheet>
+                  </div>
 
-                <div class="text-caption text-grey">
-                  ⏱ {{ result.time ?? '-' }}s  📦 {{ result.memory ?? '-' }} KB
+                  <div class="text-caption text-grey">
+                    ⏱ {{ result.time ?? '-' }}s  📦 {{ result.memory ?? '-' }} KB
+                  </div>
                 </div>
               </v-expansion-panel-text>
             </v-expansion-panel>
@@ -116,6 +190,20 @@ interface TestResult {
   testcase?: TestCase;
 }
 
+interface EvaluationCriteria {
+  name: string;
+  score: number;
+  comment: string;
+}
+
+interface LLMEvaluation {
+  score: number;
+  max_score: number;
+  summary: string;
+  criteria: EvaluationCriteria[];
+  improvement_suggestions: string[];
+}
+
 interface ProgrammingSubmission {
   id: string;
   user_id: string;
@@ -128,6 +216,7 @@ interface ProgrammingSubmission {
   updated_at?: string | Date;
   passed_testcases?: number;
   total_testcases?: number;
+  llm_evaluation?: LLMEvaluation;
 }
 
 interface SubmissionStat {
@@ -155,13 +244,52 @@ const visibleTestResults = computed<TestResult[]>(() => {
   if (!selectedSubmission.value || !selectedSubmission.value.test_results) {
     return [];
   }
-  
+
   return selectedSubmission.value.test_results.filter(t => t.testcase?.is_public);
 });
 
 // Computed property to safely access code content
 const detailsCodeContent = computed<string>(() => {
   return selectedSubmission.value?.code || '// Code not available';
+});
+
+// Add mock evaluation data
+const mockEvaluation: LLMEvaluation = {
+  score: 8.5,
+  max_score: 10,
+  summary: "The solution is correct and efficient. Code is readable and follows standard conventions.",
+  criteria: [
+    {
+      name: "Correctness",
+      score: 10,
+      comment: "All test cases passed. Logic is sound."
+    },
+    {
+      name: "Efficiency",
+      score: 8,
+      comment: "Time complexity is acceptable, though a more optimal data structure could be used."
+    },
+    {
+      name: "Readability",
+      score: 9,
+      comment: "Code is easy to read and understand. Good use of indentation and naming."
+    },
+    {
+      name: "Style",
+      score: 7,
+      comment: "Minor style issues: missing blank lines, inconsistent spacing."
+    }
+  ],
+  improvement_suggestions: [
+    "Use a dictionary to optimize lookup operations.",
+    "Add comments to improve maintainability.",
+    "Ensure consistent indentation and spacing."
+  ]
+};
+
+// Add computed property for evaluation
+const evaluation = computed<LLMEvaluation>(() => {
+  return selectedSubmission.value?.llm_evaluation || mockEvaluation;
 });
 
 onMounted(async () => {
@@ -205,8 +333,10 @@ pre {
   white-space: pre;
 }
 .scroll-box {
-  max-height: 240px;
+  max-height: 200px;
   overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 .text-success {
   color: #4caf50;
@@ -220,5 +350,54 @@ pre {
 }
 .hoverable-list-item:hover {
   background-color: #2c2c2c;
+}
+
+/* New styles for list items */
+:deep(.v-list-item__content) {
+  min-width: 0;
+  padding-right: 8px;
+  width: 100%;
+}
+
+:deep(.v-list-item__title) {
+  white-space: normal !important;
+  word-break: break-word;
+  overflow: visible;
+  text-overflow: unset;
+}
+
+:deep(.v-list-item__subtitle) {
+  white-space: normal !important;
+  word-break: break-word !important;
+  overflow: visible !important;
+  text-overflow: unset !important;
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin-top: 4px !important;
+}
+
+:deep(.v-list-item__prepend) {
+  align-self: flex-start;
+  margin-top: 4px;
+  margin-right: 8px !important;
+}
+
+:deep(.v-icon) {
+  margin-top: 2px;
+}
+
+
+/* Specific styles for evaluation criteria */
+:deep(.v-list-item) {
+  align-items: flex-start !important;
+  padding: 8px 16px !important;
+  min-height: auto !important;
+}
+
+:deep(.v-list-item__content) {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  padding-right: 16px !important;
 }
 </style>

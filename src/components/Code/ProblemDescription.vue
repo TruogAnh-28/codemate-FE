@@ -10,7 +10,7 @@
       <div v-html="props.problemDescription"></div>
     </v-card-text>
 
-    <v-card-text v-else-if="descriptionTab === 'submission'" class="pa-4">
+    <v-card-text v-else-if="descriptionTab === 'submission'" class="pa-4 flex-grow-1 overflow-y-auto">
       <!-- Use the SubmissionList component without passing submissions prop -->
       <SubmissionList :programmingExerciseId="exerciseId" />
     </v-card-text>
@@ -90,11 +90,7 @@
 <script setup lang="ts">
 import { ref, watch, nextTick, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
-import { llmCodeServices } from '@/services/llmCodeServices';
-import type { ChatMessage } from '@/types/chat';
 import SubmissionList from '@/components/Code/SubmissionList.vue';
-import { streamFromApi } from '@/common/api.service';
-import axios from 'axios';
 import MarkdownIt from 'markdown-it';
 import hljs from 'highlight.js';
 import 'highlight.js/styles/github-dark.css';
@@ -182,11 +178,25 @@ watch(descriptionTab, async (tab) => {
 const chatBottom = ref<null | HTMLElement>(null);
 const chatContainer = ref<null | HTMLElement>(null);
 
+// Watch messages array for changes and scroll to bottom
+watch(messages, () => {
+  scrollToBottom();
+}, { deep: true });
+
+// Watch streaming buffer for continuous scrolling during text streaming
+watch(streamingBuffer, () => {
+  scrollToBottom();
+});
+
 function scrollToBottom() {
   nextTick(() => {
     const container = chatContainer.value;
     if (container) {
-      container.scrollTop = container.scrollHeight;
+      const scrollOptions: ScrollToOptions = {
+        top: container.scrollHeight,
+        behavior: 'smooth'
+      };
+      container.scrollTo(scrollOptions);
     }
   });
 }
@@ -213,6 +223,7 @@ function scrollToBottom() {
   overflow-y: auto;
   min-height: 0;
   max-height: 100%;
+  scroll-behavior: smooth;
 }
 
 .chat-messages {

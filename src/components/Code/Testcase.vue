@@ -86,11 +86,9 @@ watch(() => props.result, newVal => {
                         :model-value="tc.input"
                         label="Input"
                         bg-color="grey-darken-3"
-                        auto-grow
                         density="compact"
-                        class="monospace scroll-box"
+                        class="monospace fixed-textarea"
                         rows="4"
-                        max-rows="10"
                         :readonly="false"
                         @update:model-value="emit('update:input', index, 'input', $event)"
                       />
@@ -101,23 +99,11 @@ watch(() => props.result, newVal => {
                         :model-value="tc.expected_output"
                         label="Expected Output"
                         bg-color="grey-darken-3"
-                        auto-grow
                         density="compact"
-                        class="monospace scroll-box"
+                        class="monospace fixed-textarea"
                         rows="4"
-                        max-rows="10"
                         :readonly="false"
                         @update:model-value="emit('update:input', index, 'expected_output', $event)"
-                      />
-                    </v-col>
-
-                    <v-col cols="12" class="text-right">
-                      <v-btn
-                        icon="mdi-delete"
-                        size="small"
-                        color="error"
-                        variant="text"
-                        @click="emit('remove-testcase', index)"
                       />
                     </v-col>
                   </v-row>
@@ -148,6 +134,9 @@ watch(() => props.result, newVal => {
 .test-cases {
   border-top: 1px solid rgba(255, 255, 255, 0.12);
   overflow: hidden;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .test-cases-header {
@@ -155,6 +144,7 @@ watch(() => props.result, newVal => {
   height: 36px;
   background-color: rgba(66, 66, 66, 0.8);
   border-top: 1px solid rgba(255, 255, 255, 0.12);
+  flex-shrink: 0;
 }
 
 :deep(.v-field__input) {
@@ -166,15 +156,50 @@ watch(() => props.result, newVal => {
   word-break: break-word;
   max-height: 100%;
   overflow: auto;
+  flex-grow: 1;
 }
 
 .monospace {
   font-family: monospace;
 }
 
-.scroll-box {
-  max-height: 240px;
+.fixed-textarea {
+  height: 150px;
+}
+
+:deep(.v-textarea .v-field__input) {
+  height: 150px;
+  overflow-y: auto;
+}
+
+:deep(.v-textarea .v-field) {
+  height: 150px;
+}
+
+:deep(.v-window) {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+:deep(.v-window__container) {
+  height: 100%;
+  flex-grow: 1;
+}
+
+:deep(.v-window-item) {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+:deep(.v-card-text) {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
   overflow: auto;
+  flex-grow: 1;
+  padding-bottom: 0;
 }
 </style>
 
