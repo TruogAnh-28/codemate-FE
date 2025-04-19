@@ -37,7 +37,7 @@
         <v-list>
           <v-list-item
             @click="codeSolutionStore.toggleSolution(selectedLanguage)"
-            :disabled="codeSolutionStore.isLoading"
+            :disabled="!allowedToGetAISolution"
           >
             <template v-slot:prepend>
               <v-icon :color="codeSolutionStore.isShowingAISolution(selectedLanguage) ? 'success' : 'primary'">
@@ -74,7 +74,7 @@
       </v-menu>
 
       <v-btn variant="tonal" color="success" class="mr-2" @click="runCode" :loading="isLoading">Run</v-btn>
-      <v-btn variant="tonal" color="primary" @click="submitCode" :loading="isLoading">Submit</v-btn>
+      <v-btn variant="tonal" color="primary" @click="submitCode" :loading="isLoadingSubmit">Submit</v-btn>
     </v-toolbar>
 
     <!-- CodeMirror Editor -->
@@ -144,7 +144,7 @@ const availableLanguageIds = computed(() =>
 
 const route = useRoute();
 const param = route.params as RouteParam;
-const { submitCodeWithPolling } = useProgrammingSubmissions();
+const { submissions, submitCodeWithPolling } = useProgrammingSubmissions();
 
 const emit = defineEmits<{
   (e: 'update:solution', value: string): void;
@@ -157,6 +157,7 @@ const selectedLanguage = ref<number>(54);
 const code = ref<string>('// Loading code...');
 const editorContainer = ref<HTMLElement | null>(null);
 const isLoading = ref<boolean>(false);
+const isLoadingSubmit = ref<boolean>(false);
 const isExplaining = ref<boolean>(false);
 const isGettingHints = ref<boolean>(false);
 const lineExplanations = ref<LineExplanation[]>([]);
@@ -169,11 +170,13 @@ let editor: EditorView | null = null;
 const codeSolutionStore = useCodeSolutionStore();
 
 const {
-  isExecuting,
-  executionResults,
-  executionError,
   executeCode
 } = useCodeExecution();
+
+const allowedToGetAISolution = computed(() => {
+  // Only allow users/students to get AI solution if they have submitted the code at least 5 times
+  return submissions.value.length >= 5;
+});
 
 // Create a basic setup configuration since there's no basicSetup in CM6
 const createBasicSetup = () => [
@@ -303,17 +306,6 @@ const initEditor = (): void => {
   });
 };
 
-// Map numeric language ID to LanguageKey for type safety
-const mapLanguageIdToKey = (id: number): LanguageKey => {
-  switch(id) {
-    case 54: return 'cpp';
-    case 62: return 'java';
-    case 71: return 'python';
-    // Add more mappings as needed
-    default: return 'cpp'; // Default fallback
-  }
-};
-
 const getCommentSyntax = (judge0LangId: number): { start: string; end: string } => {
   // Map Judge0 language IDs to comment prefixes
   const lineCommentMap: Record<number, string> = {
@@ -363,14 +355,10 @@ const insertHintsIntoCode = (
   return lines.join('\n');
 };
 
-
 // New function to get hints and add them to the code
 const giveHints = async (): Promise<void> => {
   try {
     isGettingHints.value = true;
-
-    // Convert numeric language ID to LanguageKey for type safety
-    const languageKey = mapLanguageIdToKey(selectedLanguage.value);
 
     const responseBody = await llmCodeServices.getHints({ problem_statement: props.problemDescription, code_context: code.value });
     console.log("Response body:", responseBody);
@@ -474,7 +462,7 @@ const runCode = async () => {
 };
 
 const submitCode = async (): Promise<void> => {
-  isLoading.value = true;
+  isLoadingSubmit.value = true;
   emit('update:loading', true);
 
   submitCodeWithPolling(
@@ -493,12 +481,12 @@ const submitCode = async (): Promise<void> => {
 - Score: ${submission.score ?? 'N/A'}
         `;
         emit('submit-result', summary);
-        isLoading.value = false;
+        isLoadingSubmit.value = false;
         emit('update:loading', false);
       },
       onError: (err) => {
         emit('submit-result', `❌ Submission failed: ${err.message}`);
-        isLoading.value = false;
+        isLoadingSubmit.value = false;
         emit('update:loading', false);
       }
     }

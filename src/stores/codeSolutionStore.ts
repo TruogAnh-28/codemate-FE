@@ -1,9 +1,5 @@
 import { defineStore } from "pinia";
 import { CodeExerciseService } from "@/services/CodeExerciseService";
-import { CodeExerciseMockService } from "@/services/mock/CodeExerciseMockService";
-
-// Set this to true to use mock data
-const USE_MOCK = true;
 
 export const useCodeSolutionStore = defineStore("codeSolution", {
   state: () => ({
