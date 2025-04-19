@@ -110,7 +110,7 @@ const handleTestInputUpdate = (index: number, field: 'input' | 'expected_output'
 
 // Computed dynamic height for CodeEditor
 const codeEditorStyle = computed(() => ({
-  height: testcaseExpanded.value ? '60%' : 'calc(100% - 36px)',
+  height: testcaseExpanded.value ? '60vh' : 'calc(100vh - 36px)',
   minHeight: testcaseExpanded.value ? '300px' : '500px',
   maxHeight: testcaseExpanded.value ? 'calc(100vh - 300px)' : 'calc(100vh - 100px)',
   overflow: 'auto',
@@ -119,9 +119,9 @@ const codeEditorStyle = computed(() => ({
 
 // Add this computed property
 const testcaseStyle = computed(() => ({
-  height: testcaseExpanded.value ? '40%' : '36px',
-  minHeight: testcaseExpanded.value ? '200px' : '36px',
-  maxHeight: testcaseExpanded.value ? 'calc(100vh - 300px)' : '36px',
+  height: testcaseExpanded.value ? '50%' : '36px',
+  minHeight: testcaseExpanded.value ? '300px' : '36px',
+  maxHeight: testcaseExpanded.value ? 'calc(100vh - 200px)' : '36px',
   overflow: 'hidden',
   transition: 'height 0.2s ease-in-out',
 }));
@@ -163,8 +163,8 @@ const startResize = (e: MouseEvent) => {
 
 <style>
 html, body {
-  overflow: auto;
-  height: 100%;
+  overflow: hidden;
+  height: 100vh;
   margin: 0;
   padding: 0;
 }

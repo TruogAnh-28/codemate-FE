@@ -1,5 +1,5 @@
 <template>
-  <v-sheet class="d-flex flex-column h-70">
+  <v-sheet class="d-flex flex-column fill-height">
     <!-- Language selector and actions -->
     <v-toolbar dense color="grey-darken-4">
       <v-select
@@ -37,7 +37,7 @@
         <v-list>
           <v-list-item
             @click="codeSolutionStore.toggleSolution(selectedLanguage)"
-            :disabled="!allowedToGetAISolution"
+            :disabled="codeSolutionStore.isLoading"
           >
             <template v-slot:prepend>
               <v-icon :color="codeSolutionStore.isShowingAISolution(selectedLanguage) ? 'success' : 'primary'">
@@ -73,22 +73,22 @@
         </v-list>
       </v-menu>
 
-      <v-btn variant="tonal" color="success" class="mr-2" @click="runCode" :loading="isLoading">Run</v-btn>
-      <v-btn variant="tonal" color="primary" @click="submitCode" :loading="isLoadingSubmit">Submit</v-btn>
+      <v-btn variant="tonal" color="success" class="mr-2" @click="runCode" :loading="isRunning">Run</v-btn>
+      <v-btn variant="tonal" color="primary" @click="submitCode" :loading="isSubmitting">Submit</v-btn>
     </v-toolbar>
 
     <!-- CodeMirror Editor -->
-    <div class="flex-grow-1 overflow-auto">
-      <div ref="editorContainer" class="editor-container"></div>
+    <div class="editor-wrapper flex-grow-1 d-flex flex-column">
+      <div ref="editorContainer" class="editor-container" tabindex="0"></div>
     </div>
   </v-sheet>
 </template>
 
 <script setup lang="ts">
-import { EditorState } from '@codemirror/state';
+import { EditorState, EditorSelection } from '@codemirror/state';
 import { EditorView, keymap, lineNumbers, highlightActiveLine, highlightSpecialChars, drawSelection, dropCursor, rectangularSelection, crosshairCursor, highlightActiveLineGutter, hoverTooltip } from '@codemirror/view';
 import { CodeExerciseService } from '@/services/CodeExerciseService';
-import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
+import { defaultKeymap, history, historyKeymap, indentWithTab } from '@codemirror/commands';
 import { indentOnInput, syntaxHighlighting, defaultHighlightStyle, bracketMatching, foldGutter, indentUnit } from '@codemirror/language';
 import { closeBrackets, closeBracketsKeymap } from '@codemirror/autocomplete';
 import { lintGutter } from '@codemirror/lint';
@@ -156,8 +156,8 @@ const emit = defineEmits<{
 const selectedLanguage = ref<number>(54);
 const code = ref<string>('// Loading code...');
 const editorContainer = ref<HTMLElement | null>(null);
-const isLoading = ref<boolean>(false);
-const isLoadingSubmit = ref<boolean>(false);
+const isRunning = ref<boolean>(false);
+const isSubmitting = ref<boolean>(false);
 const isExplaining = ref<boolean>(false);
 const isGettingHints = ref<boolean>(false);
 const lineExplanations = ref<LineExplanation[]>([]);
@@ -172,11 +172,6 @@ const codeSolutionStore = useCodeSolutionStore();
 const {
   executeCode
 } = useCodeExecution();
-
-const allowedToGetAISolution = computed(() => {
-  // Only allow users/students to get AI solution if they have submitted the code at least 5 times
-  return submissions.value.length >= 5;
-});
 
 // Create a basic setup configuration since there's no basicSetup in CM6
 const createBasicSetup = () => [
@@ -195,6 +190,21 @@ const createBasicSetup = () => [
   crosshairCursor(),
   highlightActiveLine(),
   keymap.of([
+    {
+      key: 'Tab',
+      preventDefault: true,
+      run: (view) => {
+        const tabChar = '\t';
+        const { state } = view;
+        const changes = state.changeByRange(range => ({
+          changes: { from: range.from, to: range.to, insert: tabChar },
+          range: EditorSelection.cursor(range.from + tabChar.length)
+        }));
+
+        view.dispatch(changes);
+        return true;
+      }
+    },
     ...defaultKeymap,
     ...historyKeymap,
     ...closeBracketsKeymap
@@ -306,6 +316,17 @@ const initEditor = (): void => {
   });
 };
 
+// Map numeric language ID to LanguageKey for type safety
+const mapLanguageIdToKey = (id: number): LanguageKey => {
+  switch(id) {
+    case 54: return 'cpp';
+    case 62: return 'java';
+    case 71: return 'python';
+    // Add more mappings as needed
+    default: return 'cpp'; // Default fallback
+  }
+};
+
 const getCommentSyntax = (judge0LangId: number): { start: string; end: string } => {
   // Map Judge0 language IDs to comment prefixes
   const lineCommentMap: Record<number, string> = {
@@ -359,6 +380,9 @@ const insertHintsIntoCode = (
 const giveHints = async (): Promise<void> => {
   try {
     isGettingHints.value = true;
+
+    // Convert numeric language ID to LanguageKey for type safety
+    const languageKey = mapLanguageIdToKey(selectedLanguage.value);
 
     const responseBody = await llmCodeServices.getHints({ problem_statement: props.problemDescription, code_context: code.value });
     console.log("Response body:", responseBody);
@@ -423,7 +447,7 @@ const explainCode = async (): Promise<void> => {
 
 // Run code with test case
 const runCode = async () => {
-  isLoading.value = true;
+  isRunning.value = true;
   emit('update:loading', true);
 
   try {
@@ -456,13 +480,13 @@ const runCode = async () => {
   } catch (error) {
     emit('run-result', `❌ Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
   } finally {
-    isLoading.value = false;
+    isRunning.value = false;
     emit('update:loading', false);
   }
 };
 
 const submitCode = async (): Promise<void> => {
-  isLoadingSubmit.value = true;
+  isSubmitting.value = true;
   emit('update:loading', true);
 
   submitCodeWithPolling(
@@ -481,12 +505,12 @@ const submitCode = async (): Promise<void> => {
 - Score: ${submission.score ?? 'N/A'}
         `;
         emit('submit-result', summary);
-        isLoadingSubmit.value = false;
+        isSubmitting.value = false;
         emit('update:loading', false);
       },
       onError: (err) => {
         emit('submit-result', `❌ Submission failed: ${err.message}`);
-        isLoadingSubmit.value = false;
+        isSubmitting.value = false;
         emit('update:loading', false);
       }
     }
@@ -524,8 +548,16 @@ onMounted(async () => {
       if (languageConfigs.value.length > 0) {
         const firstConfig = languageConfigs.value[0];
         selectedLanguage.value = firstConfig.judge0_language_id;
-        code.value = firstConfig.boilerplate_code;
-        codePerLanguage.set(firstConfig.judge0_language_id, firstConfig.boilerplate_code);
+        
+        // Try to load stored code first
+        const storedCode = loadCodeFromStorage(param.exerciseId, firstConfig.judge0_language_id);
+        if (storedCode) {
+          code.value = storedCode;
+        } else {
+          code.value = firstConfig.boilerplate_code;
+        }
+        
+        codePerLanguage.set(firstConfig.judge0_language_id, code.value);
         nextTick(() => initEditor());
       }
     }
@@ -535,10 +567,39 @@ onMounted(async () => {
   }
 });
 
+// Helper function to get storage key for a specific language
+const getStorageKey = (exerciseId: string, languageId: number): string => {
+  return `code_solution_${exerciseId}_${languageId}`;
+};
+
+// Helper function to save code to localStorage
+const saveCodeToStorage = (exerciseId: string, languageId: number, code: string): void => {
+  try {
+    localStorage.setItem(getStorageKey(exerciseId, languageId), code);
+  } catch (error) {
+    console.error('Failed to save code to localStorage:', error);
+  }
+};
+
+// Helper function to load code from localStorage
+const loadCodeFromStorage = (exerciseId: string, languageId: number): string | null => {
+  try {
+    return localStorage.getItem(getStorageKey(exerciseId, languageId));
+  } catch (error) {
+    console.error('Failed to load code from localStorage:', error);
+    return null;
+  }
+};
+
 // Helper function to get the appropriate code for a language
 const getCodeForLanguage = (langId: number, isAISolution: boolean): string => {
   if (isAISolution) {
     return codeSolutionStore.solutionCache.get(langId) || '';
+  }
+  // Try to get code from localStorage first
+  const storedCode = loadCodeFromStorage(param.exerciseId, langId);
+  if (storedCode) {
+    return storedCode;
   }
   return codePerLanguage.get(langId) || '';
 };
@@ -549,6 +610,8 @@ const setCodeForLanguage = (langId: number, newCode: string, isAISolution: boole
     codeSolutionStore.solutionCache.set(langId, newCode);
   } else {
     codePerLanguage.set(langId, newCode);
+    // Save to localStorage
+    saveCodeToStorage(param.exerciseId, langId, newCode);
   }
 };
 
@@ -562,19 +625,24 @@ watch(selectedLanguage, async (newId, oldId) => {
   // Reset solution state for the new language
   codeSolutionStore.reset(newId);
 
-  // Get code associated with the new language
-  const newCode = getCodeForLanguage(newId, codeSolutionStore.isShowingAISolution(newId));
-
-  if (newCode) {
-    code.value = newCode;
+  // Try to load stored code first
+  const storedCode = loadCodeFromStorage(param.exerciseId, newId);
+  if (storedCode) {
+    code.value = storedCode;
   } else {
-    const config = languageConfigs.value.find(c => c.judge0_language_id === newId);
-    if (config?.boilerplate_code) {
-      code.value = config.boilerplate_code;
+    // Get code associated with the new language
+    const newCode = getCodeForLanguage(newId, codeSolutionStore.isShowingAISolution(newId));
+    if (newCode) {
+      code.value = newCode;
     } else {
-      code.value = setDefaultCodeForLanguage(newId);
+      const config = languageConfigs.value.find(c => c.judge0_language_id === newId);
+      if (config?.boilerplate_code) {
+        code.value = config.boilerplate_code;
+      } else {
+        code.value = setDefaultCodeForLanguage(newId);
+      }
+      setCodeForLanguage(newId, code.value, codeSolutionStore.isShowingAISolution(newId));
     }
-    setCodeForLanguage(newId, code.value, codeSolutionStore.isShowingAISolution(newId));
   }
 
   nextTick(() => initEditor());
@@ -586,7 +654,7 @@ watch(() => codeSolutionStore.isShowingAISolution(selectedLanguage.value), async
   if (show) {
     // Try to fetch solution if showing AI solution
     await codeSolutionStore.fetchAISolution(param.exerciseId, selectedLanguage.value);
-    
+
     // If we have a solution in the cache, use it
     if (codeSolutionStore.hasCachedSolution(selectedLanguage.value)) {
       const cachedSolution = codeSolutionStore.solutionCache.get(selectedLanguage.value);
@@ -632,10 +700,24 @@ watch(code, (newCode) => {
   }
 });
 
+// Watch for code changes to save to localStorage
+watch(code, (newCode) => {
+  if (!codeSolutionStore.isShowingAISolution(selectedLanguage.value)) {
+    saveCodeToStorage(param.exerciseId, selectedLanguage.value, newCode);
+  }
+}, { deep: true });
+
 const { importCode, exportCode } = useFileIO();
 
 const onImport = () => {
-  importCode((importedCode) => {
+  importCode((importedCode, detectedLangId) => {
+    if (detectedLangId) {
+      // Check if the detected language is supported in the current exercise
+      const isSupported = languageConfigs.value.some(config => config.judge0_language_id === detectedLangId);
+      if (isSupported) {
+        selectedLanguage.value = detectedLangId;
+      }
+    }
     code.value = importedCode;
     nextTick(initEditor);
   });
@@ -647,9 +729,20 @@ const onExport = () => {
 </script>
 
 <style>
-.editor-container {
-  width: 100%;
+.fill-height {
   height: 100%;
+}
+
+.editor-wrapper {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0; /* critical to avoid overflow issues in flex */
+}
+
+.editor-container {
+  flex-grow: 1;
+  min-height: 0;
   overflow: auto;
   background-color: #1e1e1e;
 }

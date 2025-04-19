@@ -178,11 +178,25 @@ watch(descriptionTab, async (tab) => {
 const chatBottom = ref<null | HTMLElement>(null);
 const chatContainer = ref<null | HTMLElement>(null);
 
+// Watch messages array for changes and scroll to bottom
+watch(messages, () => {
+  scrollToBottom();
+}, { deep: true });
+
+// Watch streaming buffer for continuous scrolling during text streaming
+watch(streamingBuffer, () => {
+  scrollToBottom();
+});
+
 function scrollToBottom() {
   nextTick(() => {
     const container = chatContainer.value;
     if (container) {
-      container.scrollTop = container.scrollHeight;
+      const scrollOptions: ScrollToOptions = {
+        top: container.scrollHeight,
+        behavior: 'smooth'
+      };
+      container.scrollTo(scrollOptions);
     }
   });
 }
@@ -209,6 +223,7 @@ function scrollToBottom() {
   overflow-y: auto;
   min-height: 0;
   max-height: 100%;
+  scroll-behavior: smooth;
 }
 
 .chat-messages {
