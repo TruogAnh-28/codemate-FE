@@ -37,7 +37,7 @@
         <v-list>
           <v-list-item
             @click="codeSolutionStore.toggleSolution(selectedLanguage)"
-            :disabled="codeSolutionStore.isLoading"
+            :disabled="codeSolutionStore.isLoading || (props.submissionCount !== undefined && props.submissionCount <= 5)"
           >
             <template v-slot:prepend>
               <v-icon :color="codeSolutionStore.isShowingAISolution(selectedLanguage) ? 'success' : 'primary'">
@@ -47,6 +47,9 @@
             <v-list-item-title>
               {{ codeSolutionStore.isShowingAISolution(selectedLanguage) ? 'Show My Solution' : 'Show AI Solution' }}
             </v-list-item-title>
+            <v-list-item-subtitle v-if="props.submissionCount !== undefined && props.submissionCount <= 5" class="text-caption text-grey">
+              Complete at least 5 submissions to unlock AI solution
+            </v-list-item-subtitle>
           </v-list-item>
 
           <v-divider></v-divider>
@@ -123,6 +126,7 @@ const props = defineProps<{
     expected_output: string;
     isPublic?: boolean;
   }>;
+  submissionCount?: number;
 }>();
 
 // Define types for hints

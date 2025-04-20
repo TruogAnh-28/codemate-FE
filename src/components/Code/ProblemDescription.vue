@@ -12,7 +12,10 @@
 
     <v-card-text v-else-if="descriptionTab === 'submission'" class="pa-4 flex-grow-1 overflow-y-auto">
       <!-- Use the SubmissionList component without passing submissions prop -->
-      <SubmissionList :programmingExerciseId="exerciseId" />
+      <SubmissionList 
+        :programmingExerciseId="exerciseId" 
+        @update:submissionCount="submissionCount = $event"
+      />
     </v-card-text>
 
     <v-card-text v-else class="chat-container d-flex flex-column flex-grow-1 pa-0">
@@ -88,14 +91,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, nextTick, onMounted } from 'vue';
+import { ref, watch, nextTick, onMounted, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import SubmissionList from '@/components/Code/SubmissionList.vue';
 import MarkdownIt from 'markdown-it';
 import hljs from 'highlight.js';
 import 'highlight.js/styles/github-dark.css';
 import { useProblemAssistant } from '@/composables/useProblemAssistant';
-
+import { ExerciseCodeResponse } from '@/types/Exercise';
 
 interface RouteParams {
   exerciseId: string;
@@ -110,7 +113,6 @@ interface ProblemDescriptionProps {
 const props = withDefaults(defineProps<ProblemDescriptionProps>(), {
   initialTab: 'description'
 });
-
 
 const route = useRoute();
 const {exerciseId} = route.params as RouteParams;
@@ -128,8 +130,6 @@ const {
 onMounted(() => {
   console.log(props.problemDescription);
 });
-
-
 
 // Create MarkdownIt instance with proper typing
 const md: MarkdownIt = new MarkdownIt({
@@ -168,6 +168,12 @@ const emit = defineEmits<{
 }>();
 
 const descriptionTab = ref<string>(props.initialTab);
+const testTab = ref('testcase');
+const isLoading = ref(false);
+const exerciseDetail = ref<ExerciseCodeResponse | null>(null);
+const problemDescription = computed(() => exerciseDetail.value?.description ?? '');
+const submissionCount = ref(0);
+
 watch(descriptionTab, async (tab) => {
   emit('update:tab', tab);
   if (tab === 'coding-assistant' && messages.value.length === 0) {
