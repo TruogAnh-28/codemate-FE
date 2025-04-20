@@ -548,7 +548,7 @@ onMounted(async () => {
       if (languageConfigs.value.length > 0) {
         const firstConfig = languageConfigs.value[0];
         selectedLanguage.value = firstConfig.judge0_language_id;
-        
+
         // Try to load stored code first
         const storedCode = loadCodeFromStorage(param.exerciseId, firstConfig.judge0_language_id);
         if (storedCode) {
@@ -556,7 +556,7 @@ onMounted(async () => {
         } else {
           code.value = firstConfig.boilerplate_code;
         }
-        
+
         codePerLanguage.set(firstConfig.judge0_language_id, code.value);
         nextTick(() => initEditor());
       }
@@ -619,8 +619,11 @@ const setCodeForLanguage = (langId: number, newCode: string, isAISolution: boole
 watch(selectedLanguage, async (newId, oldId) => {
   if (newId === undefined) return;
 
+  // Get the current code before any changes
+  const currentCode = code.value;
+
   // Save current code for the previous language
-  setCodeForLanguage(oldId, code.value, codeSolutionStore.isShowingAISolution(oldId));
+  setCodeForLanguage(oldId, currentCode, codeSolutionStore.isShowingAISolution(oldId));
 
   // Reset solution state for the new language
   codeSolutionStore.reset(newId);
@@ -711,14 +714,39 @@ const { importCode, exportCode } = useFileIO();
 
 const onImport = () => {
   importCode((importedCode, detectedLangId) => {
+    console.log(detectedLangId);
     if (detectedLangId) {
       // Check if the detected language is supported in the current exercise
       const isSupported = languageConfigs.value.some(config => config.judge0_language_id === detectedLangId);
       if (isSupported) {
+        console.log("current code:", code.value);
+        console.log("current language:", selectedLanguage.value);
+        
+        // Save current code to the current language before switching
+        const currentLangId = selectedLanguage.value;
+        setCodeForLanguage(currentLangId, code.value, codeSolutionStore.isShowingAISolution(currentLangId));
+        
+        // Switch to the new language
         selectedLanguage.value = detectedLangId;
+        
+        console.log("imported code:", importedCode);
+        console.log("selected language:", selectedLanguage.value);
+        
+        setCodeForLanguage(detectedLangId, importedCode, codeSolutionStore.isShowingAISolution(detectedLangId));
+        
+        console.log("code after import:", code.value);
+        
+        const codeForOldLang = getCodeForLanguage(currentLangId, codeSolutionStore.isShowingAISolution(currentLangId));
+        console.log("code for old lang:", codeForOldLang);
+        
+        const codeForNewLang = getCodeForLanguage(detectedLangId, codeSolutionStore.isShowingAISolution(detectedLangId));
+        console.log("code for new lang:", codeForNewLang);
       }
+    } else {
+      // If no language detected, just update the current language's code
+      code.value = importedCode;
+      setCodeForLanguage(selectedLanguage.value, importedCode, codeSolutionStore.isShowingAISolution(selectedLanguage.value));
     }
-    code.value = importedCode;
     nextTick(initEditor);
   });
 };

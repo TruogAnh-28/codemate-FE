@@ -46,19 +46,19 @@ export function useFileIO() {
       if (input.files && input.files[0]) {
         const file = input.files[0]
         const text = await file.text()
-        
+
         // Detect language from file extension
         const extension = file.name.split('.').pop()?.toLowerCase() || ''
         console.log('Detected extension:', extension)
-        
+
         // Get possible language IDs for this extension
         const possibleLangIds = LANGUAGE_IDS[extension] || []
         console.log('Possible language IDs:', possibleLangIds)
-        
+
         // Use preferred language ID if available, otherwise use the first one
         const detectedLangId = PREFERRED_LANGUAGE_IDS[extension] || possibleLangIds[0]
         console.log('Selected language ID:', detectedLangId)
-        
+
         callback(text, detectedLangId)
       }
     }
