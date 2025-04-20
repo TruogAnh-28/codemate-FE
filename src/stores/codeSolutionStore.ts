@@ -1,5 +1,11 @@
 import { defineStore } from "pinia";
 import { CodeExerciseService } from "@/services/CodeExerciseService";
+import { llmCodeServices } from "@/services/llmCodeServices";
+
+interface LineHint {
+  line: number;
+  hint: string;
+}
 
 export const useCodeSolutionStore = defineStore("codeSolution", {
   state: () => ({
@@ -8,7 +14,9 @@ export const useCodeSolutionStore = defineStore("codeSolution", {
     error: null as string | null,
     showAISolutionMap: new Map<number, boolean>(), // Track show/hide state per language
     solutionCache: new Map<number, string>(), // Cache solutions per language
-    lastFetchedLanguage: null as number | null // Track the last language we fetched a solution for
+    lastFetchedLanguage: null as number | null, // Track the last language we fetched a solution for
+    isGettingHints: false,
+    hintsError: null as string | null,
   }),
 
   actions: {
@@ -41,6 +49,28 @@ export const useCodeSolutionStore = defineStore("codeSolution", {
       }
     },
 
+    async getHints(problemDescription: string, code: string) {
+      this.isGettingHints = true;
+      this.hintsError = null;
+      try {
+        const response = await llmCodeServices.getHints({ 
+          problem_statement: problemDescription, 
+          code_context: code 
+        });
+        
+        if (response.data?.line_hints) {
+          return response.data.line_hints;
+        }
+        throw new Error('No hints available');
+      } catch (err) {
+        this.hintsError = "Failed to get hints";
+        console.error(err);
+        throw err;
+      } finally {
+        this.isGettingHints = false;
+      }
+    },
+
     toggleSolution(languageId: number) {
       const currentState = this.showAISolutionMap.get(languageId) || false;
       this.showAISolutionMap.set(languageId, !currentState);
@@ -57,6 +87,8 @@ export const useCodeSolutionStore = defineStore("codeSolution", {
       this.isLoading = false;
       this.error = null;
       this.lastFetchedLanguage = null;
+      this.isGettingHints = false;
+      this.hintsError = null;
       if (languageId !== undefined) {
         // Reset only the specified language
         this.showAISolutionMap.delete(languageId);

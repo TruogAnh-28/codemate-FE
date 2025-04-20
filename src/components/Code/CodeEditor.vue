@@ -26,7 +26,7 @@
             color="primary"
             class="mr-2"
             v-bind="props"
-            :loading="codeSolutionStore.isLoading"
+            :loading="codeSolutionStore.isLoading || isGettingHints || isExplaining"
           >
             <v-icon left>mdi-code-braces</v-icon>
             Solutions
@@ -55,7 +55,7 @@
           <v-divider></v-divider>
 
           <v-list-item
-            @click="explainCode"
+            @click="getOptimizationSuggestions"
             :disabled="isExplaining"
           >
             <template v-slot:prepend>
@@ -357,7 +357,7 @@ const getCommentSyntax = (judge0LangId: number): { start: string; end: string } 
   };
 
   const commentPrefix = lineCommentMap[judge0LangId] || '//';
-  return { start: `${commentPrefix} HINT: `, end: '' };
+  return { start: `${commentPrefix} `, end: '' };
 };
 
 
@@ -391,6 +391,10 @@ const giveHints = async (): Promise<void> => {
     const responseBody = await llmCodeServices.getHints({ problem_statement: props.problemDescription, code_context: code.value });
     console.log("Response body:", responseBody);
 
+    if (!responseBody.data?.line_hints) {
+      throw new Error('No hints available');
+    }
+
     const hints = responseBody.data.line_hints;
 
     // Insert hints directly into the code
@@ -413,37 +417,43 @@ const giveHints = async (): Promise<void> => {
   }
 };
 
-// Get code explanations using the llmCodeServices
-const explainCode = async (): Promise<void> => {
+// Get optimization suggestions using the llmCodeServices
+const getOptimizationSuggestions = async (): Promise<void> => {
   try {
     isExplaining.value = true;
 
     // Clear previous explanations
     lineExplanations.value = [];
 
-    // Prepare request payload
-    const codeAnalysisRequest: CodeAnalysisRequest = {
-      code: code.value,
-      language: selectedLanguage.value // Use the mapped string value
-    };
-
-    // Call the service to get explanations
-    const response = await llmCodeServices.getCodeExplanation(
-      { showError, showSuccess },
-      codeAnalysisRequest
-    );
+    // Call the service to get optimization hints
+    const response = await llmCodeServices.getHints({
+      problem_statement: props.problemDescription,
+      code_context: code.value,
+      optimize: true
+    });
 
     // Process the response
-    if (response.data && Array.isArray(response.data)) {
-      lineExplanations.value = response.data;
+    if (response.data?.line_hints) {
+      // Convert hints to explanations format for tooltips
+      lineExplanations.value = response.data.line_hints.map(hint => ({
+        line: hint.line,
+        explanation: hint.hint,
+        code: '' // We don't have the code snippet in hints
+      }));
 
-      // Reinitialize editor to apply new tooltips
+      // Insert optimization suggestions into the code as comments
+      const codeWithSuggestions = insertHintsIntoCode(code.value, response.data.line_hints, selectedLanguage.value);
+      code.value = codeWithSuggestions;
+
+      // Reinitialize editor to apply new tooltips and show updated code
       nextTick(() => {
         initEditor();
+        showSuccess("Optimization suggestions have been added to your code as comments.");
       });
     }
   } catch (error) {
-    console.error('Error getting code explanations:', error);
+    console.error('Error getting optimization suggestions:', error);
+    showError('Failed to get optimization suggestions');
   } finally {
     isExplaining.value = false;
   }

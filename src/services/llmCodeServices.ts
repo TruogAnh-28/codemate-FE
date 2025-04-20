@@ -31,7 +31,7 @@ export const llmCodeServices = {
         );
   },
 
-  async getHints(payload: { problem_statement: string; code_context: string }) {
+  async getHints(payload: { problem_statement: string; code_context: string; optimize?: boolean }) {
     return await ApiService.post<IResponseData<HintOutput>>('/coding-assistant/hint', payload);
   }
 };
