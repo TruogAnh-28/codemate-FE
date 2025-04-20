@@ -58,7 +58,7 @@
             <template v-slot:prepend>
               <v-icon color="info">mdi-information</v-icon>
             </template>
-            <v-list-item-title>Explain Code</v-list-item-title>
+            <v-list-item-title>Get optimizing suggestions</v-list-item-title>
           </v-list-item>
 
           <v-list-item
@@ -144,7 +144,7 @@ const availableLanguageIds = computed(() =>
 
 const route = useRoute();
 const param = route.params as RouteParam;
-const { submissions, submitCodeWithPolling } = useProgrammingSubmissions();
+const { submitCodeWithPolling } = useProgrammingSubmissions();
 
 const emit = defineEmits<{
   (e: 'update:solution', value: string): void;
@@ -721,24 +721,24 @@ const onImport = () => {
       if (isSupported) {
         console.log("current code:", code.value);
         console.log("current language:", selectedLanguage.value);
-        
+
         // Save current code to the current language before switching
         const currentLangId = selectedLanguage.value;
         setCodeForLanguage(currentLangId, code.value, codeSolutionStore.isShowingAISolution(currentLangId));
-        
+
         // Switch to the new language
         selectedLanguage.value = detectedLangId;
-        
+
         console.log("imported code:", importedCode);
         console.log("selected language:", selectedLanguage.value);
-        
+
         setCodeForLanguage(detectedLangId, importedCode, codeSolutionStore.isShowingAISolution(detectedLangId));
-        
+
         console.log("code after import:", code.value);
-        
+
         const codeForOldLang = getCodeForLanguage(currentLangId, codeSolutionStore.isShowingAISolution(currentLangId));
         console.log("code for old lang:", codeForOldLang);
-        
+
         const codeForNewLang = getCodeForLanguage(detectedLangId, codeSolutionStore.isShowingAISolution(detectedLangId));
         console.log("code for new lang:", codeForNewLang);
       }

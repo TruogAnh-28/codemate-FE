@@ -33,6 +33,30 @@ export const useGeneratedCodeExerciseStore = defineStore("generatedCodeExercise"
         this.loading = false;
       }
     },
-  },
+    async deleteCodingExercise(
+      exerciseID: string,
+      apiCallConfigs: { showError: (msg: string) => void , showSuccess: (msg: string) => void}
+    ) {
+      console.log("//");
+      try {
+        const response = await CodeExerciseService.deleteAIGenCodeExercise(
+          exerciseID, {showSuccess: apiCallConfigs.showSuccess, showError: apiCallConfigs.showError}
+        );
+
+      const deletedCodeExercise = response.data;
+
+      if (deletedCodeExercise) {
+        const index = this.exercises.findIndex(exercise => exercise.id == deletedCodeExercise.id);
+        this.exercises.splice(index);
+        console.log(this.exercises);
+      }
+
+      } catch (err) {
+        this.error = "Failed to delete coding exercise.";
+      } finally {
+
+      }
+    },
+  }
 });
 
