@@ -378,16 +378,16 @@ onMounted(async () => {
   }
 });
 
-// --- Computed Properties & Methods ---
-const getStatusColor = (status: string): string => {
-  const normalizedStatus = status?.toLowerCase() || "unknown";
-  const statusColors: { [key: string]: string } = {
-    "in progress": "success", // Match API response "in Progress" -> "in progress"
-    completed: "info",
-    new: "primary",
-  };
-  return statusColors[normalizedStatus] || "grey";
-};
+// // --- Computed Properties & Methods ---
+// const getStatusColor = (status: string): string => {
+//   const normalizedStatus = status?.toLowerCase() || "unknown";
+//   const statusColors: { [key: string]: string } = {
+//     "in progress": "success", // Match API response "in Progress" -> "in progress"
+//     completed: "info",
+//     new: "primary",
+//   };
+//   return statusColors[normalizedStatus] || "grey";
+// };
 
 
 const fetchAIAssessment = async () => {

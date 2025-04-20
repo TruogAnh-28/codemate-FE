@@ -1,4 +1,4 @@
-import { ref, watch, nextTick } from 'vue';
+import { ref } from 'vue';
 import { streamFromApi } from '@/common/api.service';
 import type { ChatMessage } from '@/types/chat';
 import { llmCodeServices } from '@/services/llmCodeServices';
