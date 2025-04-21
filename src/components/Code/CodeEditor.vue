@@ -7,6 +7,7 @@
         :items="availableLanguageIds"
         :item-title="(id) => getLanguageName(id)"
         :item-value="(id) => id"
+        :disabled="codeSolutionStore.isShowingAISolution(selectedLanguage)"
         density="compact"
         hide-details
         class="language-select"
@@ -295,7 +296,7 @@ const initEditor = (): void => {
   const languageSupport = cmLanguages[languageId] || javascript();
 
   const startState = EditorState.create({
-    doc: code.value,
+    doc: codeSolutionStore.isShowingAISolution(selectedLanguage.value) ? codeSolutionStore.solutionCache.get(selectedLanguage.value) : code.value,
     extensions: [
       ...createBasicSetup(),
       darkTheme,
@@ -303,15 +304,16 @@ const initEditor = (): void => {
       lintGutter(),
       createLineExplanationTooltip(),
       EditorView.lineWrapping,
+      codeSolutionStore.isShowingAISolution(selectedLanguage.value) ? EditorView.editable.of(false) : EditorView.editable.of(true),
       EditorView.updateListener.of((update) => {
-        if (update.docChanged) {
+        if (update.docChanged && !codeSolutionStore.isShowingAISolution(selectedLanguage.value)) {
           code.value = update.state.doc.toString();
           emit('update:solution', code.value);
 
-          // Clear explanations when code changes
           lineExplanations.value = [];
         }
       })
+
     ]
   });
 
@@ -644,8 +646,6 @@ watch(selectedLanguage, async (newId, oldId) => {
   // Get the current code before any changes
   const currentCode = code.value;
 
-  console.log("current code:", currentCode);
-
   // Save current code for the previous language
   setCodeForLanguage(oldId, currentCode, codeSolutionStore.isShowingAISolution(oldId));
 
@@ -654,7 +654,6 @@ watch(selectedLanguage, async (newId, oldId) => {
 
   // Try to load stored code first
   const storedCode = loadCodeFromStorage(param.exerciseId, newId);
-  console.log("stored code of new language id:", storedCode);
   if (storedCode) {
     code.value = storedCode;
   } else {
@@ -681,18 +680,21 @@ watch(selectedLanguage, async (newId, oldId) => {
 
 // Watch for solution toggle
 watch(() => codeSolutionStore.isShowingAISolution(selectedLanguage.value), async (show) => {
+  console.log("watch 1");
   if (show) {
-    // Try to fetch solution if showing AI solution
-    await codeSolutionStore.fetchAISolution(param.exerciseId, selectedLanguage.value);
-
-    // If we have a solution in the cache, use it
     if (codeSolutionStore.hasCachedSolution(selectedLanguage.value)) {
+      console.log("cached");
       const cachedSolution = codeSolutionStore.solutionCache.get(selectedLanguage.value);
+      console.log(cachedSolution);
       if (cachedSolution) {
         code.value = cachedSolution;
         nextTick(() => initEditor());
         return;
       }
+    } else {
+      await codeSolutionStore.fetchAISolution(param.exerciseId, selectedLanguage.value);
+      code.value = codeSolutionStore.solutionCache.get(selectedLanguage.value) || code.value;
+      return;
     }
   }
 

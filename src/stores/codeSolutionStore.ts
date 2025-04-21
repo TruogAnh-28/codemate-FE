@@ -29,7 +29,7 @@ export const useCodeSolutionStore = defineStore("codeSolution", {
               languageId,
               { showError: () => {}, showSuccess: () => {} }
             );
-        
+
         if (response.data) {
           this.aiSolution = response.data.solution;
           // Cache the solution
@@ -48,11 +48,11 @@ export const useCodeSolutionStore = defineStore("codeSolution", {
       this.isGettingHints = true;
       this.hintsError = null;
       try {
-        const response = await llmCodeServices.getHints({ 
-          problem_statement: problemDescription, 
-          code_context: code 
+        const response = await llmCodeServices.getHints({
+          problem_statement: problemDescription,
+          code_context: code
         });
-        
+
         if (response.data?.line_hints) {
           return response.data.line_hints;
         }
@@ -100,4 +100,4 @@ export const useCodeSolutionStore = defineStore("codeSolution", {
       return this.solutionCache.has(languageId);
     }
   }
-}); 
+});
