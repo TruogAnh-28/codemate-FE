@@ -124,6 +124,8 @@ const props = defineProps<{
   testcases: Array<{
     input: string;
     expected_output: string;
+    stdout: string,
+    stderr: string,
     isPublic?: boolean;
   }>;
   submissionCount?: number;
@@ -385,8 +387,6 @@ const giveHints = async (): Promise<void> => {
     isGettingHints.value = true;
 
     const responseBody = await llmCodeServices.getHints({ problem_statement: props.problemDescription, code_context: code.value });
-    console.log("Response body:", responseBody);
-
     if (!responseBody.data?.line_hints) {
       throw new Error('No hints available');
     }
@@ -455,7 +455,6 @@ const getOptimizationSuggestions = async (): Promise<void> => {
   }
 };
 
-// Run code with test case
 const runCode = async () => {
   isRunning.value = true;
   emit('update:loading', true);
@@ -473,22 +472,35 @@ const runCode = async () => {
     );
 
     if (executionError) {
-      emit('run-result', `❌ ${executionError}`);
+      emit('run-result', `❌ Execution Error:\n${executionError}`);
     } else {
       // Format results for all test cases
       const formattedResults = executionResults.map((result, index) => {
         const testcase = props.testcases[index];
-        if (result.error) {
-          return `Test Case ${index + 1}:\nInput: ${testcase.input}\nExpected: ${testcase.expected_output}\n❌ ${result.error}\n`;
-        } else {
-          return `Test Case ${index + 1}:\nInput: ${testcase.input}\nExpected: ${testcase.expected_output}\n✅ Output: ${result.result}\n`;
+
+        let output = `🧪 **Test Case ${index + 1}**\n`;
+        output += `🔸 Input:\n${testcase.input}\n\n`;
+        output += `🔸 Expected Output:\n${testcase.expected_output}\n\n`;
+        output += `🔸 Your Output:\n${result.stdout}\n\n`;
+
+        if (result.stderr) {
+          output += `🔸 stderr:\n${result.stderr}\n\n`;
         }
-      }).join('\n');
+
+        if (result.status.id === 3) {
+          // 3 = Accepted
+          output += `✅ Result: Passed\n`;
+        } else {
+          output += `❌ Result: ${result.status.description}\n`;
+        }
+
+        return output;
+      }).join('\n' + '-'.repeat(40) + '\n');
 
       emit('run-result', formattedResults);
     }
   } catch (error) {
-    emit('run-result', `❌ Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    emit('run-result', `❌ Internal Error:\n${error instanceof Error ? error.message : 'Unknown error'}`);
   } finally {
     isRunning.value = false;
     emit('update:loading', false);

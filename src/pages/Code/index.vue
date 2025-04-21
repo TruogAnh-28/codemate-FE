@@ -24,7 +24,7 @@
             :testInput="{ nums: JSON.stringify([2, 7, 11, 15]), target: '9' }"
             :problemDescription="problemDescription"
             :testcases="testcases"
-            :submissionCount="submissionCount"
+            :submissionCount="submissions.length"
             @run-result="handleRunResult"
             @submit-result="handleSubmitResult"
             @update:solution="userSolution = $event"
@@ -70,7 +70,6 @@ const { exerciseId } = route.params as RouteParams;
 
 // Get submission count
 const { submissions, fetchSubmissionStats } = useProgrammingSubmissions(false);
-const submissionCount = computed(() => submissions.value.length);
 
 onMounted(async () => {
   await fetchSubmissionStats(exerciseId);

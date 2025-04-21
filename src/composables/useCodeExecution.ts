@@ -6,7 +6,9 @@ export const useCodeExecution = () => {
   const isExecuting = ref(false);
   const executionResults = ref<Array<{
     testcase: { input: string; expected_output: string };
-    result: string;
+    stdout: string;
+    stderr: string;
+    status: { id: number, description: string },
     error: string | null;
   }>>([]);
   const executionError = ref<string | null>(null);
@@ -40,6 +42,8 @@ export const useCodeExecution = () => {
         if (!result) {
           return {
             testcase: { input: '', expected_output: '' },
+            stdin: '',
+            stdout: '',
             result: '',
             error: 'No result received from Judge0'
           };
@@ -75,6 +79,9 @@ export const useCodeExecution = () => {
         return {
           testcase,
           result: resultText,
+          stdout: result.stdout,
+          stderr: result.stderr,
+          status: { id: result.status.id, description: result.status.description },
           error
         };
       });
@@ -96,4 +103,4 @@ export const useCodeExecution = () => {
     executionError,
     executeCode
   };
-}; 
+};

@@ -37,24 +37,25 @@ export const useGeneratedCodeExerciseStore = defineStore("generatedCodeExercise"
       exerciseID: string,
       apiCallConfigs: { showError: (msg: string) => void , showSuccess: (msg: string) => void}
     ) {
-      console.log("//");
+      console.log("exercise before deletion:", this.exercises);
       try {
+        this.loading = true;
         const response = await CodeExerciseService.deleteAIGenCodeExercise(
           exerciseID, {showSuccess: apiCallConfigs.showSuccess, showError: apiCallConfigs.showError}
         );
 
-      const deletedCodeExercise = response.data;
+        const deletedCodeExercise = response.data;
 
-      if (deletedCodeExercise) {
-        const index = this.exercises.findIndex(exercise => exercise.id == deletedCodeExercise.id);
-        this.exercises.splice(index);
-        console.log(this.exercises);
-      }
+        if (deletedCodeExercise) {
+          const index = this.exercises.findIndex(exercise => exercise.id == deletedCodeExercise.id);
 
+          // Remove code exercise from the list
+          this.exercises.splice(index, 1);
+        }
       } catch (err) {
         this.error = "Failed to delete coding exercise.";
       } finally {
-
+        this.loading = false;
       }
     },
   }
