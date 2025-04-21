@@ -69,8 +69,12 @@ const route = useRoute();
 const { exerciseId } = route.params as RouteParams;
 
 // Get submission count
-const { submissions } = useProgrammingSubmissions(false);
+const { submissions, fetchSubmissionStats } = useProgrammingSubmissions(false);
 const submissionCount = computed(() => submissions.value.length);
+
+onMounted(async () => {
+  await fetchSubmissionStats(exerciseId);
+})
 
 // UI States
 const descriptionTab = ref('description');

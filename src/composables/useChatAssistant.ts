@@ -23,7 +23,7 @@ export function useChatAssistant(exerciseId: string) {
     if (res?.data) messages.value = res.data;
   };
 
-  const sendMessage = async (userSolution: string, containerRef?: HTMLElement | null) => {
+  const sendMessage = async (userSolution: string, languageID: number, containerRef?: HTMLElement | null) => {
     const content = inputMessage.value.trim();
     if (!content) return;
 
@@ -44,6 +44,7 @@ export function useChatAssistant(exerciseId: string) {
           body: {
             content,
             user_solution: userSolution || "",
+            language_id: languageID
           },
         }
       );

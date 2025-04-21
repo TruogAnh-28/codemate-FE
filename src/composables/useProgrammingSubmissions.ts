@@ -7,28 +7,10 @@ export function useProgrammingSubmissions(useMockData = false) {
   const submissions = ref<ProgrammingSubmissionStat[]>([]);
   const isLoading = ref(false);
 
-  // Mock data for development and testing
-  const mockSubmissions: ProgrammingSubmissionStat[] = [
-    {
-      id: 'mock-1',
-      user_id: 'user-1',
-      exercise_id: 'ex-123',
-      judge0_language_id: 71,
-      status: 'completed',
-      passed_testcases: 1,
-      total_testcases: 2,
-      created_at: new Date()
-    }
-  ];
-
   // Function to fetch submission statistics for an exercise
   const fetchSubmissionStats = async (exerciseId: string) => {
-    if (useMockData) {
-      submissions.value = mockSubmissions;
-      return mockSubmissions;
-    }
-
     isLoading.value = true;
+
     try {
       const response = await programmingSubmissionService.getSubmissionsOfACodeExercise(exerciseId);
       if (response.data) {
@@ -153,7 +135,7 @@ export function useProgrammingSubmissions(useMockData = false) {
         baseDelay = 1000
       ): Promise<ProgrammingSubmission> => {
         const submission = await fetchSubmissionDetail(id);
-        
+
         if (!submission) {
           throw new Error('Failed to retrieve submission details');
         }

@@ -2,11 +2,6 @@ import { defineStore } from "pinia";
 import { CodeExerciseService } from "@/services/CodeExerciseService";
 import { llmCodeServices } from "@/services/llmCodeServices";
 
-interface LineHint {
-  line: number;
-  hint: string;
-}
-
 export const useCodeSolutionStore = defineStore("codeSolution", {
   state: () => ({
     aiSolution: null as string | null,

@@ -12,8 +12,8 @@
 
     <v-card-text v-else-if="descriptionTab === 'submission'" class="pa-4 flex-grow-1 overflow-y-auto">
       <!-- Use the SubmissionList component without passing submissions prop -->
-      <SubmissionList 
-        :programmingExerciseId="exerciseId" 
+      <SubmissionList
+        :programmingExerciseId="exerciseId"
         @update:submissionCount="submissionCount = $event"
       />
     </v-card-text>
@@ -62,9 +62,9 @@
       </div>
 
       <div class="chat-input d-flex align-center pa-2 rounded-lg">
-        <v-text-field
+        <v-textarea
           v-model="inputMessage"
-          placeholder="Ask Codemate assistant..."
+          placeholder="Ask assistant (Shift+Enter to send)"
           variant="solo"
           density="comfortable"
           hide-details
@@ -73,11 +73,13 @@
           class="flex-grow-1"
           rounded
           :style="{ color: '#fff' }"
-          @keydown.enter="sendMessage"
+          auto-grow
+          rows="1"
+          @keydown="handleKeydown"
         />
 
         <v-btn
-          @click="sendMessage"
+          @click="handleSendingMessage"
           icon
           color="primary"
           variant="flat"
@@ -91,14 +93,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, nextTick, onMounted, computed } from 'vue';
+import { ref, watch, nextTick, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import SubmissionList from '@/components/Code/SubmissionList.vue';
 import MarkdownIt from 'markdown-it';
 import hljs from 'highlight.js';
 import 'highlight.js/styles/github-dark.css';
 import { useProblemAssistant } from '@/composables/useProblemAssistant';
-import { ExerciseCodeResponse } from '@/types/Exercise';
 
 interface RouteParams {
   exerciseId: string;
@@ -144,34 +145,11 @@ const md: MarkdownIt = new MarkdownIt({
   }
 });
 
-interface ProblemExample {
-  title: string;
-  input: {
-    nums: string;
-    target: string;
-  };
-  output: string;
-  explanation?: string;
-}
-
-interface ExerciseCodeResponseForStudent {
-  question: string;
-  difficulty: string;
-  tags: string[];
-  description: string;
-  examples: ProblemExample[];
-  constraints: string[];
-}
-
 const emit = defineEmits<{
   (e: 'update:tab', tab: string): void;
 }>();
 
 const descriptionTab = ref<string>(props.initialTab);
-const testTab = ref('testcase');
-const isLoading = ref(false);
-const exerciseDetail = ref<ExerciseCodeResponse | null>(null);
-const problemDescription = computed(() => exerciseDetail.value?.description ?? '');
 const submissionCount = ref(0);
 
 watch(descriptionTab, async (tab) => {
@@ -205,6 +183,13 @@ function scrollToBottom() {
       container.scrollTo(scrollOptions);
     }
   });
+}
+
+function handleKeydown(e: KeyboardEvent) {
+  if (e.key === 'Enter' && e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
 }
 </script>
 
