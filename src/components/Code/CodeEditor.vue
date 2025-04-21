@@ -100,7 +100,7 @@ import { javascript } from '@codemirror/lang-javascript';
 import { cpp } from '@codemirror/lang-cpp';
 import { python } from '@codemirror/lang-python';
 import { java } from '@codemirror/lang-java';
-import { TestInput, LineExplanation, LanguageKey } from '@/types/LLM_code';
+import { TestInput, LineExplanation } from '@/types/LLM_code';
 import { LanguageConfigDto } from '@/types/CodingExercise';
 import { JUDGE0_LANG } from '@/constants/judge0_lang';
 import { useProgrammingSubmissions } from '@/composables/useProgrammingSubmissions';
@@ -125,8 +125,8 @@ const props = defineProps<{
   testcases: Array<{
     input: string;
     expected_output: string;
-    stdout: string,
-    stderr: string,
+    stdout?: string,
+    stderr?: string,
     isPublic?: boolean;
   }>;
   submissionCount?: number;
@@ -321,17 +321,6 @@ const initEditor = (): void => {
     state: startState,
     parent: editorContainer.value
   });
-};
-
-// Map numeric language ID to LanguageKey for type safety
-const mapLanguageIdToKey = (id: number): LanguageKey => {
-  switch(id) {
-    case 54: return 'cpp';
-    case 62: return 'java';
-    case 71: return 'python';
-    // Add more mappings as needed
-    default: return 'cpp'; // Default fallback
-  }
 };
 
 const getCommentSyntax = (judge0LangId: number): { start: string; end: string } => {
