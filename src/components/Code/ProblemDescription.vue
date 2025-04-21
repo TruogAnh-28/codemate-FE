@@ -100,6 +100,7 @@ import MarkdownIt from 'markdown-it';
 import hljs from 'highlight.js';
 import 'highlight.js/styles/github-dark.css';
 import { useProblemAssistant } from '@/composables/useProblemAssistant';
+import { useCodeEditorStore } from '@/composables/useCodeEditor';
 
 interface RouteParams {
   exerciseId: string;
@@ -110,6 +111,8 @@ interface ProblemDescriptionProps {
   problemDescription?: string;
   userSolution?: string;
 }
+
+const { code, selectedLanguage } = useCodeEditorStore();
 
 const props = withDefaults(defineProps<ProblemDescriptionProps>(), {
   initialTab: 'description'
@@ -126,7 +129,7 @@ const {
   renderMarkdown,
   sendMessage,
   fetchHistory
-} = useProblemAssistant(route.params.exerciseId as string, props.userSolution);
+} = useProblemAssistant(exerciseId);
 
 onMounted(() => {
   console.log(props.problemDescription);
@@ -188,8 +191,13 @@ function scrollToBottom() {
 function handleKeydown(e: KeyboardEvent) {
   if (e.key === 'Enter' && e.shiftKey) {
     e.preventDefault();
-    sendMessage();
+    sendMessage(code.value, selectedLanguage.value);
   }
+}
+
+const handleSendingMessage = async () => {
+console.log(code.value);
+  await sendMessage(code.value, selectedLanguage.value);
 }
 </script>
 

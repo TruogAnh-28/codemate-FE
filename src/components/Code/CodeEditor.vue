@@ -108,6 +108,7 @@ import { useRoute } from 'vue-router';
 import { llmCodeServices } from '@/services/llmCodeServices';
 import { useCodeSolutionStore } from "@/stores/codeSolutionStore";
 import { useCodeExecution } from '@/composables/useCodeExecution';
+import { useCodeEditorStore } from '@/composables/useCodeEditor';
 
 // Save user's code for each language
 const codePerLanguage = new Map<number, string>();
@@ -156,8 +157,8 @@ const emit = defineEmits<{
   (e: 'update:loading', isLoading: boolean): void;
 }>();
 
-const selectedLanguage = ref<number>(54);
-const code = ref<string>('// Loading code...');
+const { code, selectedLanguage } = useCodeEditorStore();
+const languageConfigs = ref<LanguageConfigDto[]>([]);
 const editorContainer = ref<HTMLElement | null>(null);
 const isRunning = ref<boolean>(false);
 const isSubmitting = ref<boolean>(false);
@@ -166,7 +167,6 @@ const isGettingHints = ref<boolean>(false);
 const lineExplanations = ref<LineExplanation[]>([]);
 const showError = inject("showError") as (message: string) => void;
 const showSuccess = inject("showSuccess") as (message: string) => void;
-const languageConfigs = ref<LanguageConfigDto[]>([]);
 
 let editor: EditorView | null = null;
 
