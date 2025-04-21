@@ -12,7 +12,10 @@
 
     <v-card-text v-else-if="descriptionTab === 'submission'" class="pa-4 flex-grow-1 overflow-y-auto">
       <!-- Use the SubmissionList component without passing submissions prop -->
-      <SubmissionList :programmingExerciseId="exerciseId" />
+      <SubmissionList
+        :programmingExerciseId="exerciseId"
+        @update:submissionCount="submissionCount = $event"
+      />
     </v-card-text>
 
     <v-card-text v-else class="chat-container d-flex flex-column flex-grow-1 pa-0">
@@ -59,9 +62,9 @@
       </div>
 
       <div class="chat-input d-flex align-center pa-2 rounded-lg">
-        <v-text-field
+        <v-textarea
           v-model="inputMessage"
-          placeholder="Ask Codemate assistant..."
+          placeholder="Ask assistant (Shift+Enter to send)"
           variant="solo"
           density="comfortable"
           hide-details
@@ -70,11 +73,13 @@
           class="flex-grow-1"
           rounded
           :style="{ color: '#fff' }"
-          @keydown.enter="sendMessage"
+          auto-grow
+          rows="1"
+          @keydown="handleKeydown"
         />
 
         <v-btn
-          @click="sendMessage"
+          @click="handleSendingMessage"
           icon
           color="primary"
           variant="flat"
@@ -95,7 +100,7 @@ import MarkdownIt from 'markdown-it';
 import hljs from 'highlight.js';
 import 'highlight.js/styles/github-dark.css';
 import { useProblemAssistant } from '@/composables/useProblemAssistant';
-
+import { useCodeEditorStore } from '@/composables/useCodeEditor';
 
 interface RouteParams {
   exerciseId: string;
@@ -107,10 +112,11 @@ interface ProblemDescriptionProps {
   userSolution?: string;
 }
 
+const { code, selectedLanguage } = useCodeEditorStore();
+
 const props = withDefaults(defineProps<ProblemDescriptionProps>(), {
   initialTab: 'description'
 });
-
 
 const route = useRoute();
 const {exerciseId} = route.params as RouteParams;
@@ -123,13 +129,11 @@ const {
   renderMarkdown,
   sendMessage,
   fetchHistory
-} = useProblemAssistant(route.params.exerciseId as string, props.userSolution);
+} = useProblemAssistant(exerciseId);
 
 onMounted(() => {
   console.log(props.problemDescription);
 });
-
-
 
 // Create MarkdownIt instance with proper typing
 const md: MarkdownIt = new MarkdownIt({
@@ -144,30 +148,13 @@ const md: MarkdownIt = new MarkdownIt({
   }
 });
 
-interface ProblemExample {
-  title: string;
-  input: {
-    nums: string;
-    target: string;
-  };
-  output: string;
-  explanation?: string;
-}
-
-interface ExerciseCodeResponseForStudent {
-  question: string;
-  difficulty: string;
-  tags: string[];
-  description: string;
-  examples: ProblemExample[];
-  constraints: string[];
-}
-
 const emit = defineEmits<{
   (e: 'update:tab', tab: string): void;
 }>();
 
 const descriptionTab = ref<string>(props.initialTab);
+const submissionCount = ref(0);
+
 watch(descriptionTab, async (tab) => {
   emit('update:tab', tab);
   if (tab === 'coding-assistant' && messages.value.length === 0) {
@@ -199,6 +186,18 @@ function scrollToBottom() {
       container.scrollTo(scrollOptions);
     }
   });
+}
+
+function handleKeydown(e: KeyboardEvent) {
+  if (e.key === 'Enter' && e.shiftKey) {
+    e.preventDefault();
+    sendMessage(code.value, selectedLanguage.value);
+  }
+}
+
+const handleSendingMessage = async () => {
+console.log(code.value);
+  await sendMessage(code.value, selectedLanguage.value);
 }
 </script>
 

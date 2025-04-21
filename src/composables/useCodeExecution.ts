@@ -6,7 +6,9 @@ export const useCodeExecution = () => {
   const isExecuting = ref(false);
   const executionResults = ref<Array<{
     testcase: { input: string; expected_output: string };
-    result: string;
+    stdout: string;
+    stderr: string;
+    status: { id: number, description: string },
     error: string | null;
   }>>([]);
   const executionError = ref<string | null>(null);
@@ -40,41 +42,31 @@ export const useCodeExecution = () => {
         if (!result) {
           return {
             testcase: { input: '', expected_output: '' },
-            result: '',
+            stdout: '',
+            stderr: '',
+            status: { id: 0, description: '' },
             error: 'No result received from Judge0'
           };
         }
 
         const testcase = testcases[index] || { input: '', expected_output: '' };
-        let resultText = '';
         let error = null;
 
         if (!result.status) {
           return {
             testcase,
-            result: '',
+            stdout: '',
+            stderr: '',
+            status: { id: 0, description: '' },
             error: 'Invalid response from Judge0: missing status'
           };
         }
 
-        if (result.status.id === 3) { // Accepted
-          resultText = result.stdout || '';
-        } else if (result.status.id === 4) { // Wrong Answer
-          resultText = result.stdout || '';
-          error = 'Wrong Answer';
-        } else if (result.status.id === 5) { // Time Limit Exceeded
-          error = 'Time Limit Exceeded';
-        } else if (result.status.id === 6) { // Compilation Error
-          error = `Compilation Error:\n${result.compile_output || ''}`;
-        } else if (result.status.id === 7) { // Runtime Error
-          error = `Runtime Error:\n${result.stderr || ''}`;
-        } else {
-          error = `Unknown Error (Status: ${result.status.id})`;
-        }
-
         return {
           testcase,
-          result: resultText,
+          stdout: result.stdout || '',
+          stderr: result.stderr || '',
+          status: { id: result.status.id, description: result.status.description },
           error
         };
       });
@@ -96,4 +88,4 @@ export const useCodeExecution = () => {
     executionError,
     executeCode
   };
-}; 
+};

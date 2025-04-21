@@ -24,6 +24,7 @@
             :testInput="{ nums: JSON.stringify([2, 7, 11, 15]), target: '9' }"
             :problemDescription="problemDescription"
             :testcases="testcases"
+            :submissionCount="submissions.length"
             @run-result="handleRunResult"
             @submit-result="handleSubmitResult"
             @update:solution="userSolution = $event"
@@ -56,6 +57,7 @@ import CodeEditor from '@/components/Code/CodeEditor.vue';
 import Testcase from '@/components/Code/Testcase.vue';
 import { useTestcaseManager } from '@/composables/useTestcaseManager';
 import { ExerciseCodeResponse } from '@/types/Exercise';
+import { useProgrammingSubmissions } from '@/composables/useProgrammingSubmissions';
 
 interface RouteParams {
   exerciseId: string;
@@ -65,6 +67,13 @@ const userSolution = ref('');
 
 const route = useRoute();
 const { exerciseId } = route.params as RouteParams;
+
+// Get submission count
+const { submissions, fetchSubmissionStats } = useProgrammingSubmissions(false);
+
+onMounted(async () => {
+  await fetchSubmissionStats(exerciseId);
+})
 
 // UI States
 const descriptionTab = ref('description');

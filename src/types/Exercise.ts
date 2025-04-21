@@ -203,6 +203,10 @@ export interface ExerciseCodeResponse extends ExerciseCodeRequest {
   id: string;
 }
 
+export interface DeleteCodeExerciseResponse {
+  id: string;
+}
+
 export interface GetExercisesList{
   id: UUID;
   name: string;

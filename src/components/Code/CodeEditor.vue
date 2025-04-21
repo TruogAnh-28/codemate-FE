@@ -7,6 +7,7 @@
         :items="availableLanguageIds"
         :item-title="(id) => getLanguageName(id)"
         :item-value="(id) => id"
+        :disabled="codeSolutionStore.isShowingAISolution(selectedLanguage)"
         density="compact"
         hide-details
         class="language-select"
@@ -26,7 +27,7 @@
             color="primary"
             class="mr-2"
             v-bind="props"
-            :loading="codeSolutionStore.isLoading"
+            :loading="codeSolutionStore.isLoading || isGettingHints || isExplaining"
           >
             <v-icon left>mdi-code-braces</v-icon>
             Solutions
@@ -37,7 +38,7 @@
         <v-list>
           <v-list-item
             @click="codeSolutionStore.toggleSolution(selectedLanguage)"
-            :disabled="codeSolutionStore.isLoading"
+            :disabled="codeSolutionStore.isLoading || (props.submissionCount !== undefined && props.submissionCount < 5)"
           >
             <template v-slot:prepend>
               <v-icon :color="codeSolutionStore.isShowingAISolution(selectedLanguage) ? 'success' : 'primary'">
@@ -47,18 +48,21 @@
             <v-list-item-title>
               {{ codeSolutionStore.isShowingAISolution(selectedLanguage) ? 'Show My Solution' : 'Show AI Solution' }}
             </v-list-item-title>
+            <v-list-item-subtitle v-if="props.submissionCount !== undefined && props.submissionCount < 5" class="text-caption text-grey">
+              Complete at least 5 submissions to unlock AI solution
+            </v-list-item-subtitle>
           </v-list-item>
 
           <v-divider></v-divider>
 
           <v-list-item
-            @click="explainCode"
+            @click="getOptimizationSuggestions"
             :disabled="isExplaining"
           >
             <template v-slot:prepend>
               <v-icon color="info">mdi-information</v-icon>
             </template>
-            <v-list-item-title>Explain Code</v-list-item-title>
+            <v-list-item-title>Get optimizing suggestions</v-list-item-title>
           </v-list-item>
 
           <v-list-item
@@ -88,7 +92,7 @@
 import { EditorState, EditorSelection } from '@codemirror/state';
 import { EditorView, keymap, lineNumbers, highlightActiveLine, highlightSpecialChars, drawSelection, dropCursor, rectangularSelection, crosshairCursor, highlightActiveLineGutter, hoverTooltip } from '@codemirror/view';
 import { CodeExerciseService } from '@/services/CodeExerciseService';
-import { defaultKeymap, history, historyKeymap, indentWithTab } from '@codemirror/commands';
+import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
 import { indentOnInput, syntaxHighlighting, defaultHighlightStyle, bracketMatching, foldGutter, indentUnit } from '@codemirror/language';
 import { closeBrackets, closeBracketsKeymap } from '@codemirror/autocomplete';
 import { lintGutter } from '@codemirror/lint';
@@ -96,16 +100,16 @@ import { javascript } from '@codemirror/lang-javascript';
 import { cpp } from '@codemirror/lang-cpp';
 import { python } from '@codemirror/lang-python';
 import { java } from '@codemirror/lang-java';
-import { TestInput, LineExplanation, CodeAnalysisRequest, LanguageKey } from '@/types/LLM_code';
+import { TestInput, LineExplanation } from '@/types/LLM_code';
 import { LanguageConfigDto } from '@/types/CodingExercise';
 import { JUDGE0_LANG } from '@/constants/judge0_lang';
 import { useProgrammingSubmissions } from '@/composables/useProgrammingSubmissions';
-import { useFileIO } from '@/composables/useFileIO';
 import { ref, watch, computed, onMounted, nextTick, inject } from 'vue';
 import { useRoute } from 'vue-router';
 import { llmCodeServices } from '@/services/llmCodeServices';
 import { useCodeSolutionStore } from "@/stores/codeSolutionStore";
 import { useCodeExecution } from '@/composables/useCodeExecution';
+import { useCodeEditorStore } from '@/composables/useCodeEditor';
 
 // Save user's code for each language
 const codePerLanguage = new Map<number, string>();
@@ -121,8 +125,11 @@ const props = defineProps<{
   testcases: Array<{
     input: string;
     expected_output: string;
+    stdout?: string,
+    stderr?: string,
     isPublic?: boolean;
   }>;
+  submissionCount?: number;
 }>();
 
 // Define types for hints
@@ -144,7 +151,7 @@ const availableLanguageIds = computed(() =>
 
 const route = useRoute();
 const param = route.params as RouteParam;
-const { submissions, submitCodeWithPolling } = useProgrammingSubmissions();
+const { submitCodeWithPolling } = useProgrammingSubmissions();
 
 const emit = defineEmits<{
   (e: 'update:solution', value: string): void;
@@ -153,8 +160,8 @@ const emit = defineEmits<{
   (e: 'update:loading', isLoading: boolean): void;
 }>();
 
-const selectedLanguage = ref<number>(54);
-const code = ref<string>('// Loading code...');
+const { code, selectedLanguage } = useCodeEditorStore();
+const languageConfigs = ref<LanguageConfigDto[]>([]);
 const editorContainer = ref<HTMLElement | null>(null);
 const isRunning = ref<boolean>(false);
 const isSubmitting = ref<boolean>(false);
@@ -163,7 +170,6 @@ const isGettingHints = ref<boolean>(false);
 const lineExplanations = ref<LineExplanation[]>([]);
 const showError = inject("showError") as (message: string) => void;
 const showSuccess = inject("showSuccess") as (message: string) => void;
-const languageConfigs = ref<LanguageConfigDto[]>([]);
 
 let editor: EditorView | null = null;
 
@@ -290,7 +296,7 @@ const initEditor = (): void => {
   const languageSupport = cmLanguages[languageId] || javascript();
 
   const startState = EditorState.create({
-    doc: code.value,
+    doc: codeSolutionStore.isShowingAISolution(selectedLanguage.value) ? codeSolutionStore.solutionCache.get(selectedLanguage.value) : code.value,
     extensions: [
       ...createBasicSetup(),
       darkTheme,
@@ -298,15 +304,16 @@ const initEditor = (): void => {
       lintGutter(),
       createLineExplanationTooltip(),
       EditorView.lineWrapping,
+      codeSolutionStore.isShowingAISolution(selectedLanguage.value) ? EditorView.editable.of(false) : EditorView.editable.of(true),
       EditorView.updateListener.of((update) => {
-        if (update.docChanged) {
+        if (update.docChanged && !codeSolutionStore.isShowingAISolution(selectedLanguage.value)) {
           code.value = update.state.doc.toString();
           emit('update:solution', code.value);
 
-          // Clear explanations when code changes
           lineExplanations.value = [];
         }
       })
+
     ]
   });
 
@@ -314,17 +321,6 @@ const initEditor = (): void => {
     state: startState,
     parent: editorContainer.value
   });
-};
-
-// Map numeric language ID to LanguageKey for type safety
-const mapLanguageIdToKey = (id: number): LanguageKey => {
-  switch(id) {
-    case 54: return 'cpp';
-    case 62: return 'java';
-    case 71: return 'python';
-    // Add more mappings as needed
-    default: return 'cpp'; // Default fallback
-  }
 };
 
 const getCommentSyntax = (judge0LangId: number): { start: string; end: string } => {
@@ -353,7 +349,7 @@ const getCommentSyntax = (judge0LangId: number): { start: string; end: string } 
   };
 
   const commentPrefix = lineCommentMap[judge0LangId] || '//';
-  return { start: `${commentPrefix} HINT: `, end: '' };
+  return { start: `${commentPrefix} `, end: '' };
 };
 
 
@@ -381,11 +377,10 @@ const giveHints = async (): Promise<void> => {
   try {
     isGettingHints.value = true;
 
-    // Convert numeric language ID to LanguageKey for type safety
-    const languageKey = mapLanguageIdToKey(selectedLanguage.value);
-
     const responseBody = await llmCodeServices.getHints({ problem_statement: props.problemDescription, code_context: code.value });
-    console.log("Response body:", responseBody);
+    if (!responseBody.data?.line_hints) {
+      throw new Error('No hints available');
+    }
 
     const hints = responseBody.data.line_hints;
 
@@ -409,43 +404,48 @@ const giveHints = async (): Promise<void> => {
   }
 };
 
-// Get code explanations using the llmCodeServices
-const explainCode = async (): Promise<void> => {
+// Get optimization suggestions using the llmCodeServices
+const getOptimizationSuggestions = async (): Promise<void> => {
   try {
     isExplaining.value = true;
 
     // Clear previous explanations
     lineExplanations.value = [];
 
-    // Prepare request payload
-    const codeAnalysisRequest: CodeAnalysisRequest = {
-      code: code.value,
-      language: selectedLanguage.value // Use the mapped string value
-    };
-
-    // Call the service to get explanations
-    const response = await llmCodeServices.getCodeExplanation(
-      { showError, showSuccess },
-      codeAnalysisRequest
-    );
+    // Call the service to get optimization hints
+    const response = await llmCodeServices.getHints({
+      problem_statement: props.problemDescription,
+      code_context: code.value,
+      optimize: true
+    });
 
     // Process the response
-    if (response.data && Array.isArray(response.data)) {
-      lineExplanations.value = response.data;
+    if (response.data?.line_hints) {
+      // Convert hints to explanations format for tooltips
+      lineExplanations.value = response.data.line_hints.map(hint => ({
+        line: hint.line,
+        explanation: hint.hint,
+        code: '' // We don't have the code snippet in hints
+      }));
 
-      // Reinitialize editor to apply new tooltips
+      // Insert optimization suggestions into the code as comments
+      const codeWithSuggestions = insertHintsIntoCode(code.value, response.data.line_hints, selectedLanguage.value);
+      code.value = codeWithSuggestions;
+
+      // Reinitialize editor to apply new tooltips and show updated code
       nextTick(() => {
         initEditor();
+        showSuccess("Optimization suggestions have been added to your code as comments.");
       });
     }
   } catch (error) {
-    console.error('Error getting code explanations:', error);
+    console.error('Error getting optimization suggestions:', error);
+    showError('Failed to get optimization suggestions');
   } finally {
     isExplaining.value = false;
   }
 };
 
-// Run code with test case
 const runCode = async () => {
   isRunning.value = true;
   emit('update:loading', true);
@@ -463,22 +463,35 @@ const runCode = async () => {
     );
 
     if (executionError) {
-      emit('run-result', `❌ ${executionError}`);
+      emit('run-result', `❌ Execution Error:\n${executionError}`);
     } else {
       // Format results for all test cases
       const formattedResults = executionResults.map((result, index) => {
         const testcase = props.testcases[index];
-        if (result.error) {
-          return `Test Case ${index + 1}:\nInput: ${testcase.input}\nExpected: ${testcase.expected_output}\n❌ ${result.error}\n`;
-        } else {
-          return `Test Case ${index + 1}:\nInput: ${testcase.input}\nExpected: ${testcase.expected_output}\n✅ Output: ${result.result}\n`;
+
+        let output = `🧪 **Test Case ${index + 1}**\n`;
+        output += `🔸 Input:\n${testcase.input}\n\n`;
+        output += `🔸 Expected Output:\n${testcase.expected_output}\n\n`;
+        output += `🔸 Your Output:\n${result.stdout}\n\n`;
+
+        if (result.stderr) {
+          output += `🔸 stderr:\n${result.stderr}\n\n`;
         }
-      }).join('\n');
+
+        if (result.status.id === 3) {
+          // 3 = Accepted
+          output += `✅ Result: Passed\n`;
+        } else {
+          output += `❌ Result: ${result.status.description}\n`;
+        }
+
+        return output;
+      }).join('\n' + '-'.repeat(40) + '\n');
 
       emit('run-result', formattedResults);
     }
   } catch (error) {
-    emit('run-result', `❌ Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    emit('run-result', `❌ Internal Error:\n${error instanceof Error ? error.message : 'Unknown error'}`);
   } finally {
     isRunning.value = false;
     emit('update:loading', false);
@@ -635,11 +648,13 @@ watch(selectedLanguage, async (newId, oldId) => {
   } else {
     // Get code associated with the new language
     const newCode = getCodeForLanguage(newId, codeSolutionStore.isShowingAISolution(newId));
+    console.log("new code:", newCode);
     if (newCode) {
       code.value = newCode;
     } else {
       const config = languageConfigs.value.find(c => c.judge0_language_id === newId);
       if (config?.boilerplate_code) {
+        console.log("boilerplate: ", config.boilerplate_code);
         code.value = config.boilerplate_code;
       } else {
         code.value = setDefaultCodeForLanguage(newId);
@@ -654,18 +669,21 @@ watch(selectedLanguage, async (newId, oldId) => {
 
 // Watch for solution toggle
 watch(() => codeSolutionStore.isShowingAISolution(selectedLanguage.value), async (show) => {
+  console.log("watch 1");
   if (show) {
-    // Try to fetch solution if showing AI solution
-    await codeSolutionStore.fetchAISolution(param.exerciseId, selectedLanguage.value);
-
-    // If we have a solution in the cache, use it
     if (codeSolutionStore.hasCachedSolution(selectedLanguage.value)) {
+      console.log("cached");
       const cachedSolution = codeSolutionStore.solutionCache.get(selectedLanguage.value);
+      console.log(cachedSolution);
       if (cachedSolution) {
         code.value = cachedSolution;
         nextTick(() => initEditor());
         return;
       }
+    } else {
+      await codeSolutionStore.fetchAISolution(param.exerciseId, selectedLanguage.value);
+      code.value = codeSolutionStore.solutionCache.get(selectedLanguage.value) || code.value;
+      return;
     }
   }
 
@@ -710,49 +728,93 @@ watch(code, (newCode) => {
   }
 }, { deep: true });
 
-const { importCode, exportCode } = useFileIO();
+// Language extension mapping
+const EXTENSIONS: Record<number, string> = {
+  50: 'c',
+  54: 'cpp',
+  59: 'cpp',
+  76: 'cpp',
+  51: 'cs',
+  62: 'java',
+  63: 'js',
+  70: 'py',
+  71: 'py',
+  60: 'go',
+  72: 'rb',
+  73: 'rs',
+  83: 'swift',
+  78: 'kt',
+  74: 'ts',
+  68: 'php',
+  85: 'pl',
+  81: 'scala',
+  61: 'hs',
+  64: 'lua',
+  80: 'r'
+};
+
+// Create reverse mapping of extensions to language IDs
+const LANGUAGE_IDS: Record<string, number[]> = {};
+Object.entries(EXTENSIONS).forEach(([langId, ext]) => {
+  if (!LANGUAGE_IDS[ext]) {
+    LANGUAGE_IDS[ext] = [];
+  }
+  LANGUAGE_IDS[ext].push(Number(langId));
+});
+
+// Prefer newer versions of languages when multiple options exist
 
 const onImport = () => {
-  importCode((importedCode, detectedLangId) => {
-    console.log(detectedLangId);
-    if (detectedLangId) {
-      // Check if the detected language is supported in the current exercise
-      const isSupported = languageConfigs.value.some(config => config.judge0_language_id === detectedLangId);
-      if (isSupported) {
-        console.log("current code:", code.value);
-        console.log("current language:", selectedLanguage.value);
-        
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.c,.cpp,.cs,.java,.js,.py,.go,.rb,.rs,.swift,.kt,.ts,.php,.pl,.scala,.hs,.lua,.r';
+
+  input.onchange = async () => {
+    if (input.files && input.files[0]) {
+      const file = input.files[0];
+      const text = await file.text();
+
+      // Detect language from file extension
+      const extension = file.name.split('.').pop()?.toLowerCase() || '';
+      const possibleLangIds = LANGUAGE_IDS[extension] || [];
+
+      // Find the highest available language ID that matches the extension
+      const availableLangIds = languageConfigs.value.map(config => config.judge0_language_id);
+      const detectedLangId = possibleLangIds
+        .filter(id => availableLangIds.includes(id))
+        .sort((a, b) => b - a)[0]; // Sort in descending order to get the highest version
+
+      if (detectedLangId && detectedLangId != selectedLanguage.value) {
         // Save current code to the current language before switching
-        const currentLangId = selectedLanguage.value;
-        setCodeForLanguage(currentLangId, code.value, codeSolutionStore.isShowingAISolution(currentLangId));
-        
+        setCodeForLanguage(selectedLanguage.value, code.value, codeSolutionStore.isShowingAISolution(selectedLanguage.value));
+
         // Switch to the new language
         selectedLanguage.value = detectedLangId;
-        
-        console.log("imported code:", importedCode);
-        console.log("selected language:", selectedLanguage.value);
-        
-        setCodeForLanguage(detectedLangId, importedCode, codeSolutionStore.isShowingAISolution(detectedLangId));
-        
-        console.log("code after import:", code.value);
-        
-        const codeForOldLang = getCodeForLanguage(currentLangId, codeSolutionStore.isShowingAISolution(currentLangId));
-        console.log("code for old lang:", codeForOldLang);
-        
-        const codeForNewLang = getCodeForLanguage(detectedLangId, codeSolutionStore.isShowingAISolution(detectedLangId));
-        console.log("code for new lang:", codeForNewLang);
+        setCodeForLanguage(detectedLangId, text, codeSolutionStore.isShowingAISolution(detectedLangId));
+      } else {
+        // If no matching language found, use current language
+        code.value = text;
+        setCodeForLanguage(selectedLanguage.value, text, codeSolutionStore.isShowingAISolution(selectedLanguage.value));
       }
-    } else {
-      // If no language detected, just update the current language's code
-      code.value = importedCode;
-      setCodeForLanguage(selectedLanguage.value, importedCode, codeSolutionStore.isShowingAISolution(selectedLanguage.value));
+      nextTick(initEditor);
     }
-    nextTick(initEditor);
-  });
+  };
+  input.click();
 };
 
 const onExport = () => {
-  exportCode(code.value, selectedLanguage.value);
+  console.log('Exporting code for language:', selectedLanguage.value);
+  console.log('Code to export:', code.value);
+  const extension = EXTENSIONS[selectedLanguage.value] || 'txt';
+  console.log('Using extension:', extension);
+  const blob = new Blob([code.value], { type: 'text/plain' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = `solution.${extension}`;
+  console.log('Downloading file:', link.download);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 };
 </script>
 
