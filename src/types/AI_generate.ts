@@ -83,6 +83,7 @@ export interface RecommendLessonMonitor {
   needs_review_prior: boolean;
   issues_analysis: IssuesAnalysis;
   recommendations: Recommendation[];
+  achievements_analysis: AchievementsAnalysis;
 }
 
 export interface IssuesAnalysis {
@@ -104,4 +105,37 @@ export interface Recommendation {
   action: string;
   reason: string;
   details: string;
+}
+
+export interface AchievementsAnalysis {
+  total_achievements: number;
+  recent_achievements: Achievement[];
+  mastered_concepts: string[];
+  achievement_categories: {
+    quiz_completion: number;
+    high_performance: number;
+    concept_mastery: number;
+  };
+  achievement_levels: {
+    basic: number;
+    intermediate: number;
+    advanced: number;
+  };
+  learning_trajectory: string;
+  strengths: string[];
+  recent_progress: RecentProgress[];
+}
+
+export interface Achievement {
+  type: string;
+  difficulty: string;
+  description: string;
+  earned_date: string;
+  related_topics: string[];
+}
+
+export interface RecentProgress {
+  type: string;
+  description: string;
+  date: string;
 }

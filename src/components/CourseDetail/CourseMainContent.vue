@@ -43,7 +43,7 @@
         />
       </v-window-item>
 
-      <v-window-item value="exercises">
+      <!-- <v-window-item value="exercises">
         <CourseExercises
           v-if="isStudent && isCourseDetailResponse(course)"
           :course="course"
@@ -53,7 +53,7 @@
           :course="course"
           @refreshCourse="handleCourseRefresh"
         />
-      </v-window-item>
+      </v-window-item> -->
     </v-window>
   </v-card>
 </template>
@@ -63,7 +63,7 @@ import {
   CourseDetailResponse,
   GetCourseDetailProfessorResponse,
 } from "@/types/Course";
-import { useAuthStore } from "@/stores/auth";
+// import { useAuthStore } from "@/stores/auth";
 export interface Tab {
   label: string;
   value: string;
@@ -76,23 +76,23 @@ defineProps<{
   tabs: Tab[];
 }>();
 
-const authStore = useAuthStore;
-const { user } = authStore.getState();
-const role = computed(() => user?.role);
-const isStudent = computed(() => role.value === "student");
-const isProfessor = computed(() => role.value === "professor");
+// const authStore = useAuthStore;
+// const { user } = authStore.getState();
+// const role = computed(() => user?.role);
+// const isStudent = computed(() => role.value === "student");
+// const isProfessor = computed(() => role.value === "professor");
 
-function isCourseDetailResponse(course: any): course is CourseDetailResponse {
-  return (
-    course &&
-    typeof course === "object" &&
-    "course_percentage_complete" in course &&
-    "course_last_accessed" in course &&
-    "completed_lessons" in course &&
-    "time_spent" in course &&
-    "assignments_done" in course
-  );
-}
+// function isCourseDetailResponse(course: any): course is CourseDetailResponse {
+//   return (
+//     course &&
+//     typeof course === "object" &&
+//     "course_percentage_complete" in course &&
+//     "course_last_accessed" in course &&
+//     "completed_lessons" in course &&
+//     "time_spent" in course &&
+//     "assignments_done" in course
+//   );
+// }
 
 const emit = defineEmits<{
   "update:active-tab": [value: string];

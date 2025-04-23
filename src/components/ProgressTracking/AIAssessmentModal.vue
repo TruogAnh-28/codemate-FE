@@ -296,7 +296,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, computed } from "vue"; // Added computed
+import { computed } from "vue";
 import { StudentAssessment } from "@/types/ProgressTracking";
 
 // --- Helper Function ---
