@@ -125,13 +125,16 @@
           </v-card>
 
 
-          <!-- Significant Issues & Recommendations Tabs -->
+          <!-- Tabs for Issues, Recommendations, and Achievements -->
            <v-tabs v-model="tab" color="primary" align-tabs="center" class="mb-4" density="compact">
               <v-tab value="issues">
                   <v-icon start>mdi-alert-circle-outline</v-icon> Significant Issues
                </v-tab>
               <v-tab value="recommendations">
                    <v-icon start>mdi-lightbulb-on-outline</v-icon> Recommendations
+              </v-tab>
+              <v-tab value="achievements" v-if="hasAchievements">
+                   <v-icon start>mdi-trophy-outline</v-icon> Achievements
               </v-tab>
            </v-tabs>
 
@@ -243,6 +246,217 @@
                     </v-card>
                   </div>
                 </v-window-item>
+                
+                <!-- Achievements Tab -->
+                <v-window-item value="achievements">
+                  <div v-if="!hasAchievements" class="text-center py-6 text-medium-emphasis">
+                    No achievement data available for this analysis.
+                  </div>
+                  <div v-else class="achievements-container">
+                    <!-- Summary Cards -->
+                    <v-row class="mb-4">
+                      <v-col cols="12" md="4">
+                        <v-card outlined class="achievement-summary-card" color="purple-lighten-5">
+                          <v-card-text class="pa-4">
+                            <div class="d-flex align-center mb-2">
+                              <v-icon color="purple" size="24" class="mr-2">mdi-trophy</v-icon>
+                              <span class="text-subtitle-1 font-weight-bold text-purple-darken-1">Total Achievements</span>
+                            </div>
+                            <div class="text-h4 text-purple-darken-2 font-weight-bold">
+                              {{ monitorData.achievements_analysis?.total_achievements || 0 }}
+                            </div>
+                          </v-card-text>
+                        </v-card>
+                      </v-col>
+                      
+                      <v-col cols="12" md="4">
+                        <v-card outlined class="achievement-summary-card" color="indigo-lighten-5">
+                          <v-card-text class="pa-4">
+                            <div class="d-flex align-center mb-2">
+                              <v-icon color="indigo" size="24" class="mr-2">mdi-star-circle</v-icon>
+                              <span class="text-subtitle-1 font-weight-bold text-indigo-darken-1">Mastered Concepts</span>
+                            </div>
+                            <div class="text-h4 text-indigo-darken-2 font-weight-bold">
+                              {{ monitorData.achievements_analysis?.mastered_concepts?.length || 0 }}
+                            </div>
+                          </v-card-text>
+                        </v-card>
+                      </v-col>
+                      
+                      <v-col cols="12" md="4">
+                        <v-card outlined class="achievement-summary-card" color="teal-lighten-5">
+                          <v-card-text class="pa-4">
+                            <div class="d-flex align-center mb-2">
+                              <v-icon color="teal" size="24" class="mr-2">mdi-chart-line</v-icon>
+                              <span class="text-subtitle-1 font-weight-bold text-teal-darken-1">Learning Trajectory</span>
+                            </div>
+                            <div class="text-h5 text-teal-darken-2 font-weight-bold text-capitalize">
+                              {{ monitorData.achievements_analysis?.learning_trajectory || 'N/A' }}
+                            </div>
+                          </v-card-text>
+                        </v-card>
+                      </v-col>
+                    </v-row>
+                    
+                    <!-- Recent Achievements Section -->
+                    <v-card variant="outlined" class="mb-6">
+                      <v-card-item class="py-3">
+                        <v-card-title class="text-subtitle-1 font-weight-bold d-flex align-center">
+                          <v-icon color="success" start>mdi-trophy-award</v-icon>
+                          Recent Achievements
+                        </v-card-title>
+                      </v-card-item>
+                      <v-divider></v-divider>
+                      <v-card-text class="px-4">
+                        <v-list>
+                          <v-list-item
+                            v-for="(achievement, index) in monitorData.achievements_analysis?.recent_achievements"
+                            :key="`achievement-${index}`"
+                            class="achievement-item pa-0"
+                          >
+                            <v-list-item-content class="pa-4">
+                              <div class="d-flex align-items-start">
+                                <v-avatar :color="getAchievementColor(achievement.type)" size="36" class="mr-3">
+                                  <v-icon color="white" size="20">{{ getAchievementIcon(achievement.type) }}</v-icon>
+                                </v-avatar>
+                                <div class="flex-grow-1">
+                                  <div class="d-flex align-center mb-1">
+                                    <div class="text-subtitle-2 font-weight-bold">{{ achievement.description }}</div>
+                                    <!-- <v-chip size="x-small" :color="getDifficultyColor(achievement.difficulty)" variant="tonal" 
+                                            class="ml-2 text-capitalize">
+                                      {{ achievement.difficulty }}
+                                    </v-chip> -->
+                                  </div>
+                                  <div class="d-flex align-center text-caption text-medium-emphasis">
+                                    <v-icon size="14" class="mr-1">mdi-calendar-outline</v-icon>
+                                    {{ formatDate(achievement.earned_date) }}
+                                  </div>
+                                  <div v-if="achievement.related_topics && achievement.related_topics.length" 
+                                       class="d-flex flex-wrap mt-2" style="gap: 4px;">
+                                       <v-chip size="x-small" :color="getDifficultyColor(achievement.difficulty)" variant="tonal" 
+                                            class="ml-2 text-capitalize">
+                                      {{ achievement.difficulty }}
+                                    </v-chip>
+                                    <v-chip
+                                      v-for="(topic, tIndex) in achievement.related_topics.slice(0, 3)"
+                                      :key="`topic-${index}-${tIndex}`"
+                                      size="x-small"
+                                      color="grey-lighten-3"
+                                      variant="flat"
+                                      class="text-caption"
+                                    >
+                                      {{ topic }}
+                                    </v-chip>
+                                
+                                    <v-chip
+                                      v-if="achievement.related_topics.length > 3"
+                                      size="x-small"
+                                      color="grey-lighten-3"
+                                      variant="flat"
+                                      class="text-caption"
+                                    >
+                                      +{{ achievement.related_topics.length - 3 }} more
+                                    </v-chip>
+                                  </div>
+                                </div>
+                              </div>
+                            </v-list-item-content>
+                            <v-divider v-if="index < monitorData.achievements_analysis.recent_achievements.length - 1"></v-divider>
+                          </v-list-item>
+                        </v-list>
+                      </v-card-text>
+                    </v-card>
+                    
+                    <!-- Strengths Section -->
+                    <v-card variant="outlined" class="mb-6">
+                      <v-card-item class="py-3">
+                        <v-card-title class="text-subtitle-1 font-weight-bold d-flex align-center">
+                          <v-icon color="success" start>mdi-check-circle</v-icon>
+                          Your Strengths
+                        </v-card-title>
+                      </v-card-item>
+                      <v-divider></v-divider>
+                      <v-card-text class="pt-4">
+                        <div v-if="monitorData.achievements_analysis?.strengths?.length" class="d-flex flex-wrap" style="gap: 8px;">
+                          <v-chip
+                            v-for="(strength, index) in monitorData.achievements_analysis.strengths"
+                            :key="`strength-${index}`"
+                            color="success"
+                            variant="tonal"
+                            class="font-weight-medium"
+                            prepend-icon="mdi-check-bold"
+                          >
+                            {{ strength }}
+                          </v-chip>
+                        </div>
+                        <p v-else class="text-center text-medium-emphasis">No specific strengths identified yet.</p>
+                      </v-card-text>
+                    </v-card>
+                    
+                    <!-- Achievement Distribution -->
+                    <v-row>
+                      <v-col cols="12" md="6">
+                        <v-card variant="outlined" height="100%">
+                          <v-card-item class="py-3">
+                            <v-card-title class="text-subtitle-1 font-weight-bold d-flex align-center">
+                              <v-icon color="primary" start>mdi-tag-multiple</v-icon>
+                              Achievement Categories
+                            </v-card-title>
+                          </v-card-item>
+                          <v-divider></v-divider>
+                          <v-card-text class="pt-4">
+                            <div v-if="monitorData.achievements_analysis?.achievement_categories" class="category-bars">
+                              <div v-for="(count, category) in monitorData.achievements_analysis.achievement_categories" 
+                                   :key="category" class="category-bar-wrapper mb-3">
+                                <div class="d-flex justify-space-between mb-1">
+                                  <span class="text-caption text-capitalize font-weight-medium">{{ formatCategory(category) }}</span>
+                                  <span class="text-caption font-weight-bold">{{ count }}</span>
+                                </div>
+                                <v-progress-linear
+                                  :model-value="(count / monitorData.achievements_analysis.total_achievements) * 100"
+                                  :color="getCategoryColor(category)"
+                                  height="12"
+                                  rounded
+                                ></v-progress-linear>
+                              </div>
+                            </div>
+                            <p v-else class="text-center text-medium-emphasis">No category data available.</p>
+                          </v-card-text>
+                        </v-card>
+                      </v-col>
+                      
+                      <v-col cols="12" md="6">
+                        <v-card variant="outlined" height="100%">
+                          <v-card-item class="py-3">
+                            <v-card-title class="text-subtitle-1 font-weight-bold d-flex align-center">
+                              <v-icon color="primary" start>mdi-stairs-up</v-icon>
+                              Achievement Levels
+                            </v-card-title>
+                          </v-card-item>
+                          <v-divider></v-divider>
+                          <v-card-text class="pt-4">
+                            <div v-if="monitorData.achievements_analysis?.achievement_levels" class="level-bars">
+                              <div v-for="(count, level) in monitorData.achievements_analysis.achievement_levels" 
+                                   :key="level" class="level-bar-wrapper mb-3">
+                                <div class="d-flex justify-space-between mb-1">
+                                  <span class="text-caption text-capitalize font-weight-medium">{{ level }}</span>
+                                  <span class="text-caption font-weight-bold">{{ count }}</span>
+                                </div>
+                                <v-progress-linear
+                                  :model-value="(count / monitorData.achievements_analysis.total_achievements) * 100"
+                                  :color="getLevelColor(level)"
+                                  height="12"
+                                  rounded
+                                ></v-progress-linear>
+                              </div>
+                            </div>
+                            <p v-else class="text-center text-medium-emphasis">No level data available.</p>
+                          </v-card-text>
+                        </v-card>
+                      </v-col>
+                    </v-row>
+                  </div>
+                </v-window-item>
           </v-window>
         </div>
       </v-card-text>
@@ -310,11 +524,12 @@ const loading = ref(true);
 const error = ref<string | null>(null);
 const tab = ref('issues'); // Default tab
 
-// // Computed for modal visibility
-// const isModalVisible = computed({
-//   get: () => props.modelValue,
-//   set: (value) => emit("update:modelValue", value),
-// });
+// Computed for achievements tab
+const hasAchievements = computed(() => {
+  return !!monitorData.value?.achievements_analysis && 
+         (!!monitorData.value.achievements_analysis.total_achievements || 
+          !!monitorData.value.achievements_analysis.recent_achievements?.length);
+});
 
 // Methods
 const closeModal = () => {
@@ -415,7 +630,64 @@ const formatAction = (action: string): string => {
         return action ? action.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase()) : 'Recommendation';
   }
 };
+const getAchievementColor = (type: string | undefined | null): string => {
+  switch (type?.toLowerCase()) {
+    case "quiz_completion": return "purple";
+    case "high_performance": return "success";
+    case "concept_mastery": return "indigo";
+    default: return "grey";
+  }
+};
 
+const getAchievementIcon = (type: string | undefined | null): string => {
+  switch (type?.toLowerCase()) {
+    case "quiz_completion": return "mdi-check-circle";
+    case "high_performance": return "mdi-star";
+    case "concept_mastery": return "mdi-school";
+    default: return "mdi-trophy";
+  }
+};
+
+const getDifficultyColor = (difficulty: string | undefined | null): string => {
+  switch (difficulty?.toLowerCase()) {
+    case "basic": return "info";
+    case "intermediate": return "warning";
+    case "advanced": return "error";
+    default: return "grey";
+  }
+};
+
+const formatDate = (dateStr: string | undefined | null): string => {
+  if (!dateStr) return "Unknown date";
+  try {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+  } catch (e) {
+    return dateStr;
+  }
+};
+
+const formatCategory = (category: string): string => {
+  return category.replace(/_/g, " ");
+};
+
+const getCategoryColor = (category: string): string => {
+  switch (category) {
+    case "quiz_completion": return "purple";
+    case "high_performance": return "success";
+    case "concept_mastery": return "indigo";
+    default: return "primary";
+  }
+};
+
+const getLevelColor = (level: string): string => {
+  switch (level) {
+    case "basic": return "info";
+    case "intermediate": return "warning";
+    case "advanced": return "error";
+    default: return "grey";
+  }
+};
 // --- Footer Action Button Logic ---
 const shouldShowPrimaryActionButton = computed(() => {
   return getOverallStatus.value !== 'repeat' && getOverallStatus.value !== 'unknown';

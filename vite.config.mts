@@ -67,12 +67,6 @@ export default defineConfig({
   worker: {
     format: 'es'
   },
-  optimizeDeps: {
-    include: [
-      'monaco-editor-vue3',
-      'monaco-editor'
-    ]
-  },
   server: {
     host: '0.0.0.0',
     port: 5173,

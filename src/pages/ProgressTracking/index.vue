@@ -378,7 +378,7 @@ onMounted(async () => {
   }
 });
 
-// // --- Computed Properties & Methods ---
+// --- Computed Properties & Methods ---
 // const getStatusColor = (status: string): string => {
 //   const normalizedStatus = status?.toLowerCase() || "unknown";
 //   const statusColors: { [key: string]: string } = {

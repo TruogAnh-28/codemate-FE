@@ -5,37 +5,26 @@
       elevation="3"
     >
       <v-card-text>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <v-card class="bg-blue-50 transition-all hover:shadow-md" variant="flat">
             <v-card-text>
               <div class="flex items-center mb-2">
-                <v-icon color="blue" class="mr-2">mdi-calculator-variant</v-icon>
-                <div class="text-lg font-semibold">Average Class Score</div>
+                <v-icon color="blue" class="mr-2">mdi-account-group</v-icon>
+                <div class="text-lg font-semibold">Student Count</div>
               </div>
               <div class="text-3xl font-bold text-blue-600">
-                {{ averageClassScore.toFixed(1) }}
+                {{ courseGrades?.students_list?.length || 0 }}
               </div>
             </v-card-text>
           </v-card>
           <v-card class="bg-green-50 transition-all hover:shadow-md" variant="flat">
             <v-card-text>
               <div class="flex items-center mb-2">
-                <v-icon color="green" class="mr-2">mdi-arrow-up-bold</v-icon>
-                <div class="text-lg font-semibold">Highest Score</div>
+                <v-icon color="green" class="mr-2">mdi-chart-line</v-icon>
+                <div class="text-lg font-semibold">Average Progress</div>
               </div>
               <div class="text-3xl font-bold text-green-600">
-                {{ highestScore.toFixed(1) }}
-              </div>
-            </v-card-text>
-          </v-card>
-          <v-card class="bg-orange-50 transition-all hover:shadow-md" variant="flat">
-            <v-card-text>
-              <div class="flex items-center mb-2">
-                <v-icon color="orange" class="mr-2">mdi-arrow-down-bold</v-icon>
-                <div class="text-lg font-semibold">Lowest Score</div>
-              </div>
-              <div class="text-3xl font-bold text-orange-600">
-                {{ lowestScore.toFixed(1) }}
+                {{ averageProgress.toFixed(1) }}%
               </div>
             </v-card-text>
           </v-card>
@@ -76,48 +65,22 @@
           <div class="text-sm text-gray-500">{{ item.student_email || '-' }}</div>
         </template>
         
-        <template v-slot:item.exercises="{ item }">
-          <div v-if="item.exercises?.length" class="space-y-2">
-            <div 
-              v-for="exercise in expandedStudents[item.student_id] 
-                ? item.exercises 
-                : item.exercises.slice(0, 5)" 
-              :key="exercise.exercise_id" 
-              class="flex items-center gap-2"
-            >
-              <span class="text-sm">{{ exercise.exercise_name }}:</span>
-              <span class="text-sm font-medium">{{ exercise.score.toFixed(1) }}</span>
-            </div>
-            
-            <div v-if="item.exercises.length > 5" class="flex justify-center mt-2">
-              <v-btn
-                variant="text"
-                density="compact"
-                size="small"
-                @click="toggleExpand(item.student_id)"
-                class="text-primary transition-all duration-200 hover:bg-gray-100"
-              >
-                <v-icon start>
-                  {{ expandedStudents[item.student_id] ? 'mdi-chevron-up' : 'mdi-chevron-down' }}
-                </v-icon>
-                {{ expandedStudents[item.student_id] ? 'Show Less' : `Show ${item.exercises.length - 5} More` }}
-              </v-btn>
-            </div>
+        <template v-slot:item.goal="{ item }">
+          <div class="text-sm">
+            {{ item.learning_path?.objective || 'No goal defined' }}
           </div>
-          <span v-else>-</span>
         </template>
 
-        <template v-slot:item.average_score="{ item }">
-          <div class="flex items-center gap-2 font-bold">
-            <div class="flex items-center">
-              <v-icon 
-                :color="getScoreColor(item.average_score)" 
-                class="mr-2"
-              >
-                mdi-circle-medium
-              </v-icon>
-              <span>{{ item.average_score.toFixed(1) }}</span>
-            </div>
+        <template v-slot:item.progress="{ item }">
+          <div class="flex items-center gap-2">
+            <v-progress-linear
+              :model-value="item.learning_path?.progress || 0"
+              :color="getProgressColor(item.learning_path?.progress || 0)"
+              height="10"
+              rounded
+              class="flex-grow"
+            ></v-progress-linear>
+            <span class="text-sm font-medium">{{ (item.learning_path?.progress || 0).toFixed(1) }}%</span>
           </div>
         </template>
 
@@ -141,7 +104,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { computed } from 'vue';
 import type { GetCourseGradesResponse } from "@/types/ProgressTracking";
 
 const props = defineProps<{
@@ -150,41 +113,29 @@ const props = defineProps<{
   loading: boolean;
 }>();
 
-const expandedStudents = ref<{ [key: string]: boolean }>({});
 const courseId = props.courseId;
 const courseHeaders = [
   { title: "Student ID", key: "student_mssv", align: "center" as const },
   { title: "Student Name", key: "student_name", align: "start" as const },
   { title: "Email", key: "student_email", align: "start" as const },
-  { title: "Exercises", key: "exercises", align: "start" as const },
-  { title: "Average Score", key: "average_score", align: "center" as const, sortable: true },
-  { title: "Learning Path Progress", key: "learning_path", align: "center" as const },
+  { title: "Goal", key: "goal", align: "start" as const },
+  { title: "Progress", key: "progress", align: "start" as const, sortable: true },
+  { title: "View Details", key: "learning_path", align: "center" as const },
 ];
 
-const averageClassScore = computed(() => {
+const averageProgress = computed(() => {
   if (!props.courseGrades?.students_list?.length) return 0;
-  const sum = props.courseGrades.students_list.reduce((acc, student) => acc + student.average_score, 0);
-  return sum / props.courseGrades.students_list.length;
+  const studentWithPaths = props.courseGrades.students_list.filter(student => student.learning_path);
+  if (studentWithPaths.length === 0) return 0;
+  
+  const sum = studentWithPaths.reduce((acc, student) => acc + (student.learning_path?.progress || 0), 0);
+  return sum / studentWithPaths.length;
 });
 
-const highestScore = computed(() => {
-  if (!props.courseGrades?.students_list?.length) return 0;
-  return Math.max(...props.courseGrades.students_list.map(student => student.average_score));
-});
-
-const lowestScore = computed(() => {
-  if (!props.courseGrades?.students_list?.length) return 0;
-  return Math.min(...props.courseGrades.students_list.map(student => student.average_score));
-});
-
-const getScoreColor = (score: number) => {
-  if (score >= 85) return "success";
-  if (score >= 70) return "info";
-  if (score >= 60) return "warning";
+const getProgressColor = (progress: number) => {
+  if (progress >= 80) return "success";
+  if (progress >= 50) return "info";
+  if (progress >= 25) return "warning";
   return "error";
-};
-
-const toggleExpand = (studentId: string) => {
-  expandedStudents.value[studentId] = !expandedStudents.value[studentId];
 };
 </script>

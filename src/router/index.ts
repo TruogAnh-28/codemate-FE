@@ -317,16 +317,16 @@ const ProfessorRoutes = [
       meta: { requiresAuth: true, role: "professor" },
     }],
   },
-  {
-    path: "/professor-schedule",
-    component: () => import("@/layouts/default.vue"),
-    children: [{
-      path: "",
-      name: "ProfessorSchedule",
-      component: () => import("@/pages/Schedule/Professor.vue"),
-      meta: { requiresAuth: true, role: "professor" },
-    }],
-  },
+  // {
+  //   path: "/professor-schedule",
+  //   component: () => import("@/layouts/default.vue"),
+  //   children: [{
+  //     path: "",
+  //     name: "ProfessorSchedule",
+  //     component: () => import("@/pages/Schedule/Professor.vue"),
+  //     meta: { requiresAuth: true, role: "professor" },
+  //   }],
+  // },
   // {
   //   path: "/professor-schedule",
   //   name: "ProfessorSchedule",
