@@ -22,7 +22,7 @@
         <p class="text-gray-600 leading-relaxed">
           Glad to see you again! Keep up the momentum in your course.
         </p>
-
+<!-- 
         <v-btn
           variant="text"
           color="primary"
@@ -31,7 +31,7 @@
         >
           Tap to learn
           <v-icon end icon="mdi-arrow-right" class="ml-1" />
-        </v-btn>
+        </v-btn> -->
       </div>
     </v-card-text>
   </v-card>

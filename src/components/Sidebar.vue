@@ -204,12 +204,12 @@ const professorItems: NavigationItem[] = [
     value: "professor-progress",
     to: "/professor-progress",
   },
-  {
-    icon: "mdi-invoice-text-clock",
-    title: "Schedule",
-    value: "professor-schedule",
-    to: "/professor-schedule",
-  },
+  // {
+  //   icon: "mdi-invoice-text-clock",
+  //   title: "Schedule",
+  //   value: "professor-schedule",
+  //   to: "/professor-schedule",
+  // },
 ];
 
 const adminItems: NavigationItem[] = [

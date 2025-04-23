@@ -25,6 +25,7 @@ export interface QuizListResponse {
   max_score: number;
   time_limit?: number;
   duration?: number;
+  question_count?: number;
 }
 
 export interface ModuleQuizResponse {
@@ -68,6 +69,14 @@ export interface QuizQuestionResult {
   isCorrect: boolean;
 }
 
+export interface Achievement {
+  type: string;
+  description: string;
+  earned_date: string;
+  related_topics: string[];
+  difficulty: string;
+}
+
 export interface LearningIssue {
   type: string;
   description: string;
@@ -84,6 +93,7 @@ export interface QuizScoreResponse {
   score: number;
   results: QuizQuestionResult[];
   identified_issues?: LearningIssue[];
+  new_achievements?: Achievement[];
 }
 export interface ClearAnswerResponse {
   success: boolean;

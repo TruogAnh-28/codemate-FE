@@ -93,7 +93,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, nextTick, onMounted } from 'vue';
+import { ref, watch, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import SubmissionList from '@/components/Code/SubmissionList.vue';
 import MarkdownIt from 'markdown-it';
@@ -119,7 +119,9 @@ const props = withDefaults(defineProps<ProblemDescriptionProps>(), {
 });
 
 const route = useRoute();
-const {exerciseId} = route.params as RouteParams;
+
+// Explicitly type route.params
+const routeParams = route.params as RouteParams;
 
 const {
   messages,
@@ -164,6 +166,7 @@ watch(descriptionTab, async (tab) => {
 
 const chatBottom = ref<null | HTMLElement>(null);
 const chatContainer = ref<null | HTMLElement>(null);
+
 
 // Watch messages array for changes and scroll to bottom
 watch(messages, () => {

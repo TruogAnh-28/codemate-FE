@@ -1,220 +1,487 @@
 <template>
   <v-dialog
-    v-model="isModalVisible"
+    :model-value="modelValue"
+    @update:modelValue="closeModal"
     max-width="950"
-    persistent
+    scrollable
     class="learning-recommendation-modal"
   >
     <v-card class="pa-0 rounded-xl overflow-hidden shadow-lg">
       <!-- Header with Gradient -->
-      <v-card-title class="header-gradient text-white pa-6 d-flex align-center">
-        <v-icon color="white" class="mr-3" size="28">mdi-school</v-icon>
+      <v-card-title class="header-gradient text-black pa-5 d-flex align-center">
+        <v-icon color="white" class="mr-3" size="28">mdi-school-outline</v-icon>
         <span class="text-h5 font-weight-bold">Learning Recommendation Analysis</span>
         <v-spacer></v-spacer>
-        <v-btn icon small @click="closeModal" class="text-black">
+        <v-btn icon flat density="compact" @click="closeModal" class="text-black">
           <v-icon>mdi-close</v-icon>
         </v-btn>
       </v-card-title>
 
       <!-- Content -->
-      <v-card-text class="pa-0 max-h-[65vh] overflow-y-auto bg-gray-50">
+      <v-card-text class="pa-0 content-area bg-grey-lighten-5">
         <!-- Loading State -->
-        <div v-if="loading" class="text-center py-10">
+        <div v-if="loading" class="text-center py-12 d-flex flex-column align-center justify-center fill-height">
           <v-progress-circular
             indeterminate
             color="primary"
-            size="40"
+            size="50"
+            width="4"
           ></v-progress-circular>
-          <p class="mt-4 text-gray-600">Loading analysis data...</p>
+          <p class="mt-4 text-medium-emphasis">Loading analysis data...</p>
         </div>
 
         <!-- Error State -->
-        <div v-else-if="error" class="text-center py-10">
-          <v-icon color="error" size="48">mdi-alert-circle</v-icon>
-          <p class="mt-4 text-gray-600">{{ error }}</p>
+        <div v-else-if="error" class="text-center py-10 px-6 d-flex flex-column align-center justify-center fill-height">
+          <v-icon color="error" size="48">mdi-alert-circle-outline</v-icon>
+          <p class="mt-4 text-body-1 text-medium-emphasis">{{ error }}</p>
           <v-btn color="primary" variant="flat" class="mt-4" @click="retryFetch">
+            <v-icon left>mdi-refresh</v-icon>
             Retry
           </v-btn>
         </div>
 
+        <!-- No Data State (After Loading, if monitorData is still null) -->
+         <div v-else-if="!monitorData" class="text-center py-10 px-6 d-flex flex-column align-center justify-center fill-height">
+             <v-icon color="grey-lighten-1" size="48">mdi-information-off-outline</v-icon>
+             <p class="mt-4 text-body-1 text-medium-emphasis">No analysis data available for this lesson yet.<br/>Analysis may require more progress.</p>
+              <v-btn color="primary" variant="outlined" class="mt-4" @click="retryFetch">
+                <v-icon left>mdi-refresh</v-icon>
+                 Check Again
+             </v-btn>
+         </div>
+
         <!-- Data Available State -->
-        <div v-else>
+        <div v-else class="pa-6">
           <!-- Main Recommendation Banner -->
-          <div class="recommendation-banner px-6 py-8">
-            <div class="d-flex align-center mb-4">
-              <v-icon :color="getStatusColor()" size="36" class="mr-3">{{ getStatusIcon() }}</v-icon>
-              <h2 class="text-h5 font-weight-bold" :class="`text-${getStatusColor()}`">
+          <div class="recommendation-banner pa-5 mb-6 rounded-lg">
+            <div class="d-flex align-center mb-3">
+              <v-icon :color="getStatusColor()" size="32" class="mr-3">{{ getStatusIcon() }}</v-icon>
+              <h2 class="text-h6 font-weight-bold" :class="`text-${getStatusColor()}`">
                 {{ getStatusTitle() }}
               </h2>
             </div>
-            <p class="text-body-1 recommendation-text">{{ getMainRecommendation() }}</p>
-            
-            <!-- Action Details -->
-            <div v-if="getRecommendedDetails()" class="recommended-details mt-4 py-4 px-6 rounded-lg">
+             <!-- Use formatting for main recommendation reason -->
+            <div class="text-body-1 recommendation-text formatted-content">
+                <p v-for="(line, index) in formatTextLines(getMainRecommendation)" :key="`main-rec-${index}`" class="mb-1">
+                 {{ line }}
+                </p>
+                 <p v-if="!getMainRecommendation" class="text-medium-emphasis text-body-2 mb-0">
+                    Analysis complete. Review details below.
+                 </p>
+            </div>
+
+            <!-- Action Details (e.g., for review_prior) -->
+            <div v-if="getReviewPriorDetails" class="recommended-details mt-4 py-3 px-4 rounded-lg">
               <div class="d-flex align-center mb-2">
                 <v-icon color="secondary" size="20" class="mr-2">mdi-information-outline</v-icon>
-                <span class="font-weight-medium">Recommended Content:</span>
+                <span class="font-weight-medium text-secondary">Recommendation Detail (Review Prior):</span>
               </div>
-              <p class="text-body-1 font-weight-medium ml-8">{{ getRecommendedDetails() }}</p>
+              <!-- Use formatting for details -->
+              <div class="text-body-2 font-weight-medium ml-8 formatted-content">
+                 <p v-for="(line, index) in formatTextLines(getReviewPriorDetails)" :key="`detail-rec-${index}`" class="mb-1">
+                  {{ line }}
+                 </p>
+              </div>
             </div>
           </div>
 
           <!-- Issues Overview -->
-          <div class="px-6 py-4 bg-white">
-            <div class="d-flex justify-space-between align-center mb-4">
-              <h3 class="text-h6 font-weight-bold text-primary-darker">Learning Issues Summary</h3>
-              <v-chip color="error" variant="outlined" class="font-weight-medium">
-                {{ monitorData.issues_analysis.total_issues_count }} total issues
-              </v-chip>
-            </div>
-            
-            <!-- Issue Types Distribution -->
-            <div class="d-flex mb-6 flex-wrap gap-3">
-              <v-chip
-                v-for="issue in monitorData.issues_analysis.increasing_issues"
-                :key="issue"
-                color="warning"
-                variant="elevated"
-                class="py-2 px-4 text-body-2 font-weight-medium"
-                prepend-icon="mdi-trending-up"
-              >
-                {{ issue }}
-              </v-chip>
-            </div>
-          </div>
+          <v-card variant="outlined" class="mb-6">
+            <v-card-item class="py-3">
+                 <v-card-title class="text-subtitle-1 font-weight-bold d-flex align-center">
+                      <v-icon color="primary" start>mdi-format-list-checks</v-icon>
+                      Learning Issues Summary
+                      <v-spacer></v-spacer>
+                        <v-chip color="error" variant="flat" size="small" class="font-weight-medium">
+                            {{ monitorData.issues_analysis.total_issues_count }} total issues found
+                        </v-chip>
+                 </v-card-title>
+            </v-card-item>
+             <v-divider></v-divider>
+             <v-card-text class="pt-4">
+                 <!-- Issue Types Distribution -->
+                <div v-if="monitorData.issues_analysis.increasing_issues?.length > 0" class="mb-4">
+                    <div class="text-caption font-weight-medium text-warning-darken-2 mb-2">Areas Showing Increased Difficulty:</div>
+                    <div class="d-flex flex-wrap" style="gap: 8px;">
+                    <v-chip
+                        v-for="issue in monitorData.issues_analysis.increasing_issues"
+                        :key="issue"
+                        color="warning"
+                        variant="tonal"
+                        size="small"
+                        class="font-weight-medium"
+                        prepend-icon="mdi-trending-up"
+                    >
+                        {{ issue }}
+                    </v-chip>
+                    </div>
+                </div>
+                 <div class="text-caption font-weight-medium text-primary-darken-2">Most Frequent Issue Type:
+                    <v-chip color="primary" variant="text" size="small" class="ml-1 font-weight-bold text-capitalize">
+                     {{ formatIssueType(monitorData.issues_analysis.most_frequent_type) || 'N/A' }}
+                    </v-chip>
+                 </div>
+             </v-card-text>
+          </v-card>
 
-          <!-- Significant Issues -->
-          <div class="px-6 py-4 bg-white border-t border-gray-100">
-            <v-expansion-panels
-              variant="accordion"
-              flat
-              class="rounded-lg shadow-sm"
-            >
-              <v-expansion-panel elevation="0" class="border rounded-lg">
-                <v-expansion-panel-title class="py-4 px-4 bg-gray-50">
-                  <div class="d-flex align-center">
-                    <v-icon color="primary" class="mr-3">mdi-alert-circle-outline</v-icon>
-                    <span class="font-weight-bold text-primary">Significant Learning Issues</span>
-                  </div>
-                </v-expansion-panel-title>
-                <v-expansion-panel-text class="px-4 py-4">
-                  <div class="overflow-x-auto">
-                    <v-table dense class="modern-table">
-                      <thead>
-                        <tr>
-                          <th class="text-left">Type</th>
-                          <th class="text-left">Description</th>
-                          <th class="text-center">Severity</th>
-                          <th class="text-center">Frequency</th>
-                          <th class="text-left">Impact on Goals</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr
-                          v-for="(issue, index) in monitorData.issues_analysis.significant_issues"
-                          :key="index"
-                          class="issue-row"
-                        >
-                          <td class="py-3">
-                            <v-chip size="small" color="primary" variant="flat" class="text-capitalize">
-                              {{ formatIssueType(issue.type) }}
-                            </v-chip>
-                          </td>
-                          <td class="text-wrap max-w-xs py-3 font-weight-medium">
-                            {{ issue.description }}
-                          </td>
-                          <td class="text-center py-3">
-                            <v-chip
-                              :color="getSeverityColor(issue.severity)"
-                              size="small"
-                              variant="elevated"
-                              class="font-weight-medium text-white"
-                            >
-                              {{ issue.severity }}
-                            </v-chip>
-                          </td>
-                          <td class="text-center py-3">
-                            <span class="frequency-badge">{{ issue.frequency }}</span>
-                          </td>
-                          <td class="text-wrap max-w-sm py-3 text-body-2">
-                            {{ issue.impact_on_goals }}
-                          </td>
-                        </tr>
-                      </tbody>
-                    </v-table>
-                  </div>
-                </v-expansion-panel-text>
-              </v-expansion-panel>
-            </v-expansion-panels>
-          </div>
 
-          <!-- Recommendations -->
-          <div class="px-6 py-4 bg-white border-t border-gray-100">
-            <v-expansion-panels
-              variant="accordion"
-              flat
-              class="rounded-lg shadow-sm"
-            >
-              <v-expansion-panel elevation="0" class="border rounded-lg">
-                <v-expansion-panel-title class="py-4 px-4 bg-gray-50">
-                  <div class="d-flex align-center">
-                    <v-icon color="secondary" class="mr-3">mdi-lightbulb-outline</v-icon>
-                    <span class="font-weight-bold text-secondary-darker">Detailed Recommendations</span>
+          <!-- Tabs for Issues, Recommendations, and Achievements -->
+           <v-tabs v-model="tab" color="primary" align-tabs="center" class="mb-4" density="compact">
+              <v-tab value="issues">
+                  <v-icon start>mdi-alert-circle-outline</v-icon> Significant Issues
+               </v-tab>
+              <v-tab value="recommendations">
+                   <v-icon start>mdi-lightbulb-on-outline</v-icon> Recommendations
+              </v-tab>
+              <v-tab value="achievements" v-if="hasAchievements">
+                   <v-icon start>mdi-trophy-outline</v-icon> Achievements
+              </v-tab>
+           </v-tabs>
+
+          <v-window v-model="tab">
+                <v-window-item value="issues">
+                     <v-card variant="outlined">
+                       <v-card-text class="pa-0">
+                         <div v-if="!monitorData.issues_analysis?.significant_issues?.length" class="text-center py-6 text-medium-emphasis">
+                            No significant issues identified in this analysis.
+                         </div>
+                          <v-table v-else dense class="modern-table">
+                            <thead>
+                                <tr>
+                                <th class="text-left" style="width: 15%;">Type / Severity</th>
+                                <th class="text-left" style="width: 40%;">Description</th>
+                                <th class="text-center" style="width: 10%;">Frequency</th>
+                                <th class="text-left" style="width: 35%;">Impact on Goals</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr
+                                v-for="(issue, index) in monitorData.issues_analysis.significant_issues"
+                                :key="`issue-${index}`"
+                                class="issue-row"
+                                >
+                                <td class="py-3">
+                                    <v-chip size="small" :color="getSeverityColor(issue.severity)" variant="flat" class="text-capitalize font-weight-medium mb-1" block>
+                                    {{ formatIssueType(issue.type) }}
+                                    </v-chip>
+                                     <v-chip size="x-small" :color="getSeverityColor(issue.severity)" variant="tonal" label block>
+                                    Severity: {{ issue.severity }}
+                                    </v-chip>
+                                </td>
+                                <td class="text-wrap max-w-xs py-3">
+                                    <div class="formatted-content text-body-2">
+                                    <p v-for="(line, i) in formatTextLines(issue.description)" :key="`desc-${index}-${i}`" class="mb-1">
+                                        {{ line }}
+                                    </p>
+                                    </div>
+                                </td>
+                                <td class="text-center py-3">
+                                    <span class="frequency-badge">{{ issue.frequency }}</span>
+                                </td>
+                                <td class="text-wrap max-w-sm py-3">
+                                    <div class="formatted-content text-caption">
+                                    <p v-for="(line, i) in formatTextLines(issue.impact_on_goals)" :key="`impact-${index}-${i}`" class="mb-1">
+                                        {{ line }}
+                                    </p>
+                                    </div>
+                                </td>
+                                </tr>
+                            </tbody>
+                          </v-table>
+                       </v-card-text>
+                     </v-card>
+                </v-window-item>
+
+                <v-window-item value="recommendations">
+                  <div v-if="!monitorData.recommendations?.length" class="text-center py-6 text-medium-emphasis">
+                     No specific recommendations generated based on this analysis.
                   </div>
-                </v-expansion-panel-title>
-                <v-expansion-panel-text class="px-4 py-4">
-                  <div class="space-y-4">
-                    <div
+                   <div v-else class="space-y-4">
+                    <v-card
                       v-for="(recommendation, index) in monitorData.recommendations"
-                      :key="index"
-                      class="p-5 rounded-lg recommendation-card"
+                      :key="`rec-card-${index}`"
+                      variant="outlined"
+                      class="recommendation-card"
                       :class="`recommendation-${recommendation.action}`"
                     >
-                      <div class="d-flex align-center mb-3">
-                        <v-icon :color="getActionColor(recommendation.action)" size="24" class="mr-3">
-                          {{ getActionIcon(recommendation.action) }}
-                        </v-icon>
-                        <h4 class="text-h6 font-weight-bold" :class="`text-${getActionColor(recommendation.action)}`">
-                          {{ formatAction(recommendation.action) }}
-                        </h4>
-                      </div>
-                      <p class="text-body-1 mb-3 recommendation-reason">
-                        {{ recommendation.reason }}
-                      </p>
-                      <div v-if="recommendation.details" class="mt-3 py-3 px-4 details-box rounded">
-                        <span class="text-body-2 text-secondary-darker font-weight-medium">
-                          {{ recommendation.details }}
-                        </span>
-                      </div>
-                    </div>
+                       <v-card-item class="py-3">
+                            <div class="d-flex align-center">
+                                <v-icon :color="getActionColor(recommendation.action)" size="24" class="mr-3">
+                                {{ getActionIcon(recommendation.action) }}
+                                </v-icon>
+                                <span class="text-subtitle-1 font-weight-bold" :class="`text-${getActionColor(recommendation.action)}`">
+                                {{ formatAction(recommendation.action) }}
+                                </span>
+                            </div>
+                       </v-card-item>
+                       <v-divider></v-divider>
+                       <v-card-text class="pt-4">
+                           <div class="text-body-2 mb-3 recommendation-reason formatted-content">
+                                <p v-for="(line, i) in formatTextLines(recommendation.reason)" :key="`reason-${index}-${i}`" class="mb-1">
+                                {{ line }}
+                                </p>
+                            </div>
+                            <!-- Format Details -->
+                            <div v-if="recommendation.details" class="mt-3 py-3 px-4 details-box rounded">
+                               <div class="text-caption text-medium-emphasis font-weight-medium formatted-content">
+                                <p v-for="(line, i) in formatTextLines(recommendation.details)" :key="`details-${index}-${i}`" class="mb-1">
+                                    {{ line }}
+                                </p>
+                               </div>
+                            </div>
+
+                            <!-- Conditional Regenerate Button -->
+                            <div v-if="recommendation.action === 'repeat'" class="mt-4 text-right">
+                                <v-btn
+                                color="error"
+                                variant="elevated"
+                                class="font-weight-medium px-5 text-white text-none"
+                                prepend-icon="mdi-sync"
+                                @click="triggerRegenerate"
+                                >
+                                Regenerate Lesson Content
+                                </v-btn>
+                            </div>
+                       </v-card-text>
+                    </v-card>
                   </div>
-                </v-expansion-panel-text>
-              </v-expansion-panel>
-            </v-expansion-panels>
-          </div>
+                </v-window-item>
+                
+                <!-- Achievements Tab -->
+                <v-window-item value="achievements">
+                  <div v-if="!hasAchievements" class="text-center py-6 text-medium-emphasis">
+                    No achievement data available for this analysis.
+                  </div>
+                  <div v-else class="achievements-container">
+                    <!-- Summary Cards -->
+                    <v-row class="mb-4">
+                      <v-col cols="12" md="4">
+                        <v-card outlined class="achievement-summary-card" color="purple-lighten-5">
+                          <v-card-text class="pa-4">
+                            <div class="d-flex align-center mb-2">
+                              <v-icon color="purple" size="24" class="mr-2">mdi-trophy</v-icon>
+                              <span class="text-subtitle-1 font-weight-bold text-purple-darken-1">Total Achievements</span>
+                            </div>
+                            <div class="text-h4 text-purple-darken-2 font-weight-bold">
+                              {{ monitorData.achievements_analysis?.total_achievements || 0 }}
+                            </div>
+                          </v-card-text>
+                        </v-card>
+                      </v-col>
+                      
+                      <v-col cols="12" md="4">
+                        <v-card outlined class="achievement-summary-card" color="indigo-lighten-5">
+                          <v-card-text class="pa-4">
+                            <div class="d-flex align-center mb-2">
+                              <v-icon color="indigo" size="24" class="mr-2">mdi-star-circle</v-icon>
+                              <span class="text-subtitle-1 font-weight-bold text-indigo-darken-1">Mastered Concepts</span>
+                            </div>
+                            <div class="text-h4 text-indigo-darken-2 font-weight-bold">
+                              {{ monitorData.achievements_analysis?.mastered_concepts?.length || 0 }}
+                            </div>
+                          </v-card-text>
+                        </v-card>
+                      </v-col>
+                      
+                      <v-col cols="12" md="4">
+                        <v-card outlined class="achievement-summary-card" color="teal-lighten-5">
+                          <v-card-text class="pa-4">
+                            <div class="d-flex align-center mb-2">
+                              <v-icon color="teal" size="24" class="mr-2">mdi-chart-line</v-icon>
+                              <span class="text-subtitle-1 font-weight-bold text-teal-darken-1">Learning Trajectory</span>
+                            </div>
+                            <div class="text-h5 text-teal-darken-2 font-weight-bold text-capitalize">
+                              {{ monitorData.achievements_analysis?.learning_trajectory || 'N/A' }}
+                            </div>
+                          </v-card-text>
+                        </v-card>
+                      </v-col>
+                    </v-row>
+                    
+                    <!-- Recent Achievements Section -->
+                    <v-card variant="outlined" class="mb-6">
+                      <v-card-item class="py-3">
+                        <v-card-title class="text-subtitle-1 font-weight-bold d-flex align-center">
+                          <v-icon color="success" start>mdi-trophy-award</v-icon>
+                          Recent Achievements
+                        </v-card-title>
+                      </v-card-item>
+                      <v-divider></v-divider>
+                      <v-card-text class="px-4">
+                        <v-list>
+                          <v-list-item
+                            v-for="(achievement, index) in monitorData.achievements_analysis?.recent_achievements"
+                            :key="`achievement-${index}`"
+                            class="achievement-item pa-0"
+                          >
+                            <v-list-item-content class="pa-4">
+                              <div class="d-flex align-items-start">
+                                <v-avatar :color="getAchievementColor(achievement.type)" size="36" class="mr-3">
+                                  <v-icon color="white" size="20">{{ getAchievementIcon(achievement.type) }}</v-icon>
+                                </v-avatar>
+                                <div class="flex-grow-1">
+                                  <div class="d-flex align-center mb-1">
+                                    <div class="text-subtitle-2 font-weight-bold">{{ achievement.description }}</div>
+                                    <!-- <v-chip size="x-small" :color="getDifficultyColor(achievement.difficulty)" variant="tonal" 
+                                            class="ml-2 text-capitalize">
+                                      {{ achievement.difficulty }}
+                                    </v-chip> -->
+                                  </div>
+                                  <div class="d-flex align-center text-caption text-medium-emphasis">
+                                    <v-icon size="14" class="mr-1">mdi-calendar-outline</v-icon>
+                                    {{ formatDate(achievement.earned_date) }}
+                                  </div>
+                                  <div v-if="achievement.related_topics && achievement.related_topics.length" 
+                                       class="d-flex flex-wrap mt-2" style="gap: 4px;">
+                                       <v-chip size="x-small" :color="getDifficultyColor(achievement.difficulty)" variant="tonal" 
+                                            class="ml-2 text-capitalize">
+                                      {{ achievement.difficulty }}
+                                    </v-chip>
+                                    <v-chip
+                                      v-for="(topic, tIndex) in achievement.related_topics.slice(0, 3)"
+                                      :key="`topic-${index}-${tIndex}`"
+                                      size="x-small"
+                                      color="grey-lighten-3"
+                                      variant="flat"
+                                      class="text-caption"
+                                    >
+                                      {{ topic }}
+                                    </v-chip>
+                                
+                                    <v-chip
+                                      v-if="achievement.related_topics.length > 3"
+                                      size="x-small"
+                                      color="grey-lighten-3"
+                                      variant="flat"
+                                      class="text-caption"
+                                    >
+                                      +{{ achievement.related_topics.length - 3 }} more
+                                    </v-chip>
+                                  </div>
+                                </div>
+                              </div>
+                            </v-list-item-content>
+                            <v-divider v-if="index < monitorData.achievements_analysis.recent_achievements.length - 1"></v-divider>
+                          </v-list-item>
+                        </v-list>
+                      </v-card-text>
+                    </v-card>
+                    
+                    <!-- Strengths Section -->
+                    <v-card variant="outlined" class="mb-6">
+                      <v-card-item class="py-3">
+                        <v-card-title class="text-subtitle-1 font-weight-bold d-flex align-center">
+                          <v-icon color="success" start>mdi-check-circle</v-icon>
+                          Your Strengths
+                        </v-card-title>
+                      </v-card-item>
+                      <v-divider></v-divider>
+                      <v-card-text class="pt-4">
+                        <div v-if="monitorData.achievements_analysis?.strengths?.length" class="d-flex flex-wrap" style="gap: 8px;">
+                          <v-chip
+                            v-for="(strength, index) in monitorData.achievements_analysis.strengths"
+                            :key="`strength-${index}`"
+                            color="success"
+                            variant="tonal"
+                            class="font-weight-medium"
+                            prepend-icon="mdi-check-bold"
+                          >
+                            {{ strength }}
+                          </v-chip>
+                        </div>
+                        <p v-else class="text-center text-medium-emphasis">No specific strengths identified yet.</p>
+                      </v-card-text>
+                    </v-card>
+                    
+                    <!-- Achievement Distribution -->
+                    <v-row>
+                      <v-col cols="12" md="6">
+                        <v-card variant="outlined" height="100%">
+                          <v-card-item class="py-3">
+                            <v-card-title class="text-subtitle-1 font-weight-bold d-flex align-center">
+                              <v-icon color="primary" start>mdi-tag-multiple</v-icon>
+                              Achievement Categories
+                            </v-card-title>
+                          </v-card-item>
+                          <v-divider></v-divider>
+                          <v-card-text class="pt-4">
+                            <div v-if="monitorData.achievements_analysis?.achievement_categories" class="category-bars">
+                              <div v-for="(count, category) in monitorData.achievements_analysis.achievement_categories" 
+                                   :key="category" class="category-bar-wrapper mb-3">
+                                <div class="d-flex justify-space-between mb-1">
+                                  <span class="text-caption text-capitalize font-weight-medium">{{ formatCategory(category) }}</span>
+                                  <span class="text-caption font-weight-bold">{{ count }}</span>
+                                </div>
+                                <v-progress-linear
+                                  :model-value="(count / monitorData.achievements_analysis.total_achievements) * 100"
+                                  :color="getCategoryColor(category)"
+                                  height="12"
+                                  rounded
+                                ></v-progress-linear>
+                              </div>
+                            </div>
+                            <p v-else class="text-center text-medium-emphasis">No category data available.</p>
+                          </v-card-text>
+                        </v-card>
+                      </v-col>
+                      
+                      <v-col cols="12" md="6">
+                        <v-card variant="outlined" height="100%">
+                          <v-card-item class="py-3">
+                            <v-card-title class="text-subtitle-1 font-weight-bold d-flex align-center">
+                              <v-icon color="primary" start>mdi-stairs-up</v-icon>
+                              Achievement Levels
+                            </v-card-title>
+                          </v-card-item>
+                          <v-divider></v-divider>
+                          <v-card-text class="pt-4">
+                            <div v-if="monitorData.achievements_analysis?.achievement_levels" class="level-bars">
+                              <div v-for="(count, level) in monitorData.achievements_analysis.achievement_levels" 
+                                   :key="level" class="level-bar-wrapper mb-3">
+                                <div class="d-flex justify-space-between mb-1">
+                                  <span class="text-caption text-capitalize font-weight-medium">{{ level }}</span>
+                                  <span class="text-caption font-weight-bold">{{ count }}</span>
+                                </div>
+                                <v-progress-linear
+                                  :model-value="(count / monitorData.achievements_analysis.total_achievements) * 100"
+                                  :color="getLevelColor(level)"
+                                  height="12"
+                                  rounded
+                                ></v-progress-linear>
+                              </div>
+                            </div>
+                            <p v-else class="text-center text-medium-emphasis">No level data available.</p>
+                          </v-card-text>
+                        </v-card>
+                      </v-col>
+                    </v-row>
+                  </div>
+                </v-window-item>
+          </v-window>
         </div>
       </v-card-text>
 
       <!-- Actions -->
-      <v-card-actions class="pa-6 bg-white border-t" v-if="!loading && !error">
+      <v-card-actions class="pa-4 bg-grey-lighten-4 border-t" v-if="!loading && !error && monitorData">
         <v-spacer></v-spacer>
         <v-btn
-          color="grey"
+          color="grey-darken-1"
           variant="text"
-          class="font-weight-medium"
+          class="font-weight-medium text-none"
           @click="closeModal"
         >
           Close
         </v-btn>
+        <!-- Keep the primary action button, but it won't trigger regenerate -->
         <v-btn
-          v-if="shouldShowActionButton()"
-          :color="getActionButtonColor()"
+          v-if="shouldShowPrimaryActionButton"
+          :color="getActionButtonColor"
           variant="elevated"
-          class="font-weight-medium px-6 text-white"
-          prepend-icon="mdi-play"
+          class="font-weight-medium px-5 text-white text-none"
+          :prepend-icon="getActionButtonIcon"
           @click="handlePrimaryAction"
         >
-          {{ getActionButtonText() }}
+          {{ getActionButtonText }}
         </v-btn>
       </v-card-actions>
     </v-card>
@@ -222,180 +489,295 @@
 </template>
 
 <script setup lang="ts">
+import { ref, onMounted, computed, watch, inject } from "vue";
 import { aiGenerateServices } from "@/services/aiGenerateServices";
 import { useCourseStore } from "@/stores/courseStore";
 import { RecommendLessonMonitor } from "@/types/AI_generate";
-import { ref } from "vue";
+
+// --- Helper Function ---
+const formatTextLines = (text: string | undefined | null): string[] => {
+  if (!text) return [];
+  const textAsString = String(text);
+  return textAsString.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+};
+// --- End Helper Function ---
 
 const props = defineProps({
   recommend_lesson_id: {
     type: String,
     required: true,
   },
-});
-console.log("recommend_lesson_id", props.recommend_lesson_id);
-
-const monitorData = ref<RecommendLessonMonitor>({
-  can_proceed: false,
-  needs_repeat: false,
-  needs_review_prior: false,
-  issues_analysis: {
-    significant_issues: [],
-    total_issues_count: 0,
-    increasing_issues: [],
-    most_frequent_type: "",
-  },
-  recommendations: [],
+   modelValue: {
+     type: Boolean,
+     required: true,
+   },
 });
 
-const emit = defineEmits(["close", "proceed", "review", "repeat"]);
-const isModalVisible = ref(true);
-const loading = ref(true); 
+const emit = defineEmits(["close", "proceed", "review", "repeat", "regenerate", "update:modelValue"]);
+
+const showError = inject("showError") as (message: string) => void;
+const showSuccess = inject("showSuccess") as (message: string) => void; 
+
+// Reactive State
+const monitorData = ref<RecommendLessonMonitor | null>(null);
+const loading = ref(true);
 const error = ref<string | null>(null);
+const tab = ref('issues'); // Default tab
 
+// Computed for achievements tab
+const hasAchievements = computed(() => {
+  return !!monitorData.value?.achievements_analysis && 
+         (!!monitorData.value.achievements_analysis.total_achievements || 
+          !!monitorData.value.achievements_analysis.recent_achievements?.length);
+});
+
+// Methods
 const closeModal = () => {
-  isModalVisible.value = false;
+  emit("update:modelValue", false); // Emit update event
   emit("close");
 };
 
+// --- Computed properties ---
+const getOverallStatus = computed((): 'proceed' | 'repeat' | 'review_prior' | 'unknown' => {
+    if (!monitorData.value) return 'unknown';
+    if (monitorData.value.needs_repeat) return 'repeat';
+    if (monitorData.value.needs_review_prior) return 'review_prior';
+    if (monitorData.value.can_proceed) return 'proceed';
+    return 'unknown'; // Fallback
+});
+
+const getMainRecommendation = computed(() => {
+    if (!monitorData.value?.recommendations?.length) {
+        return ""; // Return empty string if no recommendations
+    }
+    const status = getOverallStatus.value;
+    const recommendation = monitorData.value.recommendations.find(r => r.action === status);
+    // Fallback to the first recommendation if specific status not found (shouldn't happen often)
+    return recommendation?.reason || monitorData.value.recommendations[0]?.reason || "";
+});
+
+const getReviewPriorDetails = computed(() => {
+  if (!monitorData.value?.recommendations) return "";
+  const recommendation = monitorData.value.recommendations.find(r => r.action === "review_prior");
+  return recommendation?.details || "";
+});
+
+// --- Status/Action getters ---
 const getStatusColor = () => {
-  if (monitorData.value.can_proceed) return "success";
-  if (monitorData.value.needs_repeat) return "error";
-  if (monitorData.value.needs_review_prior) return "warning";
-  return "primary";
+  switch (getOverallStatus.value) {
+    case "proceed": return "success";
+    case "repeat": return "error";
+    case "review_prior": return "warning";
+    default: return "primary";
+  }
 };
 
 const getStatusIcon = () => {
-  if (monitorData.value.can_proceed) return "mdi-check-circle";
-  if (monitorData.value.needs_repeat) return "mdi-refresh";
-  if (monitorData.value.needs_review_prior) return "mdi-book-open-page-variant";
-  return "mdi-information";
+ switch (getOverallStatus.value) {
+    case "proceed": return "mdi-check-circle-outline";
+    case "repeat": return "mdi-sync-alert";
+    case "review_prior": return "mdi-history";
+    default: return "mdi-information-outline";
+ }
 };
 
 const getStatusTitle = () => {
-  if (monitorData.value.can_proceed) return "Ready to Proceed";
-  if (monitorData.value.needs_repeat) return "Lesson Review Recommended";
-  if (monitorData.value.needs_review_prior) return "Prior Content Review Needed";
-  return "Learning Analysis";
-};
-
-const getMainRecommendation = () => {
-  const recommendation = monitorData.value.recommendations[0];
-  return recommendation?.reason || "No specific recommendation available";
-};
-
-const getRecommendedDetails = () => {
-  const recommendation = monitorData.value.recommendations.find(r => r.action === "review_prior");
-  return recommendation?.details || "";
-};
-
-const getSeverityColor = (severity: string) => {
-  switch (severity.toLowerCase()) {
-    case "high":
-      return "error";
-    case "medium":
-      return "warning";
-    case "low":
-      return "primary";
-    default:
-      return "grey";
+  switch (getOverallStatus.value) {
+    case "proceed": return "Ready to Proceed";
+    case "repeat": return "Lesson Repetition Recommended";
+    case "review_prior": return "Prior Content Review Needed";
+    default: return "Learning Analysis Result";
   }
 };
 
-const formatIssueType = (type: string) => {
-  return type.replace(/_/g, " ");
+const getSeverityColor = (severity: string | undefined | null): string => {
+   switch (severity?.toLowerCase()) {
+    case "high": return "error";
+    case "medium": return "warning";
+    case "low": return "info";
+    default: return "grey";
+  }
 };
 
-const getActionColor = (action: string) => {
+const formatIssueType = (type: string | undefined | null): string => {
+  return type ? type.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase()) : 'Unknown Issue';
+};
+
+const getActionColor = (action: string): string => {
+   switch (action) {
+    case "repeat": return "error";
+    case "review_prior": return "warning";
+    case "proceed": return "success";
+    default: return "primary";
+  }
+};
+
+const getActionIcon = (action: string): string => {
   switch (action) {
-    case "repeat":
-      return "error";
-    case "review_prior":
-      return "warning";
-    case "proceed":
-      return "success";
-    default:
-      return "primary";
+    case "repeat": return "mdi-refresh";
+    case "review_prior": return "mdi-book-open-page-variant-outline";
+    case "proceed": return "mdi-play-circle-outline";
+    default: return "mdi-information-outline";
   }
 };
 
-const getActionIcon = (action: string) => {
-  switch (action) {
-    case "repeat":
-      return "mdi-refresh";
-    case "review_prior":
-      return "mdi-book-open-page-variant";
-    case "proceed":
-      return "mdi-check-circle";
+const formatAction = (action: string): string => {
+   switch (action) {
+    case "repeat": return "Repeat Current Lesson";
+    case "review_prior": return "Review Prior Lessons";
+    case "proceed": return "Proceed to Next Lesson";
     default:
-      return "mdi-information";
+        return action ? action.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase()) : 'Recommendation';
+  }
+};
+const getAchievementColor = (type: string | undefined | null): string => {
+  switch (type?.toLowerCase()) {
+    case "quiz_completion": return "purple";
+    case "high_performance": return "success";
+    case "concept_mastery": return "indigo";
+    default: return "grey";
   }
 };
 
-const formatAction = (action: string) => {
-  switch (action) {
-    case "repeat":
-      return "Repeat Current Lesson";
-    case "review_prior":
-      return "Review Prior Lessons";
-    case "proceed":
-      return "Proceed to Next Lesson";
-    default:
-      return action.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase());
+const getAchievementIcon = (type: string | undefined | null): string => {
+  switch (type?.toLowerCase()) {
+    case "quiz_completion": return "mdi-check-circle";
+    case "high_performance": return "mdi-star";
+    case "concept_mastery": return "mdi-school";
+    default: return "mdi-trophy";
   }
 };
 
-const shouldShowActionButton = () => {
-  return true; // Always show action button for better UX
+const getDifficultyColor = (difficulty: string | undefined | null): string => {
+  switch (difficulty?.toLowerCase()) {
+    case "basic": return "info";
+    case "intermediate": return "warning";
+    case "advanced": return "error";
+    default: return "grey";
+  }
 };
 
-const getActionButtonColor = () => {
-  if (monitorData.value.needs_repeat) return "error";
-  if (monitorData.value.needs_review_prior) return "warning";
-  if (monitorData.value.can_proceed) return "success";
-  return "primary";
+const formatDate = (dateStr: string | undefined | null): string => {
+  if (!dateStr) return "Unknown date";
+  try {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+  } catch (e) {
+    return dateStr;
+  }
 };
 
-const getActionButtonText = () => {
-  if (monitorData.value.needs_repeat) return "Repeat Lesson";
-  if (monitorData.value.needs_review_prior) return "Review Prior Lessons";
-  if (monitorData.value.can_proceed) return "Continue to Next Lesson";
-  return "Take Action";
+const formatCategory = (category: string): string => {
+  return category.replace(/_/g, " ");
 };
+
+const getCategoryColor = (category: string): string => {
+  switch (category) {
+    case "quiz_completion": return "purple";
+    case "high_performance": return "success";
+    case "concept_mastery": return "indigo";
+    default: return "primary";
+  }
+};
+
+const getLevelColor = (level: string): string => {
+  switch (level) {
+    case "basic": return "info";
+    case "intermediate": return "warning";
+    case "advanced": return "error";
+    default: return "grey";
+  }
+};
+// --- Footer Action Button Logic ---
+const shouldShowPrimaryActionButton = computed(() => {
+  return getOverallStatus.value !== 'repeat' && getOverallStatus.value !== 'unknown';
+});
+
+const getActionButtonColor = computed(() => {
+   if (getOverallStatus.value === 'review_prior') return "warning";
+   if (getOverallStatus.value === 'proceed') return "success";
+   return "primary";
+});
+
+const getActionButtonIcon = computed(() => {
+   if (getOverallStatus.value === 'review_prior') return getActionIcon('review_prior');
+   if (getOverallStatus.value === 'proceed') return getActionIcon('proceed');
+   return 'mdi-play';
+});
+
+const getActionButtonText = computed(() => {
+   if (getOverallStatus.value === 'review_prior') return formatAction('review_prior');
+   if (getOverallStatus.value === 'proceed') return formatAction('proceed');
+   return "Acknowledge";
+});
 
 const handlePrimaryAction = () => {
-  if (monitorData.value.needs_repeat) emit("repeat");
-  else if (monitorData.value.needs_review_prior) emit("review");
-  else emit("proceed");
+  const status = getOverallStatus.value;
+  if (status === 'review_prior') emit("review");
+  else if (status === 'proceed') emit("proceed");
+  // No emit('repeat') here
   closeModal();
 };
 
-const showError = inject("showError") as (message: string) => void;
-const showSuccess = inject("showSuccess") as (message: string) => void;
+// --- Regenerate Action ---
+const triggerRegenerate = () => {
+    if (monitorData.value) {
+        emit('regenerate', monitorData.value);
+    } else {
+        console.error("Cannot regenerate: Monitor data is not available.");
+         showError("Cannot trigger regeneration: analysis data is missing.");
+    }
+};
 
+// --- Data Fetching ---
 const fetchMonitor = async () => {
   loading.value = true;
   error.value = null;
+  monitorData.value = null;
   try {
-    const getCourse = useCourseStore.getState().courseDetails;
-    console.log("getCourse", getCourse);
-    if (getCourse) {
-      const response = await aiGenerateServices.getMonitorRecommendLesson(
-        { showError, showSuccess },
-        "id" in getCourse ? getCourse.id : getCourse.course_id,
-        props.recommend_lesson_id
-      );
-      if (response && "data" in response && response.data) {
-        monitorData.value = response.data as RecommendLessonMonitor;
-      } else {
-        throw new Error("Please study the course content before proceeding. We will monitor your progress when your progress achieves over 80 percent!");
-      }
+    const courseStore = useCourseStore.getState();
+    const courseDetails = courseStore.getCourseDetails();
+    console.log(`Fetching monitor for lesson ${props.recommend_lesson_id}`);
+
+    if (courseDetails && props.recommend_lesson_id) {
+       const courseId = "course_id" in courseDetails ? String(courseDetails.course_id) : "id" in courseDetails ? String(courseDetails.id) : null;
+       if (!courseId) throw new Error("Course ID is missing.");
+
+       const response = await aiGenerateServices.getMonitorRecommendLesson(
+         { showError, showSuccess }, // Pass notification functions
+         courseId,
+         props.recommend_lesson_id
+       );
+       console.log("Monitor API Raw Response:", response);
+
+       if (response && response.data) {
+           if ('can_proceed' in response.data && 'issues_analysis' in response.data) {
+             monitorData.value = response.data as RecommendLessonMonitor;
+             console.log("Monitor Data Parsed:", monitorData.value);
+           } else {
+             console.warn("Monitor API success, but data structure mismatch:", response.data);
+             throw new Error("Received unexpected data structure from analysis API.");
+           }
+       } else {
+           const errorMessage = (response && response.message) ? response.message : "Failed to load analysis data. Server response not successful.";
+           console.error("Error fetching monitor data:", errorMessage, response);
+           if (errorMessage.includes("requires more progress") || errorMessage.includes("80 percent")) {
+             error.value = "Analysis requires more progress (>= 80%) on the lesson activities.";
+           } else if (!response) {
+                error.value = "Analysis data not found. Please complete some activities first.";
+           }
+           else {
+               error.value = errorMessage;
+           }
+           // Do not throw here, let error display in modal
+       }
     } else {
-      throw new Error("Course details not available.");
+       throw new Error("Course details or Lesson ID not available for fetching analysis.");
     }
   } catch (err) {
-    error.value =
-      err instanceof Error ? err.message : "Failed to load analysis data.";
+     const message = err instanceof Error ? err.message : "An unexpected error occurred while fetching analysis data.";
+     console.error("Exception during fetchMonitor:", err);
+     error.value = message; // Set error to display
   } finally {
     loading.value = false;
   }
@@ -405,30 +787,67 @@ const retryFetch = () => {
   fetchMonitor();
 };
 
-onMounted(() => {
-  fetchMonitor();
+// Fetch data when the modal becomes visible
+watch(() => props.modelValue, (newValue) => {
+    if (newValue) {
+        fetchMonitor();
+        tab.value = 'issues'; // Reset tab on open
+    }
 });
+
+// Initial fetch if the modal starts open (less common but good practice)
+onMounted(() => {
+  if (props.modelValue) {
+     fetchMonitor();
+  }
+});
+
 </script>
 
 <style scoped>
+/* Add styles for the formatted content */
+.formatted-content p {
+  margin-bottom: 0.5em;
+  line-height: 1.6;
+  white-space: pre-wrap; /* Preserve whitespace and wrap */
+  word-wrap: break-word;
+}
+.formatted-content p:last-child {
+  margin-bottom: 0;
+}
+.formatted-content p:where(:starts-with('•'), :starts-with('*'), :starts-with('-')) {
+  padding-left: 1.5em;
+  text-indent: -1.5em;
+}
+.formatted-content p:where(:starts-with('1.'), :starts-with('2.'), :starts-with('3.')) {
+  padding-left: 1.8em;
+  text-indent: -1.8em;
+  margin-left: 0.2em;
+}
+
+.content-area {
+    max-height: calc(80vh - 120px); /* Adjust max height based on header/footer */
+    overflow-y: auto;
+}
+.fill-height {
+    min-height: 300px; /* Ensure loading/error states have some height */
+}
+
+
 .learning-recommendation-modal {
   font-family: 'Roboto', sans-serif;
 }
 
 .header-gradient {
-  background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary-darker)) 100%);
+  background: linear-gradient(135deg, hsl(var(--v-theme-primary)) 0%, hsl(var(--v-theme-primary-darker)) 100%);
 }
 
 .shadow-lg {
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-}
-
-.shadow-sm {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1), 0 5px 10px rgba(0, 0, 0, 0.06); /* Enhanced shadow */
 }
 
 .border-t {
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid #e5e7eb; /* light gray */
 }
 
 .text-wrap {
@@ -436,26 +855,32 @@ onMounted(() => {
   word-break: break-word;
 }
 
-.max-w-xs {
-  max-width: 18rem;
-}
+.max-w-xs { max-width: 22rem; }
+.max-w-sm { max-width: 30rem; }
 
-.max-w-sm {
-  max-width: 24rem;
+.modern-table {
+    width: 100%;
+    border-collapse: collapse;
 }
-
 .modern-table th {
-  color: hsl(var(--primary-darker));
-  font-size: 0.875rem;
-  font-weight: 600;
+  color: hsl(var(--v-theme-primary-darker));
+  font-size: 0.75rem; /* Smaller header */
+  font-weight: 700; /* Bolder */
   padding: 0.75rem 1rem;
-  background-color: #f9fafb;
-  border-bottom: 2px solid hsl(var(--primary) / 0.1);
+  background-color: #f9fafb; /* Very light grey */
+  border-bottom: 2px solid hsla(var(--v-theme-primary), 0.15);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  position: sticky; /* Make header sticky */
+  top: 0; /* Stick to top */
+  z-index: 1;
 }
 
 .modern-table td {
-  padding: 0.5rem 1rem;
-  border-bottom: 1px solid #f1f5f9;
+  padding: 0.8rem 1rem; /* Increased padding */
+  border-bottom: 1px solid #f1f5f9; /* Lighter border */
+  vertical-align: top;
+  font-size: 0.875rem; /* Slightly smaller body text */
 }
 
 .issue-row:hover {
@@ -464,54 +889,50 @@ onMounted(() => {
 }
 
 .recommendation-banner {
-  background-color: #f8f9ff;
-  border-bottom: 1px solid #e5e7eb;
+  background-color: rgba(var(--v-theme-primary-rgb), 0.05); /* Use primary tint */
+  border: 1px solid rgba(var(--v-theme-primary-rgb), 0.1);
 }
 
 .recommendation-text {
-  font-size: 1.1rem;
-  line-height: 1.6;
+  font-size: 1rem;
+  line-height: 1.7; /* More spacing */
   color: #374151;
-  max-width: 90%;
 }
 
 .recommended-details {
-  background-color: rgba(3, 218, 198, 0.08);
-  border-left: 4px solid hsl(var(--secondary));
+  background-color: rgba(var(--v-theme-secondary-rgb), 0.07);
+  border-left: 4px solid hsl(var(--v-theme-secondary));
+  border: 1px solid rgba(var(--v-theme-secondary-rgb), 0.1);
+  border-left-width: 4px; /* Ensure left border is prominent */
 }
 
 .frequency-badge {
-  display: inline-block;
-  min-width: 28px;
-  height: 28px;
-  line-height: 28px;
-  text-align: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 26px;
+  height: 26px;
   border-radius: 50%;
-  background-color: hsl(var(--primary) / 0.1);
-  color: hsl(var(--primary));
+  background-color: hsla(var(--v-theme-primary), 0.15);
+  color: hsl(var(--v-theme-primary));
   font-weight: 600;
+  font-size: 0.8rem;
 }
 
 .recommendation-card {
-  background-color: #fcfcfc;
-  border: 1px solid #e5e7eb;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border-left-width: 4px; /* Prepare for colored border */
 }
-
 .recommendation-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
 }
 
-.recommendation-repeat {
-  border-left: 4px solid hsl(var(--error));
-  background-color: hsl(var(--error) / 0.05);
-}
+.recommendation-repeat { border-left-color: hsl(var(--v-theme-error)); }
+.recommendation-review_prior { border-left-color: hsl(var(--v-theme-warning)); }
+.recommendation-proceed { border-left-color: hsl(var(--v-theme-success)); }
+.recommendation-default { border-left-color: hsl(var(--v-theme-primary));} /* Fallback */
 
-.recommendation-review_prior {
-  border-left: 4px solid hsl(var(--warning));
-  background-color: hsl(var(--warning) / 0.05);
-}
 
 .recommendation-reason {
   color: #4b5563;
@@ -519,39 +940,39 @@ onMounted(() => {
 }
 
 .details-box {
-  background-color: hsl(var(--secondary) / 0.08);
-  border: 1px dashed hsl(var(--secondary-variant));
+  background-color: rgba(0,0,0,0.03); /* Subtle grey background */
+  border: 1px dashed rgba(0,0,0,0.2);
+}
+.details-box .formatted-content p {
+    font-size: 0.85rem;
+    color: #555;
 }
 
-.gap-3 {
-  gap: 0.75rem;
+
+.space-y-4 > :not([hidden]) ~ :not([hidden]) {
+    --tw-space-y-reverse: 0;
+    margin-top: calc(1rem * calc(1 - var(--tw-space-y-reverse)));
+    margin-bottom: calc(1rem * var(--tw-space-y-reverse));
 }
 
-.text-primary {
-  color: hsl(var(--primary)) !important;
+/* Vuetify Overrides / Enhancements */
+:deep(.v-expansion-panel-title) {
+    padding: 1rem 1rem;
+    font-weight: 600;
+}
+:deep(.v-expansion-panel-text__wrapper) {
+    padding: 0; /* Remove default padding */
 }
 
-.text-primary-darker {
-  color: hsl(var(--primary-darker)) !important;
+:deep(.v-chip) {
+    font-size: 0.8rem;
 }
+.text-h5 { font-size: 1.5rem !important; line-height: 1.4;}
+.text-h6 { font-size: 1.2rem !important; line-height: 1.4;}
+.text-subtitle-1 { font-size: 1rem !important; }
+.text-body-1 { font-size: 0.95rem !important; }
+.text-body-2 { font-size: 0.875rem !important; }
+.text-caption { font-size: 0.8rem !important; }
 
-.text-secondary {
-  color: hsl(var(--secondary)) !important;
-}
 
-.text-secondary-darker {
-  color: hsl(var(--secondary-darker)) !important;
-}
-
-.text-error {
-  color: hsl(var(--error)) !important;
-}
-
-.text-warning {
-  color: hsl(var(--warning)) !important;
-}
-
-.text-success {
-  color: hsl(var(--success)) !important;
-}
 </style>

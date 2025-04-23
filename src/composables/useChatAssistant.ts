@@ -63,7 +63,7 @@ export function useChatAssistant(exerciseId: string) {
     } finally {
       isThinking.value = false;
       streamingBuffer.value = '';
-      scrollToBottom(containerRef);
+      scrollToBottom(containerRef || null);
     }
   };
 

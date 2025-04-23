@@ -46,12 +46,12 @@ const progressStats = computed(() => [
     icon: "mdi-book-open-variant",
     color: "info",
   },
-  {
-    label: "Exercises",
-    value: `${props.course.nExercises}`,
-    icon: "mdi-book",
-    color: "primary",
-  },
+  // {
+  //   label: "Exercises",
+  //   value: `${props.course.nExercises}`,
+  //   icon: "mdi-book",
+  //   color: "primary",
+  // },
   {
     label: "Documents",
     value: `${props.course.nDocuments}`,
