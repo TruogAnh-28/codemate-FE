@@ -300,22 +300,10 @@
           :loading="isExerciseLoading"
           :disabled="isExerciseLoading"
         >
-
-          <v-expansion-panel-title>
-            {{ exercise.name }}
-          </v-expansion-panel-title>
-
-          <!-- Utility buttons -->
-          <v-expansion-panel-text>
-            <div class="d-flex gap-4">
-              <v-btn color="primary" @click="goToExercise(exercise.id)">Practice</v-btn>
-              <v-btn color="error" @click="handleDeletingCodeExercise(exercise.id)">Delete</v-btn>
-            </div>
-          </v-expansion-panel-text>
-
-        </v-expansion-panel>
-      </v-expansion-panels>
-
+          {{ isExerciseLoading ? "Generating..." : "Generate Your First Exercise" }}
+        </v-btn>
+      </v-card-text>
+    </v-card>
 
     <!-- Code exercises list (only shown when exercises exist) -->
     <v-expansion-panels v-else variant="accordion" class="elevation-1 rounded-lg">
@@ -336,7 +324,7 @@
 
 <script lang="ts" setup>
 import { moduleService } from "@/services/module";
-import { ModuleQuizResponse, ClearAnswerResponse } from "@/types/Exercise";
+import { ModuleQuizResponse } from "@/types/Exercise";
 import { useBreadcrumbsStore } from "@/stores/breadcrumbs";
 import { Breadcrumbs } from "@/types/Breadcrumbs";
 import ReadingMaterial from "@/components/ReadingMaterial/ReadingMaterial.vue";
@@ -355,7 +343,6 @@ const moduleQuizzes = ref<ModuleQuizResponse>({
   quizzes: [],
 });
 
-const clearSuccess = ref<ClearAnswerResponse | null>(null);
 const router = useRouter();
 const route = useRoute();
 const isLoading = ref(false);
@@ -456,9 +443,9 @@ async function doQuiz(quizId: string, status: string): Promise<void> {
   } else {
     console.error("Failed to add activity");
   }
-  if (status === "completed") {
-    await clearQuizAnswers(quizId);
-  }
+  
+  // Removed the clear quiz answers step for completed quizzes
+  
   router.push(path);
 }
 async function handleQuizGenerated() {
@@ -499,15 +486,6 @@ const fetchModuleQuizzes = async () => {
   }
 };
 
-const clearQuizAnswers = async (quizId: string) => {
-  clearSuccess.value =
-    (await moduleService.clearQuizAnswers(
-      { showError, showSuccess },
-      moduleId,
-      quizId
-    )) || "";
-};
-
 onMounted(() => {
   fetchModuleQuizzes();
 });
@@ -536,11 +514,6 @@ const handleGenerateCodeExercise = async () => {
 const goToExercise = (exerciseId: string) => {
   router.push(`/exercise-code/${exerciseId}`);
 };
-
-const handleDeletingCodeExercise = async (exerciseID: string) => {
-  console.log("...");
-  await codeExerciseStore.deleteCodingExercise(exerciseID, { showSuccess: showSuccess, showError: showError });
-}
 
 onMounted(async () => {
   await codeExerciseStore.loadExercises(moduleId);
@@ -688,10 +661,12 @@ onMounted(async () => {
   background-color: #3949ab !important;
 }
 
+/* Add some spacing between elements */
 .gap-2 {
   gap: 8px;
 }
 
+/* Truncate long quiz names with ellipsis */
 .text-truncate {
   white-space: nowrap;
   overflow: hidden;
