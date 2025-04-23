@@ -12,7 +12,7 @@
 
     <v-card-text v-else-if="descriptionTab === 'submission'" class="pa-4">
       <!-- Use the SubmissionList component without passing submissions prop -->
-      <SubmissionList :programmingExerciseId="exerciseId" />
+      <SubmissionList :programmingExerciseId="routeParams.exerciseId" />
     </v-card-text>
 
     <v-card-text v-else class="chat-container d-flex flex-column flex-grow-1 pa-0">
@@ -88,12 +88,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, nextTick, onMounted } from 'vue';
+import { ref, watch, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
-import { llmCodeServices } from '@/services/llmCodeServices';
-import type { ChatMessage } from '@/types/chat';
 import SubmissionList from '@/components/Code/SubmissionList.vue';
-import { streamFromApi } from '@/common/api.service';
 import axios from 'axios';
 import MarkdownIt from 'markdown-it';
 import hljs from 'highlight.js';
@@ -116,7 +113,9 @@ const props = withDefaults(defineProps<ProblemDescriptionProps>(), {
 
 
 const route = useRoute();
-const {exerciseId} = route.params as RouteParams;
+
+// Explicitly type route.params
+const routeParams = route.params as RouteParams;
 
 const {
   messages,
@@ -126,7 +125,7 @@ const {
   renderMarkdown,
   sendMessage,
   fetchHistory
-} = useProblemAssistant(route.params.exerciseId as string, props.userSolution);
+} = useProblemAssistant(routeParams.exerciseId, props.userSolution ?? '');
 
 
 
@@ -177,21 +176,21 @@ watch(descriptionTab, async (tab) => {
 const chatBottom = ref<null | HTMLElement>(null);
 const chatContainer = ref<null | HTMLElement>(null);
 
-function scrollToBottom() {
-  nextTick(() => {
-    const container = chatContainer.value;
-    if (container) {
-      container.scrollTop = container.scrollHeight;
-    }
-  });
-}
+// function scrollToBottom() {
+//   nextTick(() => {
+//     const container = chatContainer.value;
+//     if (container) {
+//       container.scrollTop = container.scrollHeight;
+//     }
+//   });
+// }
 
 const problemDescription = ref('');
 
 onMounted(async () => {
   try {
     const response = await axios.get<{ data: ExerciseCodeResponseForStudent }>(
-      `exercises/${exerciseId}/code`
+      `exercises/${routeParams.exerciseId}/code`
     );
 
     if (response.data && response.data.data) {

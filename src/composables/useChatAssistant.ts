@@ -37,7 +37,7 @@ export function useChatAssistant(exerciseId: string) {
         `exercises/code/${exerciseId}/conversation:invokeAssistant`,
         (chunk: string) => {
           streamingBuffer.value += chunk;
-          scrollToBottom(containerRef);
+          scrollToBottom(containerRef ?? null);
         },
         {
           method: "POST",
@@ -59,7 +59,7 @@ export function useChatAssistant(exerciseId: string) {
     } finally {
       isThinking.value = false;
       streamingBuffer.value = '';
-      scrollToBottom(containerRef);
+      scrollToBottom(containerRef || null);
     }
   };
 
