@@ -300,10 +300,22 @@
           :loading="isExerciseLoading"
           :disabled="isExerciseLoading"
         >
-          {{ isExerciseLoading ? "Generating..." : "Generate Your First Exercise" }}
-        </v-btn>
-      </v-card-text>
-    </v-card>
+
+          <v-expansion-panel-title>
+            {{ exercise.name }}
+          </v-expansion-panel-title>
+
+          <!-- Utility buttons -->
+          <v-expansion-panel-text>
+            <div class="d-flex gap-4">
+              <v-btn color="primary" @click="goToExercise(exercise.id)">Practice</v-btn>
+              <v-btn color="error" @click="handleDeletingCodeExercise(exercise.id)">Delete</v-btn>
+            </div>
+          </v-expansion-panel-text>
+
+        </v-expansion-panel>
+      </v-expansion-panels>
+
 
     <!-- Code exercises list (only shown when exercises exist) -->
     <v-expansion-panels v-else variant="accordion" class="elevation-1 rounded-lg">
@@ -524,6 +536,11 @@ const handleGenerateCodeExercise = async () => {
 const goToExercise = (exerciseId: string) => {
   router.push(`/exercise-code/${exerciseId}`);
 };
+
+const handleDeletingCodeExercise = async (exerciseID: string) => {
+  console.log("...");
+  await codeExerciseStore.deleteCodingExercise(exerciseID, { showSuccess: showSuccess, showError: showError });
+}
 
 onMounted(async () => {
   await codeExerciseStore.loadExercises(moduleId);
