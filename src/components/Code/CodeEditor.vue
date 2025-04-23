@@ -1,5 +1,5 @@
 <template>
-  <v-sheet class="d-flex flex-column overflow-hidden h-70">
+  <v-sheet class="d-flex flex-column fill-height">
     <!-- Language selector and actions -->
     <v-toolbar dense color="grey-darken-4">
       <v-select
@@ -7,6 +7,7 @@
         :items="availableLanguageIds"
         :item-title="(id) => getLanguageName(id)"
         :item-value="(id) => id"
+        :disabled="codeSolutionStore.isShowingAISolution(selectedLanguage)"
         density="compact"
         hide-details
         class="language-select"
@@ -17,22 +18,78 @@
 
       <v-btn variant="tonal" color="secondary" class="mr-2" @click="onImport">Import</v-btn>
       <v-btn variant="tonal" color="secondary" class="mr-2" @click="onExport">Export</v-btn>
-      <v-btn variant="tonal" color="warning" class="mr-2" @click="giveHints" :loading="isGettingHints">Give Hints</v-btn>
-      <v-btn variant="tonal" color="info" class="mr-2" @click="explainCode" :loading="isExplaining">Explain Code</v-btn>
-      <v-btn variant="tonal" color="success" class="mr-2" @click="runCode" :loading="isLoading">Run</v-btn>
-      <v-btn variant="tonal" color="primary" @click="submitCode" :loading="isLoading">Submit</v-btn>
 
+      <!-- Solution Actions Dropdown -->
+      <v-menu>
+        <template v-slot:activator="{ props }">
+          <v-btn
+            variant="tonal"
+            color="primary"
+            class="mr-2"
+            v-bind="props"
+            :loading="codeSolutionStore.isLoading || isGettingHints || isExplaining"
+          >
+            <v-icon left>mdi-code-braces</v-icon>
+            Solutions
+            <v-icon right>mdi-chevron-down</v-icon>
+          </v-btn>
+        </template>
+
+        <v-list>
+          <v-list-item
+            @click="codeSolutionStore.toggleSolution(selectedLanguage)"
+            :disabled="codeSolutionStore.isLoading || (props.submissionCount !== undefined && props.submissionCount < 5)"
+          >
+            <template v-slot:prepend>
+              <v-icon :color="codeSolutionStore.isShowingAISolution(selectedLanguage) ? 'success' : 'primary'">
+                {{ codeSolutionStore.isShowingAISolution(selectedLanguage) ? 'mdi-eye-off' : 'mdi-eye' }}
+              </v-icon>
+            </template>
+            <v-list-item-title>
+              {{ codeSolutionStore.isShowingAISolution(selectedLanguage) ? 'Show My Solution' : 'Show AI Solution' }}
+            </v-list-item-title>
+            <v-list-item-subtitle v-if="props.submissionCount !== undefined && props.submissionCount < 5" class="text-caption text-grey">
+              Complete at least 5 submissions to unlock AI solution
+            </v-list-item-subtitle>
+          </v-list-item>
+
+          <v-divider></v-divider>
+
+          <v-list-item
+            @click="getOptimizationSuggestions"
+            :disabled="isExplaining"
+          >
+            <template v-slot:prepend>
+              <v-icon color="info">mdi-information</v-icon>
+            </template>
+            <v-list-item-title>Get optimizing suggestions</v-list-item-title>
+          </v-list-item>
+
+          <v-list-item
+            @click="giveHints"
+            :disabled="isGettingHints"
+          >
+            <template v-slot:prepend>
+              <v-icon color="warning">mdi-lightbulb-on</v-icon>
+            </template>
+            <v-list-item-title>Get Hints</v-list-item-title>
+          </v-list-item>
+        </v-list>
+      </v-menu>
+
+      <v-btn variant="tonal" color="success" class="mr-2" @click="runCode" :loading="isRunning">Run</v-btn>
+      <v-btn variant="tonal" color="primary" @click="submitCode" :loading="isSubmitting">Submit</v-btn>
     </v-toolbar>
 
     <!-- CodeMirror Editor -->
-    <div class="flex-grow-1 overflow-hidden">
-      <div ref="editorContainer" class="editor-container"></div>
+    <div class="editor-wrapper flex-grow-1 d-flex flex-column">
+      <div ref="editorContainer" class="editor-container" tabindex="0"></div>
     </div>
   </v-sheet>
 </template>
 
 <script setup lang="ts">
-import { EditorState } from '@codemirror/state';
+import { EditorState, EditorSelection } from '@codemirror/state';
 import { EditorView, keymap, lineNumbers, highlightActiveLine, highlightSpecialChars, drawSelection, dropCursor, rectangularSelection, crosshairCursor, highlightActiveLineGutter, hoverTooltip } from '@codemirror/view';
 import { CodeExerciseService } from '@/services/CodeExerciseService';
 import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
@@ -43,18 +100,20 @@ import { javascript } from '@codemirror/lang-javascript';
 import { cpp } from '@codemirror/lang-cpp';
 import { python } from '@codemirror/lang-python';
 import { java } from '@codemirror/lang-java';
-import { createSubmission, pollSubmission, prepareStdin } from '@/services/Professor/judge0api';
-import { llmCodeServices } from '@/services/llmCodeServices';
-import { TestInput, LineExplanation, CodeAnalysisRequest, LanguageKey } from '@/types/LLM_code';
+import { TestInput, LineExplanation } from '@/types/LLM_code';
 import { LanguageConfigDto } from '@/types/CodingExercise';
 import { JUDGE0_LANG } from '@/constants/judge0_lang';
 import { useProgrammingSubmissions } from '@/composables/useProgrammingSubmissions';
-import { useFileIO } from '@/composables/useFileIO';
-import { ref, watch, computed, onMounted, onUnmounted, nextTick, inject } from 'vue';
+import { ref, watch, computed, onMounted, nextTick, inject } from 'vue';
 import { useRoute } from 'vue-router';
+import { llmCodeServices } from '@/services/llmCodeServices';
+import { useCodeSolutionStore } from "@/stores/codeSolutionStore";
+import { useCodeExecution } from '@/composables/useCodeExecution';
+import { useCodeEditorStore } from '@/composables/useCodeEditor';
 
 // Save user's code for each language
 const codePerLanguage = new Map<number, string>();
+
 interface RouteParam {
   exerciseId: string;
 
@@ -62,6 +121,15 @@ interface RouteParam {
 // Define props
 const props = defineProps<{
   testInput: TestInput;
+  problemDescription: string;
+  testcases: Array<{
+    input: string;
+    expected_output: string;
+    stdout?: string,
+    stderr?: string,
+    isPublic?: boolean;
+  }>;
+  submissionCount?: number;
 }>();
 
 // Define types for hints
@@ -92,18 +160,24 @@ const emit = defineEmits<{
   (e: 'update:loading', isLoading: boolean): void;
 }>();
 
-const selectedLanguage = ref<number>(54);
-const code = ref<string>('// Loading code...');
+const { code, selectedLanguage } = useCodeEditorStore();
+const languageConfigs = ref<LanguageConfigDto[]>([]);
 const editorContainer = ref<HTMLElement | null>(null);
-const isLoading = ref<boolean>(false);
+const isRunning = ref<boolean>(false);
+const isSubmitting = ref<boolean>(false);
 const isExplaining = ref<boolean>(false);
 const isGettingHints = ref<boolean>(false);
 const lineExplanations = ref<LineExplanation[]>([]);
 const showError = inject("showError") as (message: string) => void;
 const showSuccess = inject("showSuccess") as (message: string) => void;
-const languageConfigs = ref<LanguageConfigDto[]>([]);
 
 let editor: EditorView | null = null;
+
+const codeSolutionStore = useCodeSolutionStore();
+
+const {
+  executeCode
+} = useCodeExecution();
 
 // Create a basic setup configuration since there's no basicSetup in CM6
 const createBasicSetup = () => [
@@ -122,6 +196,21 @@ const createBasicSetup = () => [
   crosshairCursor(),
   highlightActiveLine(),
   keymap.of([
+    {
+      key: 'Tab',
+      preventDefault: true,
+      run: (view) => {
+        const tabChar = '\t';
+        const { state } = view;
+        const changes = state.changeByRange(range => ({
+          changes: { from: range.from, to: range.to, insert: tabChar },
+          range: EditorSelection.cursor(range.from + tabChar.length)
+        }));
+
+        view.dispatch(changes);
+        return true;
+      }
+    },
     ...defaultKeymap,
     ...historyKeymap,
     ...closeBracketsKeymap
@@ -207,7 +296,7 @@ const initEditor = (): void => {
   const languageSupport = cmLanguages[languageId] || javascript();
 
   const startState = EditorState.create({
-    doc: code.value,
+    doc: codeSolutionStore.isShowingAISolution(selectedLanguage.value) ? codeSolutionStore.solutionCache.get(selectedLanguage.value) : code.value,
     extensions: [
       ...createBasicSetup(),
       darkTheme,
@@ -215,15 +304,16 @@ const initEditor = (): void => {
       lintGutter(),
       createLineExplanationTooltip(),
       EditorView.lineWrapping,
+      codeSolutionStore.isShowingAISolution(selectedLanguage.value) ? EditorView.editable.of(false) : EditorView.editable.of(true),
       EditorView.updateListener.of((update) => {
-        if (update.docChanged) {
+        if (update.docChanged && !codeSolutionStore.isShowingAISolution(selectedLanguage.value)) {
           code.value = update.state.doc.toString();
           emit('update:solution', code.value);
 
-          // Clear explanations when code changes
           lineExplanations.value = [];
         }
       })
+
     ]
   });
 
@@ -233,49 +323,52 @@ const initEditor = (): void => {
   });
 };
 
-// Map numeric language ID to LanguageKey for type safety
-const mapLanguageIdToKey = (id: number): LanguageKey => {
-  switch(id) {
-    case 54: return 'cpp';
-    case 62: return 'java';
-    case 71: return 'python';
-    // Add more mappings as needed
-    default: return 'cpp'; // Default fallback
-  }
+const getCommentSyntax = (judge0LangId: number): { start: string; end: string } => {
+  // Map Judge0 language IDs to comment prefixes
+  const lineCommentMap: Record<number, string> = {
+    50: '//', // C
+    54: '//', // C++
+    59: '//', // C++17
+    76: '//', // C++20
+    51: '//', // C#
+    62: '//', // Java
+    63: '//', // JavaScript
+    70: '#',  // Python2
+    71: '#',  // Python3
+    60: '//', // Go
+    72: '#',  // Ruby
+    73: '//', // Rust
+    74: '//', // TypeScript
+    78: '//', // Kotlin
+    68: '//', // PHP
+    85: '#',  // Perl
+    81: '//', // Scala
+    61: '--', // Haskell
+    64: '--', // Lua
+    80: '#',  // R
+  };
+
+  const commentPrefix = lineCommentMap[judge0LangId] || '//';
+  return { start: `${commentPrefix} `, end: '' };
 };
 
-// Function to get comment syntax for different languages
-const getCommentSyntax = (language: LanguageKey): { start: string, end: string } => {
-  switch (language) {
-    case 'cpp':
-      return { start: '// HINT: ', end: '' };
-    case 'java':
-      return { start: '// HINT: ', end: '' };
-    case 'python':
-      return { start: '# HINT: ', end: '' };
-    default:
-      return { start: '// HINT: ', end: '' };
-  }
-};
 
 // Function to insert hints directly into the code
-const insertHintsIntoCode = (originalCode: string, hints: LineHint[], language: LanguageKey): string => {
-  const commentSyntax = getCommentSyntax(language);
+const insertHintsIntoCode = (
+  originalCode: string,
+  hints: LineHint[],
+  judge0LangId: number
+): string => {
+  const commentSyntax = getCommentSyntax(judge0LangId);
   const lines = originalCode.split('\n');
 
-  // Sort hints by line number in descending order to avoid position shifts
   const sortedHints = [...hints].sort((a, b) => b.line - a.line);
-
   for (const hint of sortedHints) {
-    // Make sure the line index exists in the array
     if (hint.line > 0 && hint.line <= lines.length) {
       const hintComment = `${commentSyntax.start}${hint.hint}${commentSyntax.end}`;
-
-      // Insert hint comment before the code line
       lines.splice(hint.line - 1, 0, hintComment);
     }
   }
-
   return lines.join('\n');
 };
 
@@ -284,19 +377,15 @@ const giveHints = async (): Promise<void> => {
   try {
     isGettingHints.value = true;
 
-    // Mock data - in production this would be an API call
-    const mockHintsData: LineHint[] = [
-      { line: 2, hint: "Consider initializing variables here" },
-      { line: 5, hint: "This is where you'll need to iterate through the array" },
-      { line: 10, hint: "Don't forget to check for edge cases" },
-      { line: 15, hint: "Remember to return the correct indices" }
-    ];
+    const responseBody = await llmCodeServices.getHints({ problem_statement: props.problemDescription, code_context: code.value });
+    if (!responseBody.data?.line_hints) {
+      throw new Error('No hints available');
+    }
 
-    // Convert numeric language ID to LanguageKey for type safety
-    const languageKey = mapLanguageIdToKey(selectedLanguage.value);
+    const hints = responseBody.data.line_hints;
 
     // Insert hints directly into the code
-    const codeWithHints = insertHintsIntoCode(code.value, mockHintsData, languageKey);
+    const codeWithHints = insertHintsIntoCode(code.value, hints, selectedLanguage.value);
 
     // Update the code with hints included
     code.value = codeWithHints;
@@ -315,143 +404,102 @@ const giveHints = async (): Promise<void> => {
   }
 };
 
-// Get code explanations using the llmCodeServices
-const explainCode = async (): Promise<void> => {
+// Get optimization suggestions using the llmCodeServices
+const getOptimizationSuggestions = async (): Promise<void> => {
   try {
     isExplaining.value = true;
 
     // Clear previous explanations
     lineExplanations.value = [];
 
-    // Prepare request payload
-    const codeAnalysisRequest: CodeAnalysisRequest = {
-      code: code.value,
-      language: selectedLanguage.value // Use the mapped string value
-    };
-
-    // Call the service to get explanations
-    const response = await llmCodeServices.getCodeExplanation(
-      { showError, showSuccess },
-      codeAnalysisRequest
-    );
+    // Call the service to get optimization hints
+    const response = await llmCodeServices.getHints({
+      problem_statement: props.problemDescription,
+      code_context: code.value,
+      optimize: true
+    });
 
     // Process the response
-    if (response.data && Array.isArray(response.data)) {
-      lineExplanations.value = response.data;
+    if (response.data?.line_hints) {
+      // Convert hints to explanations format for tooltips
+      lineExplanations.value = response.data.line_hints.map(hint => ({
+        line: hint.line,
+        explanation: hint.hint,
+        code: '' // We don't have the code snippet in hints
+      }));
 
-      // Reinitialize editor to apply new tooltips
+      // Insert optimization suggestions into the code as comments
+      const codeWithSuggestions = insertHintsIntoCode(code.value, response.data.line_hints, selectedLanguage.value);
+      code.value = codeWithSuggestions;
+
+      // Reinitialize editor to apply new tooltips and show updated code
       nextTick(() => {
         initEditor();
+        showSuccess("Optimization suggestions have been added to your code as comments.");
       });
     }
   } catch (error) {
-    console.error('Error getting code explanations:', error);
+    console.error('Error getting optimization suggestions:', error);
+    showError('Failed to get optimization suggestions');
   } finally {
     isExplaining.value = false;
   }
 };
 
-// Helper function to get Judge0 language ID for the current language
-const getJudge0LanguageId = (languageId: number): number => {
-  // Map from our language IDs to Judge0 language IDs
-  // This is safer than directly using LANGUAGE_MAP
-  const languageMap: Record<number, number> = {
-    54: 54, // C++
-    62: 62, // Java
-    63: 63, // JavaScript
-    71: 71, // Python
-    // Add more mappings as needed
-  };
+const runCode = async () => {
+  isRunning.value = true;
+  emit('update:loading', true);
 
-  return languageMap[languageId] || 54; // Default to C++ if not found
-};
-
-// Run code with test case
-const runCode = async (): Promise<void> => {
   try {
-    isLoading.value = true;
-    emit('update:loading', true);
+    if (!props.testcases || props.testcases.length === 0) {
+      throw new Error('No test cases available');
+    }
 
-    // Prepare stdin
-    const stdin = prepareStdin(
-      mapLanguageIdToKey(selectedLanguage.value),
-      props.testInput.nums,
-      props.testInput.target
+    // Execute the code with all test cases
+    const { executionResults, executionError } = await executeCode(
+      code.value,
+      selectedLanguage.value,
+      props.testcases
     );
 
-    try {
-      // Get Judge0 language ID
-      const judge0LanguageId = getJudge0LanguageId(selectedLanguage.value);
+    if (executionError) {
+      emit('run-result', `❌ Execution Error:\n${executionError}`);
+    } else {
+      // Format results for all test cases
+      const formattedResults = executionResults.map((result, index) => {
+        const testcase = props.testcases[index];
 
-      // Create submission
-      const token = await createSubmission(
-        code.value,
-        judge0LanguageId,
-        stdin,
-        '[0,1]'
-      );
+        let output = `🧪 **Test Case ${index + 1}**\n`;
+        output += `🔸 Input:\n${testcase.input}\n\n`;
+        output += `🔸 Expected Output:\n${testcase.expected_output}\n\n`;
+        output += `🔸 Your Output:\n${result.stdout}\n\n`;
 
-      // Poll for results
-      const result = await pollSubmission(token);
-
-      // Format and emit results
-      let resultText = '';
-      if (result.status.id === 3) { // Accepted
-        resultText = `Status: ${result.status.description}\n`;
-        resultText += `Output: ${result.stdout || 'No output'}\n`;
-        resultText += `Time: ${result.time} seconds\n`;
-        resultText += `Memory: ${result.memory} KB`;
-      } else {
-        resultText = `Status: ${result.status.description}\n`;
         if (result.stderr) {
-          resultText += `Error: ${result.stderr}\n`;
+          output += `🔸 stderr:\n${result.stderr}\n\n`;
         }
-        if (result.compile_output) {
-          resultText += `Compiler output: ${result.compile_output}\n`;
-        }
-      }
 
-      emit('run-result', resultText);
-    } catch (apiError: any) {
-      // Handle API errors
-      if (apiError.response) {
-        // Server returned an error with status code
-        const errorData = apiError.response.data;
-        let detailedError = `Error (${apiError.response.status}): `;
-
-        if (errorData && typeof errorData === 'object') {
-          if (errorData.error) {
-            detailedError += errorData.error;
-          } else if (errorData.message) {
-            detailedError += errorData.message;
-          } else {
-            detailedError += JSON.stringify(errorData);
-          }
-        } else if (typeof errorData === 'string') {
-          detailedError += errorData;
+        if (result.status.id === 3) {
+          // 3 = Accepted
+          output += `✅ Result: Passed\n`;
         } else {
-          detailedError += 'Unknown error format';
+          output += `❌ Result: ${result.status.description}\n`;
         }
 
-        emit('run-result', detailedError);
-      } else if (apiError.request) {
-        // Request was sent but no response received
-        emit('run-result', 'Error: No response received from server');
-      } else {
-        // Other errors when setting up the request
-        emit('run-result', `Error setting up request: ${apiError.message}`);
-      }
+        return output;
+      }).join('\n' + '-'.repeat(40) + '\n');
+
+      emit('run-result', formattedResults);
     }
-  } catch (error: any) {
-    emit('run-result', `Error running code: ${error.message}`);
+  } catch (error) {
+    emit('run-result', `❌ Internal Error:\n${error instanceof Error ? error.message : 'Unknown error'}`);
   } finally {
-    isLoading.value = false;
+    isRunning.value = false;
     emit('update:loading', false);
   }
 };
 
 const submitCode = async (): Promise<void> => {
-  isLoading.value = true;
+  isSubmitting.value = true;
   emit('update:loading', true);
 
   submitCodeWithPolling(
@@ -470,12 +518,12 @@ const submitCode = async (): Promise<void> => {
 - Score: ${submission.score ?? 'N/A'}
         `;
         emit('submit-result', summary);
-        isLoading.value = false;
+        isSubmitting.value = false;
         emit('update:loading', false);
       },
       onError: (err) => {
         emit('submit-result', `❌ Submission failed: ${err.message}`);
-        isLoading.value = false;
+        isSubmitting.value = false;
         emit('update:loading', false);
       }
     }
@@ -496,9 +544,7 @@ const setDefaultCodeForLanguage = (languageId: number) => {
 
 // Initialize editor when component is mounted
 onMounted(() => {
-  // Set initial default code
-  code.value = setDefaultCodeForLanguage(selectedLanguage.value);
-  initEditor();
+  // Don't set initial default code here, wait for language configs
 });
 
 // Fetch language configurations for the coding exercise
@@ -511,12 +557,20 @@ onMounted(async () => {
     if (response && response.data) {
       languageConfigs.value = response.data;
 
-      // Set initial language if available
-      const config = languageConfigs.value.find(c => c.judge0_language_id === selectedLanguage.value);
-      if (config) {
-        // Initialize both ref and cache map
-        code.value = config.boilerplate_code;
-        codePerLanguage.set(config.judge0_language_id, config.boilerplate_code);
+      // Set the first available language as default if none is selected
+      if (languageConfigs.value.length > 0) {
+        const firstConfig = languageConfigs.value[0];
+        selectedLanguage.value = firstConfig.judge0_language_id;
+
+        // Try to load stored code first
+        const storedCode = loadCodeFromStorage(param.exerciseId, firstConfig.judge0_language_id);
+        if (storedCode) {
+          code.value = storedCode;
+        } else {
+          code.value = firstConfig.boilerplate_code;
+        }
+
+        codePerLanguage.set(firstConfig.judge0_language_id, code.value);
         nextTick(() => initEditor());
       }
     }
@@ -526,33 +580,133 @@ onMounted(async () => {
   }
 });
 
-// Clean up when component is unmounted
-onUnmounted(() => {
-  if (editor) {
-    editor.destroy();
-    editor = null;
+// Helper function to get storage key for a specific language
+const getStorageKey = (exerciseId: string, languageId: number): string => {
+  return `code_solution_${exerciseId}_${languageId}`;
+};
+
+// Helper function to save code to localStorage
+const saveCodeToStorage = (exerciseId: string, languageId: number, code: string): void => {
+  try {
+    localStorage.setItem(getStorageKey(exerciseId, languageId), code);
+  } catch (error) {
+    console.error('Failed to save code to localStorage:', error);
   }
-});
+};
+
+// Helper function to load code from localStorage
+const loadCodeFromStorage = (exerciseId: string, languageId: number): string | null => {
+  try {
+    return localStorage.getItem(getStorageKey(exerciseId, languageId));
+  } catch (error) {
+    console.error('Failed to load code from localStorage:', error);
+    return null;
+  }
+};
+
+// Helper function to get the appropriate code for a language
+const getCodeForLanguage = (langId: number, isAISolution: boolean): string => {
+  if (isAISolution) {
+    return codeSolutionStore.solutionCache.get(langId) || '';
+  }
+  // Try to get code from localStorage first
+  const storedCode = loadCodeFromStorage(param.exerciseId, langId);
+  if (storedCode) {
+    return storedCode;
+  }
+  return codePerLanguage.get(langId) || '';
+};
+
+// Helper function to set code for a language
+const setCodeForLanguage = (langId: number, newCode: string, isAISolution: boolean): void => {
+  if (isAISolution) {
+    codeSolutionStore.solutionCache.set(langId, newCode);
+  } else {
+    codePerLanguage.set(langId, newCode);
+    // Save to localStorage
+    saveCodeToStorage(param.exerciseId, langId, newCode);
+  }
+};
 
 // Watch for language changes
-watch(selectedLanguage, (newLangId, oldLangId) => {
-  // Save current code before switching
-  if (oldLangId !== undefined) {
-    codePerLanguage.set(oldLangId, code.value);
-  }
+watch(selectedLanguage, async (newId, oldId) => {
+  if (newId === undefined) return;
 
-  // Retrieve code for the selected language or default
-  const cached = codePerLanguage.get(newLangId);
-  if (cached !== undefined) {
-    code.value = cached;
+  // Get the current code before any changes
+  const currentCode = code.value;
+
+  // Save current code for the previous language
+  setCodeForLanguage(oldId, currentCode, codeSolutionStore.isShowingAISolution(oldId));
+
+  // Reset solution state for the new language
+  codeSolutionStore.reset(newId);
+
+  // Try to load stored code first
+  const storedCode = loadCodeFromStorage(param.exerciseId, newId);
+  if (storedCode) {
+    code.value = storedCode;
   } else {
-    const config = languageConfigs.value.find(c => c.judge0_language_id === newLangId);
-    code.value = config?.boilerplate_code || setDefaultCodeForLanguage(newLangId);
-    codePerLanguage.set(newLangId, code.value);
+    // Get code associated with the new language
+    const newCode = getCodeForLanguage(newId, codeSolutionStore.isShowingAISolution(newId));
+    console.log("new code:", newCode);
+    if (newCode) {
+      code.value = newCode;
+    } else {
+      const config = languageConfigs.value.find(c => c.judge0_language_id === newId);
+      if (config?.boilerplate_code) {
+        console.log("boilerplate: ", config.boilerplate_code);
+        code.value = config.boilerplate_code;
+      } else {
+        code.value = setDefaultCodeForLanguage(newId);
+      }
+      setCodeForLanguage(newId, code.value, codeSolutionStore.isShowingAISolution(newId));
+    }
   }
 
   nextTick(() => initEditor());
   lineExplanations.value = [];
+});
+
+// Watch for solution toggle
+watch(() => codeSolutionStore.isShowingAISolution(selectedLanguage.value), async (show) => {
+  console.log("watch 1");
+  if (show) {
+    if (codeSolutionStore.hasCachedSolution(selectedLanguage.value)) {
+      console.log("cached");
+      const cachedSolution = codeSolutionStore.solutionCache.get(selectedLanguage.value);
+      console.log(cachedSolution);
+      if (cachedSolution) {
+        code.value = cachedSolution;
+        nextTick(() => initEditor());
+        return;
+      }
+    } else {
+      await codeSolutionStore.fetchAISolution(param.exerciseId, selectedLanguage.value);
+      code.value = codeSolutionStore.solutionCache.get(selectedLanguage.value) || code.value;
+      return;
+    }
+  }
+
+  // Save current code before switching
+  setCodeForLanguage(selectedLanguage.value, code.value, !show);
+
+  // Get the appropriate code for the current state
+  const newCode = getCodeForLanguage(selectedLanguage.value, show);
+  if (newCode) {
+    code.value = newCode;
+  } else {
+    const config = languageConfigs.value.find(c => c.judge0_language_id === selectedLanguage.value);
+    if (show) {
+      // If showing AI solution but no solution exists, use boilerplate
+      code.value = config?.boilerplate_code || setDefaultCodeForLanguage(selectedLanguage.value);
+    } else {
+      // If showing user solution but no code exists, use boilerplate
+      code.value = config?.boilerplate_code || setDefaultCodeForLanguage(selectedLanguage.value);
+    }
+    setCodeForLanguage(selectedLanguage.value, code.value, show);
+  }
+
+  nextTick(() => initEditor());
 });
 
 // Watch for external code changes
@@ -567,24 +721,118 @@ watch(code, (newCode) => {
   }
 });
 
-const { importCode, exportCode } = useFileIO();
+// Watch for code changes to save to localStorage
+watch(code, (newCode) => {
+  if (!codeSolutionStore.isShowingAISolution(selectedLanguage.value)) {
+    saveCodeToStorage(param.exerciseId, selectedLanguage.value, newCode);
+  }
+}, { deep: true });
+
+// Language extension mapping
+const EXTENSIONS: Record<number, string> = {
+  50: 'c',
+  54: 'cpp',
+  59: 'cpp',
+  76: 'cpp',
+  51: 'cs',
+  62: 'java',
+  63: 'js',
+  70: 'py',
+  71: 'py',
+  60: 'go',
+  72: 'rb',
+  73: 'rs',
+  83: 'swift',
+  78: 'kt',
+  74: 'ts',
+  68: 'php',
+  85: 'pl',
+  81: 'scala',
+  61: 'hs',
+  64: 'lua',
+  80: 'r'
+};
+
+// Create reverse mapping of extensions to language IDs
+const LANGUAGE_IDS: Record<string, number[]> = {};
+Object.entries(EXTENSIONS).forEach(([langId, ext]) => {
+  if (!LANGUAGE_IDS[ext]) {
+    LANGUAGE_IDS[ext] = [];
+  }
+  LANGUAGE_IDS[ext].push(Number(langId));
+});
+
+// Prefer newer versions of languages when multiple options exist
 
 const onImport = () => {
-  importCode((importedCode) => {
-    code.value = importedCode;
-    nextTick(initEditor);
-  });
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.c,.cpp,.cs,.java,.js,.py,.go,.rb,.rs,.swift,.kt,.ts,.php,.pl,.scala,.hs,.lua,.r';
+
+  input.onchange = async () => {
+    if (input.files && input.files[0]) {
+      const file = input.files[0];
+      const text = await file.text();
+
+      // Detect language from file extension
+      const extension = file.name.split('.').pop()?.toLowerCase() || '';
+      const possibleLangIds = LANGUAGE_IDS[extension] || [];
+
+      // Find the highest available language ID that matches the extension
+      const availableLangIds = languageConfigs.value.map(config => config.judge0_language_id);
+      const detectedLangId = possibleLangIds
+        .filter(id => availableLangIds.includes(id))
+        .sort((a, b) => b - a)[0]; // Sort in descending order to get the highest version
+
+      if (detectedLangId && detectedLangId != selectedLanguage.value) {
+        // Save current code to the current language before switching
+        setCodeForLanguage(selectedLanguage.value, code.value, codeSolutionStore.isShowingAISolution(selectedLanguage.value));
+
+        // Switch to the new language
+        selectedLanguage.value = detectedLangId;
+        setCodeForLanguage(detectedLangId, text, codeSolutionStore.isShowingAISolution(detectedLangId));
+      } else {
+        // If no matching language found, use current language
+        code.value = text;
+        setCodeForLanguage(selectedLanguage.value, text, codeSolutionStore.isShowingAISolution(selectedLanguage.value));
+      }
+      nextTick(initEditor);
+    }
+  };
+  input.click();
 };
 
 const onExport = () => {
-  exportCode(code.value, selectedLanguage.value);
+  console.log('Exporting code for language:', selectedLanguage.value);
+  console.log('Code to export:', code.value);
+  const extension = EXTENSIONS[selectedLanguage.value] || 'txt';
+  console.log('Using extension:', extension);
+  const blob = new Blob([code.value], { type: 'text/plain' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = `solution.${extension}`;
+  console.log('Downloading file:', link.download);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 };
 </script>
 
 <style>
-.editor-container {
-  width: 100%;
+.fill-height {
   height: 100%;
+}
+
+.editor-wrapper {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0; /* critical to avoid overflow issues in flex */
+}
+
+.editor-container {
+  flex-grow: 1;
+  min-height: 0;
   overflow: auto;
   background-color: #1e1e1e;
 }
@@ -603,5 +851,14 @@ const onExport = () => {
   font-size: 14px;
   max-width: 300px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+/* Solution dropdown styling */
+.v-list-item {
+  min-height: 40px;
+}
+
+.v-list-item__prepend {
+  margin-right: 12px;
 }
 </style>

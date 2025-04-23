@@ -19,5 +19,16 @@ export interface LineExplanation {
   code: string;
 }
 
+export interface LineHint {
+  line: number;
+  hint: string;
+}
+
+export interface HintOutput {
+  global_hint: string;
+  line_hints: LineHint[];
+}
+
+
 // Define a type for the language mapping
 export type LanguageKey = 'cpp'| 'python' | 'java';

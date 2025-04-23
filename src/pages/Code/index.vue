@@ -1,5 +1,5 @@
 <template>
-  <v-container fluid class="pa-0" style="height: 100vh; overflow: auto;">
+  <v-container fluid class="pa-0 fill-height" style="overflow: auto;">
     <v-row no-gutters class="fill-height">
 
       <!-- Problem Description Panel -->
@@ -10,6 +10,7 @@
         <ProblemDescription
           :initial-tab="descriptionTab"
           :user-solution="userSolution"
+          :problem-description="problemDescription"
           @update:tab="descriptionTab = $event"
         />
         <div class="resize-handle" @mousedown="startResize" />
@@ -19,23 +20,27 @@
       <v-col class="fill-height d-flex flex-column" style="min-width: 420px;">
         <div class="d-flex flex-column fill-height">
           <CodeEditor
-            modelValue="// Your code here\n"
-            onUpdate:modelValue="fn"
-            language="javascript"
+            v-if="exerciseDetail"
+            :testInput="{ nums: JSON.stringify([2, 7, 11, 15]), target: '9' }"
+            :problemDescription="problemDescription"
+            :testcases="testcases"
+            :submissionCount="submissions.length"
             @run-result="handleRunResult"
             @submit-result="handleSubmitResult"
             @update:solution="userSolution = $event"
             @update:loading="isLoading = $event"
-            :testInput="{ nums: JSON.stringify([2, 7, 11, 15]), target: '9' }"
             :style="codeEditorStyle"
           />
           <Testcase
+            :testcases="testcases"
             :initial-tab="testTab"
             :result="testResult"
-            :public-testcases="mappedPublicTestcases"
             @update:tab="testTab = $event"
             @update:input="handleTestInputUpdate"
             @toggle="handleTestcaseToggle"
+            @add-custom="handleAddCustomTestcase"
+            @remove-testcase="handleRemoveTestcase"
+            :style="testcaseStyle"
           />
         </div>
       </v-col>
@@ -50,20 +55,9 @@ import { CodeExerciseService } from '@/services/CodeExerciseService';
 import ProblemDescription from '@/components/Code/ProblemDescription.vue';
 import CodeEditor from '@/components/Code/CodeEditor.vue';
 import Testcase from '@/components/Code/Testcase.vue';
-import { TestCaseDto } from '@/types/CodingExercise';
-
-// Define the interfaces needed for the component
-interface CustomTestcase {
-  input: string;
-  expected_output: string;
-  isPublic?: false;
-}
-
-interface PublicTestcase {
-  input: string;
-  expected_output: string;
-  isPublic: true;
-}
+import { useTestcaseManager } from '@/composables/useTestcaseManager';
+import { ExerciseCodeResponse } from '@/types/Exercise';
+import { useProgrammingSubmissions } from '@/composables/useProgrammingSubmissions';
 
 interface RouteParams {
   exerciseId: string;
@@ -74,48 +68,70 @@ const userSolution = ref('');
 const route = useRoute();
 const { exerciseId } = route.params as RouteParams;
 
+// Get submission count
+const { submissions, fetchSubmissionStats } = useProgrammingSubmissions(false);
+
+onMounted(async () => {
+  await fetchSubmissionStats(exerciseId);
+})
+
 // UI States
 const descriptionTab = ref('description');
 const testTab = ref('testcase');
-const testResult = ref('');
 const isLoading = ref(false);
-const testcaseExpanded = ref(true);
-const publicTestcases = ref<TestCaseDto[]>([]);
+const exerciseDetail = ref<ExerciseCodeResponse | null>(null);
+const problemDescription = computed(() => exerciseDetail.value?.description ?? '');
 
+const {
+  testResult,
+  isExpanded: testcaseExpanded,
+  testcases,
+  addTestcase,
+  removeTestcase,
+  onInputChange,
+} = useTestcaseManager(exerciseId);
 
-// Fetch public testcases
-const fetchPublicTestcases = async () => {
+const handleAddCustomTestcase = () => {
+  addTestcase();
+};
+
+const handleRemoveTestcase = (index: number) => {
+  removeTestcase(index);
+};
+
+onMounted(async () => {
   try {
-    const res = await CodeExerciseService.getPublicTestcasesOfAnExercise(exerciseId, {
+    const response = await CodeExerciseService.getCodingExerciseDetail(exerciseId, {
       showError: (message: string) => console.error(message),
       showSuccess: (message: string) => console.log(message),
     });
 
-    if (res.data) {
-      publicTestcases.value = res.data as TestCaseDto[];
-    }
+    const exerciseObject = response.data;
+    exerciseDetail.value = exerciseObject;
   } catch (err) {
-    console.error('Failed to fetch public testcases:', err);
+    console.error('Failed to load exercise', err);
   }
+})
+
+const handleTestInputUpdate = (index: number, field: 'input' | 'expected_output', value: string) => {
+  onInputChange(index, field, value);
 };
-
-// Map public testcases to the format expected by Testcase component
-const mappedPublicTestcases = computed<PublicTestcase[]>(() => {
-  return publicTestcases.value.map(tc => ({
-    input: typeof tc.input === 'string' ? tc.input : '',
-    expected_output: typeof tc.expected_output === 'string' ? tc.expected_output : '',
-    isPublic: true as const
-  }));
-});
-
-onMounted(fetchPublicTestcases);
 
 // Computed dynamic height for CodeEditor
 const codeEditorStyle = computed(() => ({
-  height: testcaseExpanded.value ? '60%' : 'calc(100% - 36px)',
+  height: testcaseExpanded.value ? '60vh' : 'calc(100vh - 36px)',
   minHeight: testcaseExpanded.value ? '300px' : '500px',
   maxHeight: testcaseExpanded.value ? 'calc(100vh - 300px)' : 'calc(100vh - 100px)',
   overflow: 'auto',
+  transition: 'height 0.2s ease-in-out',
+}));
+
+// Add this computed property
+const testcaseStyle = computed(() => ({
+  height: testcaseExpanded.value ? '50%' : '36px',
+  minHeight: testcaseExpanded.value ? '300px' : '36px',
+  maxHeight: testcaseExpanded.value ? 'calc(100vh - 200px)' : '36px',
+  overflow: 'hidden',
   transition: 'height 0.2s ease-in-out',
 }));
 
@@ -137,14 +153,6 @@ const handleTestcaseToggle = (expanded: boolean) => {
   testcaseExpanded.value = expanded;
 };
 
-// Handle test input updates from the Testcase component
-const handleTestInputUpdate = (customTestcases: CustomTestcase[]) => {
-  // We could convert these custom testcases to TestInput format if needed
-  console.log('Custom testcases updated:', customTestcases);
-  // This is just a placeholder implementation since we're not actually using
-  // the custom testcases in this component
-};
-
 // Sidebar resize
 const sidebarWidth = ref(500);
 const startResize = (e: MouseEvent) => {
@@ -164,8 +172,8 @@ const startResize = (e: MouseEvent) => {
 
 <style>
 html, body {
-  overflow: auto;
-  height: 100%;
+  overflow: hidden;
+  height: 100vh;
   margin: 0;
   padding: 0;
 }
@@ -180,6 +188,7 @@ html, body {
   border-right: 1px solid rgba(255, 255, 255, 0.12);
   display: flex;
   flex-direction: column;
+  height: 100%;
 }
 
 .resize-handle {
@@ -190,5 +199,26 @@ html, body {
   height: 100%;
   cursor: col-resize;
   z-index: 10;
+}
+
+/* Add these new styles */
+.v-container {
+  height: 100vh;
+}
+
+.v-row {
+  height: 100%;
+}
+
+.v-col {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.d-flex.flex-column {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 </style>

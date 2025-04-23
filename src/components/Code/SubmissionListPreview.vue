@@ -96,41 +96,6 @@
 <script setup>
 const { submissions, fetchSubmissionStats, fetchSubmissionDetail } = useSubmissions(mock=true);
 
-// const submissions = ref([
-//   {
-//     id: '1',
-//     created_at: new Date().toISOString(),
-//     status: 'completed',
-//     code: 'function twoSum(nums, target) {\n  const map = new Map();\n  for (let i = 0; i < nums.length; i++) {\n    const complement = target - nums[i];\n    if (map.has(complement)) return [map.get(complement), i];\n    map.set(nums[i], i);\n  }\n}',
-//     test_results: [
-//       {
-//         id: 't1',
-//         status: 'Accepted',
-//         stdout: '[0,1]',
-//         time: 0.032,
-//         memory: 12345,
-//         testcase: {
-//           input: '2 7 11 15\n9',
-//           expected_output: '[0,1]',
-//           is_public: true
-//         }
-//       },
-//       {
-//         id: 't3',
-//         status: 'Accepted',
-//         stdout: 'a'.repeat(1000),
-//         time: 0.055,
-//         memory: 11000,
-//         testcase: {
-//           input: 'x'.repeat(1000),
-//           expected_output: 'b'.repeat(1000),
-//           is_public: true
-//         }
-//       }
-//     ]
-//   }
-// ]);
-
 const dialog = ref(false);
 const selectedSubmission = ref(null);
 const visibleTestResults = computed(() => {

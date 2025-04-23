@@ -45,7 +45,7 @@ export class ApiError extends Error {
  * Extended configuration for API calls
  * Includes optional error/success handling and custom response parsing
  */
-interface ApiCallConfig extends AxiosRequestConfig {
+export interface ApiCallConfig extends AxiosRequestConfig {
   showError?: (message: string) => void;
   showSuccess?: (message: string) => void;
   parseResponse?: (response: AxiosResponse) => any;
