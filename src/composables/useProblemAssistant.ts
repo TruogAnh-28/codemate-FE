@@ -1,11 +1,11 @@
-import { ref, watch, nextTick } from 'vue';
+import { ref } from 'vue';
 import { streamFromApi } from '@/common/api.service';
 import type { ChatMessage } from '@/types/chat';
 import { llmCodeServices } from '@/services/llmCodeServices';
 import MarkdownIt from 'markdown-it';
 import hljs from 'highlight.js';
 
-export function useProblemAssistant(exerciseId: string, userSolution: string) {
+export function useProblemAssistant(exerciseId: string) {
   const messages = ref<ChatMessage[]>([]);
   const inputMessage = ref('');
   const isThinking = ref(false);
@@ -29,7 +29,7 @@ export function useProblemAssistant(exerciseId: string, userSolution: string) {
     if (res?.data) messages.value = res.data;
   };
 
-  const sendMessage = async () => {
+  const sendMessage = async (userSolution: string, languageID: number) => {
     const content = inputMessage.value.trim();
     if (!content) return;
 
@@ -45,8 +45,9 @@ export function useProblemAssistant(exerciseId: string, userSolution: string) {
         {
           method: "POST",
           body: {
-            content,
-            user_solution: userSolution
+            content: content,
+            user_solution: userSolution,
+            language_id: languageID
           }
         }
       );

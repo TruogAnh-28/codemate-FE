@@ -143,3 +143,102 @@ export const handleApiError = (error: any): string => {
   // Lỗi không phải từ Axios
   return `Error: ${error.message || 'Unknown error'}`;
 };
+
+// Create batch submission to Judge0
+export const createBatchSubmission = async (
+  submissions: Array<{
+    source_code: string;
+    language_id: number;
+    stdin: string;
+    expected_output?: string;
+  }>
+): Promise<string[]> => {
+  try {
+    const base64Submissions = submissions.map(sub => ({
+      ...sub,
+      source_code: btoa(unescape(encodeURIComponent(sub.source_code))),
+      stdin: sub.stdin ? btoa(unescape(encodeURIComponent(sub.stdin))) : null,
+      expected_output: sub.expected_output ? btoa(unescape(encodeURIComponent(sub.expected_output))) : null
+    }));
+
+    const response = await axios.post<Array<{ token: string }>>(
+      `${JUDGE0_API.baseURL}/submissions/batch?base64_encoded=true`,
+      { submissions: base64Submissions },
+      {
+        headers: JUDGE0_API.headers
+      }
+    );
+
+    return response.data.map(sub => sub.token);
+  } catch (error) {
+    console.error('Error creating batch submission:', error);
+    throw error;
+  }
+};
+
+// Get batch submission results
+export const getBatchSubmission = async (tokens: string[]): Promise<SubmissionResult[]> => {
+  try {
+    const response = await axios.get<{ submissions: SubmissionResult[] }>(
+      `${JUDGE0_API.baseURL}/submissions/batch?tokens=${tokens.join(',')}&base64_encoded=true`,
+      {
+        headers: JUDGE0_API.headers
+      }
+    );
+
+    // Decode base64 responses
+    return response.data.submissions.map(sub => ({
+      ...sub,
+      stdout: sub.stdout ? decodeURIComponent(escape(atob(sub.stdout))) : null,
+      stderr: sub.stderr ? decodeURIComponent(escape(atob(sub.stderr))) : null,
+      compile_output: sub.compile_output ? decodeURIComponent(escape(atob(sub.compile_output))) : null
+    }));
+  } catch (error) {
+    console.error('Error getting batch submission:', error);
+    throw error;
+  }
+};
+
+// Poll batch submission until all are done
+export const pollBatchSubmission = async (tokens: string[]): Promise<SubmissionResult[]> => {
+  let results: SubmissionResult[];
+  const maxTries = 10;
+  const maxRetries = 3;
+  let tries = 0;
+  let retryCount = 0;
+  let baseDelay = 1000; // Start with 1 second
+
+  do {
+    try {
+      await new Promise(resolve => setTimeout(resolve, baseDelay));
+      results = await getBatchSubmission(tokens);
+      tries++;
+
+      if (tries >= maxTries) {
+        throw new Error('Timeout waiting for batch submission results');
+      }
+
+      // Check if all submissions are done (status.id > 2)
+      const allDone = results.every(result => result.status.id > 2);
+      if (allDone) break;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response?.status === 429) {
+        if (retryCount >= maxRetries) {
+          throw new Error('Rate limit exceeded after multiple retries');
+        }
+        // Exponential backoff: 1s, 2s, 4s
+        baseDelay *= 2;
+        retryCount++;
+        continue;
+      }
+      if (axios.isAxiosError(error) && error.response) {
+        const statusCode = error.response.status;
+        const errorMessage = error.response.data?.error || error.message;
+        throw new Error(`API Error (${statusCode}): ${errorMessage}`);
+      }
+      throw error;
+    }
+  } while (true);
+
+  return results;
+};

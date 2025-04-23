@@ -154,7 +154,6 @@
     </v-card>
 
     <!-- Modules Section -->
-    <!-- Modules Section -->
     <div class="mb-4 d-flex align-center">
       <v-icon color="primary" size="large" class="mr-2">mdi-view-grid-outline</v-icon>
       <h2 class="text-h5 font-weight-bold mb-0">Modules</h2>
