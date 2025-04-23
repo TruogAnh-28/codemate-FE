@@ -3,6 +3,7 @@ node_modules
 /dist
 
 # local env files
+.env
 .env.local
 .env.*.local
 
@@ -24,3 +25,6 @@ pnpm-debug.log*
 # IDE
 yarn.lock
 package-lock.json
+
+#Vite
+.vite/

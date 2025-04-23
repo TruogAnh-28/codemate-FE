@@ -1,0 +1,56 @@
+
+/* Data table styles that work with your Tailwind config */
+.v-data-table.enhanced-table .v-table__wrapper thead th {
+  font-weight: 700 !important;
+  font-size: 1.05rem !important;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid !important;
+}
+
+/* Alternating row colors */
+.v-data-table.enhanced-table .v-table__wrapper tbody tr:nth-child(even) {
+  background-color: hsl(var(--secondary) / 0.03);
+}
+
+.v-data-table.enhanced-table .v-table__wrapper tbody tr:nth-child(odd) {
+  background-color: transparent;
+}
+
+/* Column borders */
+.v-data-table.enhanced-table .v-table__wrapper td,
+.v-data-table.enhanced-table .v-table__wrapper th {
+  border-right: 1px solid hsl(var(--border) / 0.5) !important;
+  padding: 12px 16px !important;
+}
+
+.v-data-table.enhanced-table .v-table__wrapper td:last-child,
+.v-data-table.enhanced-table .v-table__wrapper th:last-child {
+  border-right: none !important;
+}
+
+/* Row hover animation */
+.v-data-table.enhanced-table .v-table__wrapper tbody tr {
+  transition: all 0.2s ease-in-out;
+}
+
+.v-data-table.enhanced-table .v-table__wrapper tbody tr:hover {
+  background-color: hsl(var(--secondary) / 0.08) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+/* Cell hover animation */
+.v-data-table.enhanced-table .v-table__wrapper td {
+  transition: background-color 0.15s ease;
+}
+
+.v-data-table.enhanced-table .v-table__wrapper td:hover {
+  background-color: hsl(var(--secondary) / 0.12) !important;
+}
+
+/* Table border */
+.enhanced-table {
+  border: 1px solid hsl(var(--border) / 0.7);
+  border-radius: 8px;
+  overflow: hidden;
+}

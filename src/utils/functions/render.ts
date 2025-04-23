@@ -43,15 +43,28 @@ export const renderFileTypeIcon = (fileType: DocumentType) => {
   }
 }
 
-export const renderStatusLabel = (status: string) => {
+export const renderStatusColor = (status: string) => {
   switch (status) {
-    case 'In Progress':
+    case 'in Progress':
       return 'secondary';
-    case 'Completed':
+    case 'completed':
       return 'success';
-    case 'New':
+    case 'new':
       return 'primary';
     default:
       return 'primary';
+  }
+}
+
+export const renderStatusLabel = (status: string) => {
+  switch (status) {
+    case 'in Progress':
+      return 'In Progress';
+    case 'completed':
+      return 'Completed';
+    case 'new':
+      return 'New';
+    default:
+      return 'New';
   }
 }

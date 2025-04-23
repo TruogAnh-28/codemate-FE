@@ -9,78 +9,82 @@
       <v-slide-group-item
         v-for="course in sortedCourses"
         :key="course.id"
-        class="flex justify-center"
+        v-slot="{ isSelected, toggle }"
       >
-        <v-card
-          class="course-card mx-2 rounded-lg shadow-lg bg-surface"
-          :elevation="6"
-          outlined
-        >
-          <!-- Header -->
-          <v-card-title>
-            <v-tooltip bottom>
-              <template #activator="{ props }">
-                <h3
-                  v-bind="props"
-                  class="text-heading-5 font-sans font-bold truncate"
+        <div class="flex justify-center">
+          <v-card
+            :class="['course-card mx-2 rounded-lg shadow-lg bg-surface', isSelected ? 'selected' : '']"
+            :elevation="6"
+            outlined
+            @click="toggle"
+          >
+            <!-- Header -->
+            <v-card-title>
+              <v-tooltip bottom>
+                <template v-slot:activator="{ props }">
+                  <h3
+                    v-bind="props"
+                    class="text-heading-5 font-sans font-bold truncate"
+                  >
+                    {{ course.name }}
+                  </h3>
+                </template>
+                <span>{{ course.name }}</span>
+              </v-tooltip>
+            </v-card-title>
+
+            <!-- Learning Outcomes -->
+            <v-card-text class="relative flex-1">
+              <LearningOutcomes :outcomes="course.learning_outcomes" :nameCourse="course.name"/>
+            </v-card-text>
+
+            <!-- Footer Section -->
+            <v-card-actions class="flex-col items-end">
+              <p
+                class="text-body-small-1 text-text-tetiary mb-2 font-sans mr-auto"
+              >
+                Last Accessed: {{ formatDateTime(course.last_accessed) }}
+              </p>
+
+              <!-- Progress Bar -->
+              <v-progress-linear
+                v-model="course.percentage_complete"
+                height="15"
+                class="mb-4 rounded-lg"
+              >
+                <template v-slot:default>
+                  <strong class="text-secondary">
+                    {{ String(Math.ceil(Number(course.percentage_complete))) }}%
+                  </strong>
+                </template>
+              </v-progress-linear>
+
+              <!-- Action Buttons -->
+              <div class="flex gap-2 w-full">
+                <v-btn
+                  color="primary"
+                  class="flex-1 px-4 py-1 text-on-primary rounded-md font-sans"
                 >
-                  {{ course.name }}
-                </h3>
-              </template>
-              <span>{{ course.name }}</span>
-            </v-tooltip>
-          </v-card-title>
-
-          <!-- Learning Outcomes -->
-          <v-card-text class="relative flex-1">
-            <LearningOutcomes :outcomes="course.learning_outcomes" :nameCourse="course.name"/>
-          </v-card-text>
-
-          <!-- Footer Section -->
-          <v-card-actions class="flex-col items-end">
-            <p
-              class="text-body-small-1 text-text-tetiary mb-2 font-sans mr-auto"
-            >
-              Last Accessed: {{ formatDateTime(course.last_accessed) }}
-            </p>
-
-            <!-- Progress Bar -->
-            <v-progress-linear
-              v-model="course.percentage_complete"
-              height="15"
-              class="mb-4 rounded-lg"
-            >
-              <template #default>
-                <strong class="text-secondary">
-                  {{ String(Math.ceil(Number(course.percentage_complete))) }}%
-                </strong>
-              </template>
-            </v-progress-linear>
-
-            <!-- Action Buttons -->
-            <div class="flex gap-2 w-full">
-              <v-btn
-                color="primary"
-                class="flex-1 px-4 py-1 text-on-primary rounded-md font-sans"
-              >
-                Resume
-              </v-btn>
-              <v-btn
-                color="secondary"
-                class="flex-1 px-4 py-1 text-on-secondary rounded-md font-sans"
-                :to="`/courselist/course/${course.id}`"
-              >
-                View Course
-              </v-btn>
-            </div>
-          </v-card-actions>
-        </v-card>
+                  Resume
+                </v-btn>
+                <v-btn
+                  color="secondary"
+                  class="flex-1 px-4 py-1 text-on-secondary rounded-md font-sans"
+                  :to="`/courselist/course/${course.id}`"
+                >
+                  View Course
+                </v-btn>
+              </div>
+            </v-card-actions>
+          </v-card>
+        </div>
       </v-slide-group-item>
     </v-slide-group>
   </v-container>
 </template>
 
 <script lang="ts" setup>
+import { ref, computed } from 'vue';
 import { CoursesListResponse } from "@/types/Course";
 import { formatDateTime } from "@/utils/functions/time";
 
@@ -113,18 +117,17 @@ const sortedCourses = computed(() => {
   justify-content: center;
 }
 
-.v-slide-group-item {
-  display: flex;
-  justify-content: center;
-}
-
 .course-card {
   width: 500px;
   transition: transform 0.3s ease-in-out;
 }
 
-.v-card:hover {
+.course-card:hover {
   transform: scale(1.05);
+}
+
+.course-card.selected {
+  border: 2px solid var(--v-primary-base);
 }
 
 .v-slide-group-item + .v-slide-group-item {

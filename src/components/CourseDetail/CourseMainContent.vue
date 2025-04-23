@@ -1,7 +1,10 @@
 <template>
   <v-card class="p-6">
     <CourseBanner
+      v-if="course"
       :course="course"
+      :canEditImage="true"
+      @update-image="handleImageUpload"
     />
 
     <v-tabs
@@ -25,10 +28,7 @@
       </v-tooltip>
     </v-tabs>
 
-    <v-window
-      :model-value="activeTab"
-      @update:model-value="handleTabUpdate"
-    >
+    <v-window :model-value="activeTab" @update:model-value="handleTabUpdate">
       <v-window-item value="description">
         <CourseDescription
           :learning-outcomes="course?.course_learning_outcomes ?? []"
@@ -36,38 +36,80 @@
       </v-window-item>
 
       <v-window-item value="lessons">
-        <CourseLessons v-if="course" :course="course" />
+        <CourseLessons 
+          v-if="course" 
+          :course="course" 
+          @refreshCourse="handleCourseRefresh"
+        />
       </v-window-item>
 
-      <v-window-item value="exercises">
-        <CourseExercises v-if="course" :course="course" />
-      </v-window-item>
+      <!-- <v-window-item value="exercises">
+        <CourseExercises
+          v-if="isStudent && isCourseDetailResponse(course)"
+          :course="course"
+        />
+        <CourseExercisesProfessor
+          v-else-if="isProfessor && !isCourseDetailResponse(course) && course"
+          :course="course"
+          @refreshCourse="handleCourseRefresh"
+        />
+      </v-window-item> -->
     </v-window>
   </v-card>
 </template>
 
 <script lang="ts" setup>
-import { CourseDetailResponse } from "@/types/Course";
-
-interface Tab {
+import {
+  CourseDetailResponse,
+  GetCourseDetailProfessorResponse,
+} from "@/types/Course";
+// import { useAuthStore } from "@/stores/auth";
+export interface Tab {
   label: string;
   value: string;
   tooltip: string;
 }
 
 defineProps<{
-  course: CourseDetailResponse | null;
+  course: CourseDetailResponse | GetCourseDetailProfessorResponse | null;
   activeTab: string;
   tabs: Tab[];
 }>();
 
+// const authStore = useAuthStore;
+// const { user } = authStore.getState();
+// const role = computed(() => user?.role);
+// const isStudent = computed(() => role.value === "student");
+// const isProfessor = computed(() => role.value === "professor");
+
+// function isCourseDetailResponse(course: any): course is CourseDetailResponse {
+//   return (
+//     course &&
+//     typeof course === "object" &&
+//     "course_percentage_complete" in course &&
+//     "course_last_accessed" in course &&
+//     "completed_lessons" in course &&
+//     "time_spent" in course &&
+//     "assignments_done" in course
+//   );
+// }
+
 const emit = defineEmits<{
-  'update:active-tab': [value: string];
+  "update:active-tab": [value: string];
+  "refreshCourse": [];
 }>();
 
 const handleTabUpdate = (value: unknown) => {
-  if (typeof value === 'string') {
-    emit('update:active-tab', value);
+  if (typeof value === "string") {
+    emit("update:active-tab", value);
   }
+};
+
+const handleImageUpload = async () => {
+  emit("refreshCourse"); 
+};
+
+const handleCourseRefresh = () => {
+  emit("refreshCourse");
 };
 </script>

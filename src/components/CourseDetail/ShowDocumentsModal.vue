@@ -30,11 +30,11 @@
           </v-list-item-title>
           <v-list-item-subtitle class="text-body-base-1 text-primary-variant">
             <a
-              :href="document.url"
+              :href="document.document_url"
               target="_blank"
               rel="noopener noreferrer"
             >
-              {{ document.url }}
+              {{ document.document_url }}
             </a>
           </v-list-item-subtitle>
         </v-list-item>
@@ -59,7 +59,7 @@
 
 <script lang="ts" setup>
 import { renderFileTypeIcon } from "@/utils/functions/render";
-import { DocumentOriginalResponse } from "@/types/Course";
+import { DocumentOriginalResponse, GetDocumentsProfessor } from "@/types/Course";
 
 const props = defineProps({
   showModal: {
@@ -67,7 +67,7 @@ const props = defineProps({
     required: true,
   },
   documents: {
-    type: Array as () => DocumentOriginalResponse[],
+    type: Array as () => DocumentOriginalResponse[] | GetDocumentsProfessor[] ,
     required: true,
   },
 });
@@ -92,4 +92,5 @@ watch(internalShowModal, (newValue: boolean) => {
 const closeModal = () => {
   emit("update:showModal", false);
 };
+
 </script>

@@ -1,7 +1,8 @@
 <template>
   <v-app>
-    <Sidebar/>
-    <Appbar/>
+    <Sidebar v-model="drawer" @expand="handleExpand" />
+    <Appbar />
+    <AutoLogin />
     <v-main>
       <router-view />
     </v-main>
@@ -9,5 +10,9 @@
 </template>
 
 <script lang="ts" setup>
-  //
+const drawer = ref(true);
+const sidebarExpanded = ref(false);
+const handleExpand = (value: boolean) => {
+  sidebarExpanded.value = value;
+};
 </script>

@@ -1,11 +1,14 @@
 <template>
   <div class="space-y-6">
     <v-container>
-      <v-row
-        v-for="(exercise, index) in getAllExercises(course)"
-        :key="index"
-        align="center"
-      >
+      <div v-if="exercises.length === 0">
+        <v-card-title class="text-heading-4 font-semibold"
+          >Exercises:</v-card-title
+        >
+        <v-card-text>No lessons available</v-card-text>
+      </div>
+
+      <v-row v-for="(exercise, index) in exercises" :key="index" align="center">
         <v-col cols="12">
           <v-card class="rounded-lg shadow-md p-4">
             <v-row align="center" class="m-0">
@@ -45,22 +48,19 @@
 </template>
 
 <script lang="ts" setup>
-import {
-  CourseDetailResponse,
-  ExerciseOriginalResponse,
-  LessonOriginalResponse,
-} from "@/types/Course";
+import { CourseDetailResponse, ExerciseOriginalResponse } from "@/types/Course";
 import { renderStatusLabel } from "@/utils/functions/render";
-
-interface ExtendedExercise extends ExerciseOriginalResponse {
-  lessonTitle: string;
-}
 
 defineProps<{
   course: CourseDetailResponse;
 }>();
 
 const exercises = ref<ExtendedExercise[]>([]);
+
+interface ExtendedExercise extends ExerciseOriginalResponse {
+  lessonTitle: string;
+}
+
 function renderLabelButtonBasedOnStatus(status: string) {
   if (status === "Completed") {
     return "Review";
@@ -69,16 +69,6 @@ function renderLabelButtonBasedOnStatus(status: string) {
   } else {
     return "Continue";
   }
-}
-
-function getAllExercises(course: CourseDetailResponse) {
-  exercises.value = course.lessons.flatMap((lesson: LessonOriginalResponse) =>
-    lesson.exercises.map((exercise) => ({
-      ...exercise,
-      lessonTitle: lesson.title,
-    }))
-  );
-  return exercises.value;
 }
 
 const startExercise = (exercise: ExtendedExercise) => {
