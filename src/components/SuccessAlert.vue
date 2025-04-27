@@ -3,7 +3,7 @@
     v-model="isVisible"
     location="top right"
     :timeout="3000"
-    class="!tw-z-[9999]"
+    content-class="p-0 bg-transparent shadow-none"
   >
     <div class="flex items-center bg-green-50 p-4 rounded-lg w-full">
       <v-icon
@@ -52,3 +52,9 @@ export default {
   },
 };
 </script>
+<style scoped>
+.v-snackbar :deep(.v-snackbar__wrapper) {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+</style>
