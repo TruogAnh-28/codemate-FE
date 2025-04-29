@@ -81,9 +81,10 @@ const submitCourse = async () => {
       return;
     }
 
-    const response = await coursesService.createCourse({ showError, showSuccess }, [
-      course.value,
-    ]);
+    const response = await coursesService.createCourse(
+      { showError, showSuccess },
+      [course.value]
+    );
     if (response && "data" in response) {
       resetForm();
       showSnackbar("Course created successfully");
@@ -98,7 +99,10 @@ const submitCourse = async () => {
 const fetchAvailableCourses = async () => {
   loading.value = true;
   try {
-    const response = await coursesService.getAvailableCourses({ showError, showSuccess });
+    const response = await coursesService.getAvailableCourses({
+      showError,
+      showSuccess,
+    });
     if (response.data) {
       availableCourses.value = response.data;
     }
@@ -231,7 +235,9 @@ const filteredCoursesById = computed(() => {
 });
 
 const filteredCredits = computed(() => {
-  const uniqueCredits = [...new Set(availableCourses.value.map((c) => c.nCredit))];
+  const uniqueCredits = [
+    ...new Set(availableCourses.value.map((c) => c.nCredit)),
+  ];
   if (!creditSearch.value) return uniqueCredits;
   return uniqueCredits.filter((c) => c.toString().includes(creditSearch.value));
 });
@@ -254,7 +260,9 @@ const updateFromId = (id: string) => {
 };
 
 const updateFromCredit = (credit: number) => {
-  const matchingCourse = availableCourses.value.find((c) => c.nCredit === credit);
+  const matchingCourse = availableCourses.value.find(
+    (c) => c.nCredit === credit
+  );
   if (matchingCourse && !course.value.name && !course.value.courseID) {
     course.value.name = matchingCourse.name;
     course.value.courseID = matchingCourse.courseID;
@@ -273,7 +281,9 @@ onMounted(() => {
     <v-row>
       <v-col cols="12">
         <div class="d-flex align-center mb-8">
-          <h1 class="text-h4 font-weight-bold gradient-text">Course Management</h1>
+          <h1 class="text-h4 font-weight-bold gradient-text">
+            Course Management
+          </h1>
           <v-spacer></v-spacer>
           <v-chip color="primary" variant="outlined" class="px-4">
             <v-icon start>mdi-book-open-variant</v-icon>
@@ -288,7 +298,9 @@ onMounted(() => {
       <v-col cols="12" md="6">
         <v-card elevation="3" class="rounded-xl border-card">
           <div class="card-header pa-6">
-            <v-icon color="primary" size="x-large" class="mb-3">mdi-book-plus</v-icon>
+            <v-icon color="primary" size="x-large" class="mb-3"
+              >mdi-book-plus</v-icon
+            >
             <h2 class="text-h5 font-weight-bold">Create Course</h2>
             <p class="text-subtitle-2 text-medium-emphasis mb-0">
               Add a new course with details
@@ -297,22 +309,6 @@ onMounted(() => {
           <v-divider></v-divider>
           <v-card-text class="pa-6">
             <v-form @submit.prevent="submitCourse">
-              <v-autocomplete
-                v-model="course.name"
-                :items="filteredCoursesByName"
-                item-title="name"
-                item-value="name"
-                label="Course Name*"
-                variant="outlined"
-                density="comfortable"
-                class="mb-4 rounded-lg"
-                prepend-inner-icon="mdi-book-open-page-variant"
-                :rules="[(v) => !!v || 'Course name is required']"
-                hide-details="auto"
-                @update:modelValue="updateFromName"
-              >
-              </v-autocomplete>
-
               <v-autocomplete
                 v-model="course.courseID"
                 :items="filteredCoursesById"
@@ -330,6 +326,22 @@ onMounted(() => {
               </v-autocomplete>
 
               <v-autocomplete
+                v-model="course.name"
+                :items="filteredCoursesByName"
+                item-title="name"
+                item-value="name"
+                label="Course Name*"
+                variant="outlined"
+                density="comfortable"
+                class="mb-4 rounded-lg"
+                prepend-inner-icon="mdi-book-open-page-variant"
+                :rules="[(v) => !!v || 'Course name is required']"
+                hide-details="auto"
+                @update:modelValue="updateFromName"
+              >
+              </v-autocomplete>
+
+              <v-autocomplete
                 v-model.number="course.creditNumber"
                 :items="filteredCredits"
                 label="Credit Number*"
@@ -337,7 +349,9 @@ onMounted(() => {
                 density="comfortable"
                 class="mb-4 rounded-lg"
                 prepend-inner-icon="mdi-numeric"
-                :rules="[(v) => v > 0 || 'Credit number must be greater than 0']"
+                :rules="[
+                  (v) => v > 0 || 'Credit number must be greater than 0',
+                ]"
                 hide-details="auto"
                 @update:modelValue="updateFromCredit"
               >
@@ -470,7 +484,9 @@ onMounted(() => {
       <v-col cols="12" md="6">
         <v-card elevation="3" class="rounded-xl border-card">
           <div class="card-header pa-6">
-            <v-icon color="primary" size="x-large" class="mb-3">mdi-account-group</v-icon>
+            <v-icon color="primary" size="x-large" class="mb-3"
+              >mdi-account-group</v-icon
+            >
             <h2 class="text-h5 font-weight-bold">Import Student IDs</h2>
             <p class="text-subtitle-2 text-medium-emphasis mb-0">
               Upload student IDs via Excel
@@ -479,11 +495,26 @@ onMounted(() => {
           <v-divider></v-divider>
           <v-card-text class="pa-6">
             <div class="template-section mb-6">
-              <div class="d-flex align-center mb-3">
-                <v-icon color="primary" class="mr-2">mdi-file-document-outline</v-icon>
-                <h3 class="text-subtitle-1 font-weight-bold mb-0">Template Format</h3>
+              <div class="d-flex align-center justify-space-between mb-3">
+                <div class="d-flex align-center">
+                  <v-icon color="primary" class="mr-2">mdi-file-document-outline</v-icon>
+                  <h3 class="text-subtitle-1 font-weight-bold mb-0">Template Format</h3>
+                </div>
+                <v-btn
+                  color="primary"
+                  variant="tonal"
+                  prepend-icon="mdi-file-download-outline"
+                  class="rounded-lg px-4"
+                  @click="downloadTemplate"
+                >
+                  Download Template
+                </v-btn>
               </div>
-              <v-sheet rounded="lg" elevation="1" class="pa-2 mb-4 bg-grey-lighten-4">
+              <v-sheet
+                rounded="lg"
+                elevation="1"
+                class="pa-2 mb-4 bg-grey-lighten-4"
+              >
                 <v-table density="compact" class="rounded-lg">
                   <thead>
                     <tr class="bg-grey-lighten-3">
@@ -497,21 +528,16 @@ onMounted(() => {
                   </tbody>
                 </v-table>
               </v-sheet>
-              <v-btn
-                color="primary"
-                variant="tonal"
-                prepend-icon="mdi-file-download-outline"
-                class="rounded-lg px-4"
-                @click="downloadTemplate"
-              >
-                Download Template
-              </v-btn>
             </div>
 
             <div class="import-section">
               <div class="d-flex align-center mb-3">
-                <v-icon color="primary" class="mr-2">mdi-cloud-upload-outline</v-icon>
-                <h3 class="text-subtitle-1 font-weight-bold mb-0">Upload Student IDs</h3>
+                <v-icon color="primary" class="mr-2"
+                  >mdi-cloud-upload-outline</v-icon
+                >
+                <h3 class="text-subtitle-1 font-weight-bold mb-0">
+                  Upload Student IDs
+                </h3>
               </div>
               <div
                 class="drop-zone pa-8 text-center"
@@ -525,7 +551,11 @@ onMounted(() => {
                   class="mb-3"
                   :color="showPreview ? 'success' : 'primary'"
                 >
-                  {{ showPreview ? "mdi-check-circle" : "mdi-cloud-upload-outline" }}
+                  {{
+                    showPreview
+                      ? "mdi-check-circle"
+                      : "mdi-cloud-upload-outline"
+                  }}
                 </v-icon>
                 <p class="mb-3">
                   {{
@@ -573,13 +603,19 @@ onMounted(() => {
                   <div class="d-flex align-center justify-space-between mb-2">
                     <div class="d-flex align-center">
                       <v-icon color="primary" class="mr-2">mdi-table</v-icon>
-                      <h3 class="text-subtitle-1 font-weight-bold mb-0">Preview Data</h3>
+                      <h3 class="text-subtitle-1 font-weight-bold mb-0">
+                        Preview Data
+                      </h3>
                     </div>
                     <v-chip color="success" size="small"
                       >{{ previewData.length }} IDs</v-chip
                     >
                   </div>
-                  <v-sheet rounded="lg" elevation="1" class="pa-2 mb-4 bg-grey-lighten-4">
+                  <v-sheet
+                    rounded="lg"
+                    elevation="1"
+                    class="pa-2 mb-4 bg-grey-lighten-4"
+                  >
                     <v-table density="compact" class="rounded-lg">
                       <thead>
                         <tr class="bg-grey-lighten-3">
@@ -591,7 +627,9 @@ onMounted(() => {
                           <td>{{ id }}</td>
                         </tr>
                         <tr v-if="previewData.length > 3">
-                          <td class="text-center text-body-2 text-medium-emphasis">
+                          <td
+                            class="text-center text-body-2 text-medium-emphasis"
+                          >
                             + {{ previewData.length - 3 }} more IDs
                           </td>
                         </tr>
@@ -606,7 +644,12 @@ onMounted(() => {
       </v-col>
     </v-row>
 
-    <v-snackbar v-model="snackbar" :color="snackbarColor" timeout="3000" location="top">
+    <v-snackbar
+      v-model="snackbar"
+      :color="snackbarColor"
+      timeout="3000"
+      location="top"
+    >
       <div class="d-flex align-center">
         <v-icon class="mr-2">{{
           snackbarColor === "success" ? "mdi-check-circle" : "mdi-alert-circle"
@@ -614,7 +657,9 @@ onMounted(() => {
         {{ snackbarText }}
       </div>
       <template #actions>
-        <v-btn color="white" variant="text" @click="snackbar = false">Close</v-btn>
+        <v-btn color="white" variant="text" @click="snackbar = false"
+          >Close</v-btn
+        >
       </template>
     </v-snackbar>
   </v-container>
@@ -633,7 +678,11 @@ onMounted(() => {
 }
 
 .card-header {
-  background: linear-gradient(to right, rgba(var(--v-theme-primary), 0.05), transparent);
+  background: linear-gradient(
+    to right,
+    rgba(var(--v-theme-primary), 0.05),
+    transparent
+  );
   border-bottom: 1px solid rgba(var(--v-theme-primary), 0.05);
 }
 

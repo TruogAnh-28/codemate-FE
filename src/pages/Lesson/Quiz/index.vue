@@ -223,35 +223,34 @@
     <v-divider class="my-5" />
 
     <!-- Code Exercises Section -->
-    <div class="mb-4 d-flex align-center">
-      <v-icon color="primary" size="large" class="mr-2">mdi-code-tags</v-icon>
-      <h2 class="text-h5 font-weight-bold mb-0">Code Exercises</h2>
-      <v-spacer />
-      <v-btn
-        @click="handleGenerateCodeExercise"
-        color="primary"
-        :loading="isExerciseLoading"
-        :disabled="isExerciseLoading"
-      >
-        {{ isExerciseLoading ? "Generating..." : "Generate New Exercise" }}
-      </v-btn>
-    </div>
+    <div v-if="isCodeCourse && codeExercises && codeExercises.length > 0">
+      <div class="mb-4 d-flex align-center">
+        <v-icon color="primary" size="large" class="mr-2">mdi-code-tags</v-icon>
+        <h2 class="text-h5 font-weight-bold mb-0">Code Exercises</h2>
+        <v-spacer />
+        <v-btn
+          @click="handleGenerateCodeExercise"
+          color="primary"
+          :loading="isExerciseLoading"
+          :disabled="isExerciseLoading"
+        >
+          {{ isExerciseLoading ? "Generating..." : "Generate New Exercise" }}
+        </v-btn>
+      </div>
 
       <v-expansion-panels variant="accordion" class="elevation-1 rounded-lg">
-        <v-expansion-panel
-          v-for="exercise in codeExercises"
-          :key="exercise.id"
-        >
+        <v-expansion-panel v-for="exercise in codeExercises" :key="exercise.id">
           <v-expansion-panel-title>
             {{ exercise.name }}
           </v-expansion-panel-title>
           <v-expansion-panel-text>
-            <v-btn color="primary" @click="goToExercise(exercise.id)">Practice</v-btn>
+            <v-btn color="primary" @click="goToExercise(exercise.id)"
+              >Practice</v-btn
+            >
           </v-expansion-panel-text>
         </v-expansion-panel>
       </v-expansion-panels>
-
-
+    </div>
   </v-container>
 </template>
 
@@ -264,6 +263,9 @@ import ReadingMaterial from "@/components/ReadingMaterial/ReadingMaterial.vue";
 import { useTimeSpentStore } from "@/stores/timeSpentStore";
 import { dashboardService } from "@/services/dashboardService";
 import { useGeneratedCodeExerciseStore } from "@/stores/generatedCodeExerciseStore";
+import { useCourseStore } from "@/stores/courseStore";
+import { coursesService } from "@/services/courseslistServices";
+import { GetAvailableCourses } from "@/types/Course";
 interface RouteParams {
   moduleId: string;
   lessonId: string;
@@ -275,7 +277,7 @@ const moduleQuizzes = ref<ModuleQuizResponse>({
   objectives: [],
   quizzes: [],
 });
-
+const availableCourse = ref<GetAvailableCourses[] | null>(null);
 const clearSuccess = ref<ClearAnswerResponse | null>(null);
 const router = useRouter();
 const route = useRoute();
@@ -292,6 +294,41 @@ if (routeState.value.breadcrumbs) {
   breadcrumbsStore.setBreadcrumbs(routeState.value.breadcrumbs);
 }
 
+const fetchAvailableCourses = async () => {
+  try {
+    const response = await coursesService.getAvailableCourses({
+      showError,
+      showSuccess,
+    });
+    if (response && "data" in response) {
+      availableCourse.value = response.data;
+      return availableCourse.value;
+    }
+  } catch (error) {
+    console.error("Error fetching available courses:", error);
+    showError("Failed to fetch available courses");
+  }
+};
+
+const isCodeCourse = computed(() => {
+  if (!availableCourse.value) return false;
+  const getCourseId = useCourseStore.getState().courseDetails;
+  if (getCourseId && "courseID" in getCourseId) {
+    // find the current course in the availableCourses list
+    return (
+      availableCourse.value.find(
+        (course) => course.courseID === getCourseId.courseID
+      )?.have_code || false
+    );
+  } else if (getCourseId && "course_courseID" in getCourseId) {
+    // find the current course in the availableCourses list
+    return (
+      availableCourse.value.find(
+        (course) => course.courseID === getCourseId.course_courseID
+      )?.have_code || false
+    );
+  }
+});
 const breadcrumbs = computed(() => breadcrumbsStore.breadcrumbs);
 const quizGenerationModalRef = ref(null);
 async function generateQuiz() {
@@ -379,6 +416,7 @@ const clearQuizAnswers = async (quizId: string) => {
 
 onMounted(() => {
   fetchModuleQuizzes();
+  fetchAvailableCourses();
 });
 
 const timeSpentStore = useTimeSpentStore();

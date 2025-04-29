@@ -329,4 +329,5 @@ export interface GetAvailableCourses{
   courseID: string;
   name: string;
   nCredit: number;
+  have_code?: boolean;
 }

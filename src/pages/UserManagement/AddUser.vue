@@ -9,6 +9,9 @@ interface CreateUserRequest {
   role: "student" | "professor" | "admin";
 }
 
+// Common role state that's shared between both sections
+const selectedRole = ref<"student" | "professor" | "admin">("student");
+
 // State for single user form
 const singleUser = ref<CreateUserRequest>({
   fullname: "",
@@ -17,13 +20,17 @@ const singleUser = ref<CreateUserRequest>({
   role: "student",
 });
 
+// Watch for role changes to update both sections
+watch(selectedRole, (newRole) => {
+  singleUser.value.role = newRole;
+});
+
 const loading = ref(false);
 const snackbar = ref(false);
 const snackbarText = ref("");
 const snackbarColor = ref("success");
 
 // State for multiple users import
-const selectedRole = ref<"student" | "professor" | "admin">("student");
 const excelFile = ref<File | null>(null);
 const fileInput = ref<HTMLInputElement | null>(null);
 const importLoading = ref(false);
@@ -57,7 +64,7 @@ const resetSingleUser = () => {
     fullname: "",
     email: "",
     ms: "",
-    role: "student",
+    role: selectedRole.value,
   };
 };
 
@@ -163,7 +170,7 @@ const processExcelFile = async () => {
           fullname: row[fullnameIndex],
           email: row[emailIndex],
           ms: row[msIndex].toString(),
-          role: selectedRole.value,
+          role: selectedRole.value, // Use the common role
         });
       }
     }
@@ -221,6 +228,41 @@ const handleDrop = (event: DragEvent) => {
       </v-col>
     </v-row>
 
+    <!-- Role Selection Card -->
+    <v-row class="mb-6">
+      <v-col cols="12">
+        <v-card elevation="2" class="rounded-xl border-card">
+          <v-card-text class="pa-6">
+            <div class="d-flex align-center mb-4">
+              <v-icon color="primary" size="large" class="mr-3">mdi-shield-account</v-icon>
+              <h2 class="text-h5 font-weight-bold">Select User Role</h2>
+            </div>
+            <p class="text-body-1 mb-6">
+              Choose the role type for the users you want to create. This will apply to both
+              single user creation and bulk import.
+            </p>
+            <v-select
+              v-model="selectedRole"
+              :items="[
+                { title: 'Student', value: 'student' },
+                { title: 'Professor', value: 'professor' },
+                { title: 'Administrator', value: 'admin' },
+              ]"
+              item-title="title"
+              item-value="value"
+              label="Select User Role*"
+              variant="outlined"
+              density="comfortable"
+              class="max-w-md rounded-lg"
+              prepend-inner-icon="mdi-shield-account"
+              :rules="[(v) => !!v || 'Role is required']"
+              hide-details="auto"
+            ></v-select>
+          </v-card-text>
+        </v-card>
+      </v-col>
+    </v-row>
+
     <v-row class="gutter-xl">
       <!-- Left Section: Single User Creation -->
       <v-col cols="12" md="6">
@@ -229,7 +271,7 @@ const handleDrop = (event: DragEvent) => {
             <v-icon color="primary" size="x-large" class="mb-3">mdi-account-plus</v-icon>
             <h2 class="text-h5 font-weight-bold">Create Single User</h2>
             <p class="text-subtitle-2 text-medium-emphasis mb-0">
-              Add a new user with custom details
+              Add a new {{ selectedRole }} with custom details
             </p>
           </div>
 
@@ -237,33 +279,15 @@ const handleDrop = (event: DragEvent) => {
 
           <v-card-text class="pa-6 flex flex-col justify-space-between">
             <v-form @submit.prevent="submitSingleUser">
-              <v-select
-                v-model="singleUser.role"
-                :items="[
-                  { title: 'Student', value: 'student' },
-                  { title: 'Professor', value: 'professor' },
-                  { title: 'Administrator', value: 'admin' },
-                ]"
-                item-title="title"
-                item-value="value"
-                label="Role*"
-                variant="outlined"
-                density="comfortable"
-                class="mb-4 rounded-lg"
-                prepend-inner-icon="mdi-shield-account"
-                :rules="[(v) => !!v || 'Role is required']"
-                hide-details="auto"
-              ></v-select>
-
               <v-text-field
                 v-model="singleUser.ms"
-                :label="singleUser.role === 'student' ? 'MSSV*' : 'MSCB*'"
+                :label="msLabel + '*'"
                 variant="outlined"
                 density="comfortable"
                 class="mb-4 rounded-lg"
                 prepend-inner-icon="mdi-identifier"
                 :placeholder="
-                  singleUser.role === 'student'
+                  selectedRole === 'student'
                     ? 'Enter student ID...'
                     : 'Enter employee ID...'
                 "
@@ -300,7 +324,7 @@ const handleDrop = (event: DragEvent) => {
             </v-form>
           </v-card-text>
 
-          <v-card-actions class="d-flex justify-end">
+          <v-card-actions class="d-flex justify-end pa-6">
             <div class="d-flex gap-4 justify-end" style="max-width: 100%">
               <v-btn
                 variant="outlined"
@@ -338,7 +362,7 @@ const handleDrop = (event: DragEvent) => {
             >
             <h2 class="text-h5 font-weight-bold">Bulk User Import</h2>
             <p class="text-subtitle-2 text-medium-emphasis mb-0">
-              Import multiple users from Excel file
+              Import multiple {{ selectedRole }}s from Excel file
             </p>
           </div>
 
@@ -347,9 +371,20 @@ const handleDrop = (event: DragEvent) => {
           <v-card-text class="pa-6">
             <!-- Template Section -->
             <div class="template-section mb-6">
-              <div class="d-flex align-center mb-3">
-                <v-icon color="primary" class="mr-2">mdi-file-document-outline</v-icon>
-                <h3 class="text-subtitle-1 font-weight-bold mb-0">Template Format</h3>
+              <div class="d-flex align-center justify-space-between mb-3">
+                <div class="d-flex align-center">
+                  <v-icon color="primary" class="mr-2">mdi-file-document-outline</v-icon>
+                  <h3 class="text-subtitle-1 font-weight-bold mb-0">Template Format</h3>
+                </div>
+                <v-btn
+                  color="primary"
+                  variant="tonal"
+                  prepend-icon="mdi-file-download-outline"
+                  class="rounded-lg px-4"
+                  @click="downloadTemplate"
+                >
+                  Download Template
+                </v-btn>
               </div>
 
               <v-sheet rounded="lg" elevation="1" class="pa-2 mb-4 bg-grey-lighten-4">
@@ -370,41 +405,16 @@ const handleDrop = (event: DragEvent) => {
                   </tbody>
                 </v-table>
               </v-sheet>
-
-              <v-btn
-                color="primary"
-                variant="tonal"
-                prepend-icon="mdi-file-download-outline"
-                class="rounded-lg px-4"
-                @click="downloadTemplate"
-              >
-                Download Template
-              </v-btn>
             </div>
 
             <!-- Upload Section -->
             <div class="import-section">
               <div class="d-flex align-center mb-3">
                 <v-icon color="primary" class="mr-2">mdi-cloud-upload-outline</v-icon>
-                <h3 class="text-subtitle-1 font-weight-bold mb-0">Upload Users</h3>
+                <h3 class="text-subtitle-1 font-weight-bold mb-0">
+                  Upload {{ selectedRole }}s
+                </h3>
               </div>
-
-              <v-select
-                v-model="selectedRole"
-                :items="[
-                  { title: 'Student', value: 'student' },
-                  { title: 'Professor', value: 'professor' },
-                  { title: 'Administrator', value: 'admin' },
-                ]"
-                item-title="title"
-                item-value="value"
-                label="Select Role*"
-                variant="outlined"
-                density="comfortable"
-                class="mb-4 rounded-lg"
-                prepend-inner-icon="mdi-shield-account"
-                hide-details="auto"
-              ></v-select>
 
               <div
                 class="drop-zone pa-8 text-center"
@@ -470,7 +480,7 @@ const handleDrop = (event: DragEvent) => {
                       <h3 class="text-subtitle-1 font-weight-bold mb-0">Preview Data</h3>
                     </div>
                     <v-chip color="success" size="small"
-                      >{{ previewData.length }} users</v-chip
+                      >{{ previewData.length }} {{ selectedRole }}s</v-chip
                     >
                   </div>
 
@@ -494,7 +504,7 @@ const handleDrop = (event: DragEvent) => {
                             colspan="3"
                             class="text-center text-body-2 text-medium-emphasis"
                           >
-                            + {{ previewData.length - 3 }} more users
+                            + {{ previewData.length - 3 }} more {{ selectedRole }}s
                           </td>
                         </tr>
                       </tbody>
@@ -510,7 +520,7 @@ const handleDrop = (event: DragEvent) => {
                     prepend-icon="mdi-database-import"
                     :loading="importLoading"
                   >
-                    Import {{ previewData.length }} Users
+                    Import {{ previewData.length }} {{ selectedRole }}s
                   </v-btn>
                 </div>
               </v-expand-transition>
@@ -585,6 +595,10 @@ const handleDrop = (event: DragEvent) => {
   text-transform: none;
   font-weight: 500;
   letter-spacing: 0.3px;
+}
+
+.max-w-md {
+  max-width: 400px;
 }
 
 :deep(.v-field) {
