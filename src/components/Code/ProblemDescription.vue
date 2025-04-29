@@ -7,12 +7,15 @@
     </v-tabs>
 
     <v-card-text v-if="descriptionTab === 'description'" class="problem-description pa-4 flex-grow-1 overflow-y-auto">
-      <div v-html="problemDescription"></div>
+      <div v-html="props.problemDescription"></div>
     </v-card-text>
 
-    <v-card-text v-else-if="descriptionTab === 'submission'" class="pa-4">
+    <v-card-text v-else-if="descriptionTab === 'submission'" class="pa-4 flex-grow-1 overflow-y-auto">
       <!-- Use the SubmissionList component without passing submissions prop -->
-      <SubmissionList :programmingExerciseId="routeParams.exerciseId" />
+      <SubmissionList
+        :programmingExerciseId="exerciseId"
+        @update:submissionCount="submissionCount = $event"
+      />
     </v-card-text>
 
     <v-card-text v-else class="chat-container d-flex flex-column flex-grow-1 pa-0">
@@ -59,9 +62,9 @@
       </div>
 
       <div class="chat-input d-flex align-center pa-2 rounded-lg">
-        <v-text-field
+        <v-textarea
           v-model="inputMessage"
-          placeholder="Ask Codemate assistant..."
+          placeholder="Ask assistant (Shift+Enter to send)"
           variant="solo"
           density="comfortable"
           hide-details
@@ -70,11 +73,13 @@
           class="flex-grow-1"
           rounded
           :style="{ color: '#fff' }"
-          @keydown.enter="sendMessage"
+          auto-grow
+          rows="1"
+          @keydown="handleKeydown"
         />
 
         <v-btn
-          @click="sendMessage"
+          @click="handleSendingMessage"
           icon
           color="primary"
           variant="flat"
@@ -88,15 +93,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'vue';
+import { ref, watch, nextTick, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import SubmissionList from '@/components/Code/SubmissionList.vue';
-import axios from 'axios';
 import MarkdownIt from 'markdown-it';
 import hljs from 'highlight.js';
 import 'highlight.js/styles/github-dark.css';
 import { useProblemAssistant } from '@/composables/useProblemAssistant';
-
+import { useCodeEditorStore } from '@/composables/useCodeEditor';
 
 interface RouteParams {
   exerciseId: string;
@@ -104,18 +108,18 @@ interface RouteParams {
 
 interface ProblemDescriptionProps {
   initialTab?: string;
+  problemDescription?: string;
   userSolution?: string;
 }
+
+const { code, selectedLanguage } = useCodeEditorStore();
 
 const props = withDefaults(defineProps<ProblemDescriptionProps>(), {
   initialTab: 'description'
 });
 
-
 const route = useRoute();
-
-// Explicitly type route.params
-const routeParams = route.params as RouteParams;
+const {exerciseId} = route.params as RouteParams;
 
 const {
   messages,
@@ -125,9 +129,11 @@ const {
   renderMarkdown,
   sendMessage,
   fetchHistory
-} = useProblemAssistant(routeParams.exerciseId, props.userSolution ?? '');
+} = useProblemAssistant(exerciseId);
 
-
+onMounted(() => {
+  console.log(props.problemDescription);
+});
 
 // Create MarkdownIt instance with proper typing
 const md: MarkdownIt = new MarkdownIt({
@@ -142,30 +148,13 @@ const md: MarkdownIt = new MarkdownIt({
   }
 });
 
-interface ProblemExample {
-  title: string;
-  input: {
-    nums: string;
-    target: string;
-  };
-  output: string;
-  explanation?: string;
-}
-
-interface ExerciseCodeResponseForStudent {
-  question: string;
-  difficulty: string;
-  tags: string[];
-  description: string;
-  examples: ProblemExample[];
-  constraints: string[];
-}
-
 const emit = defineEmits<{
   (e: 'update:tab', tab: string): void;
 }>();
 
 const descriptionTab = ref<string>(props.initialTab);
+const submissionCount = ref(0);
+
 watch(descriptionTab, async (tab) => {
   emit('update:tab', tab);
   if (tab === 'coding-assistant' && messages.value.length === 0) {
@@ -176,32 +165,40 @@ watch(descriptionTab, async (tab) => {
 const chatBottom = ref<null | HTMLElement>(null);
 const chatContainer = ref<null | HTMLElement>(null);
 
-// function scrollToBottom() {
-//   nextTick(() => {
-//     const container = chatContainer.value;
-//     if (container) {
-//       container.scrollTop = container.scrollHeight;
-//     }
-//   });
-// }
+// Watch messages array for changes and scroll to bottom
+watch(messages, () => {
+  scrollToBottom();
+}, { deep: true });
 
-const problemDescription = ref('');
-
-onMounted(async () => {
-  try {
-    const response = await axios.get<{ data: ExerciseCodeResponseForStudent }>(
-      `exercises/${routeParams.exerciseId}/code`
-    );
-
-    if (response.data && response.data.data) {
-      const exerciseObject = response.data.data;
-      problemDescription.value = exerciseObject.description;
-      console.log("Exercise object:", exerciseObject);
-    }
-  } catch (err) {
-    console.error('Failed to load exercise', err);
-  }
+// Watch streaming buffer for continuous scrolling during text streaming
+watch(streamingBuffer, () => {
+  scrollToBottom();
 });
+
+function scrollToBottom() {
+  nextTick(() => {
+    const container = chatContainer.value;
+    if (container) {
+      const scrollOptions: ScrollToOptions = {
+        top: container.scrollHeight,
+        behavior: 'smooth'
+      };
+      container.scrollTo(scrollOptions);
+    }
+  });
+}
+
+function handleKeydown(e: KeyboardEvent) {
+  if (e.key === 'Enter' && e.shiftKey) {
+    e.preventDefault();
+    sendMessage(code.value, selectedLanguage.value);
+  }
+}
+
+const handleSendingMessage = async () => {
+console.log(code.value);
+  await sendMessage(code.value, selectedLanguage.value);
+}
 </script>
 
 <style scoped>
@@ -225,6 +222,7 @@ onMounted(async () => {
   overflow-y: auto;
   min-height: 0;
   max-height: 100%;
+  scroll-behavior: smooth;
 }
 
 .chat-messages {

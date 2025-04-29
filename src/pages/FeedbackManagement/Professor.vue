@@ -188,15 +188,16 @@
           </template>
 
           <template v-slot:item.rate="{ item }">
-            <v-rating
-              :value="Number(item.rate)"
-              readonly
-              density="compact"
-              size="small"
-              color="warning"
-              class="transition-opacity hover:opacity-80"
-            ></v-rating>
-          </template>
+              <v-rating
+                :model-value="Number(item.rate)"
+                readonly
+                density="compact"
+                size="small"
+                color="warning"
+                class="transition-opacity hover:opacity-80"
+              ></v-rating>
+            </template>
+            
 
           <template v-slot:item.student_info="{ item }">
             <div class="flex flex-col">

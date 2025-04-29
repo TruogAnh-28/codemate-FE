@@ -406,6 +406,16 @@ const getStatusClass = (lesson: GetRecommendedLessonsResponse): string => {
   return "dot-current";
 };
 
+// const getStatusText = (lesson: GetRecommendedLessonsResponse): string => {
+//   const today = new Date("2025-06-20");
+//   const start = new Date(lesson.start_date);
+//   const end = new Date(lesson.end_date);
+
+//   if (today < start) return "Upcoming";
+//   if (today > end) return "Completed";
+//   return "In Progress";
+// };
+
 // Resize handler
 const handleResize = () => {
   updateMaxScroll();

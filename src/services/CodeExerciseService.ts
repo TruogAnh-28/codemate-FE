@@ -1,13 +1,14 @@
-import ApiService from "@/common/api.service";
+import ApiService, { ApiCallConfig } from "@/common/api.service";
 import { AuthConfig } from "./authenServices";
 import { GeneratedCodeExerciseBrief, LanguageConfigDto, SubmissionDto, TestCaseDto } from "@/types/CodingExercise";
 import { IResponseData } from "@/modals/apis/response";
 import { ProgrammingLanguageConfig } from "@/types/CodingExercise";
-import { ExerciseCodeResponse } from "@/types/Exercise";
+import { DeleteCodeExerciseResponse, ExerciseCodeResponse } from "@/types/Exercise";
+import { CodeSolution } from "@/types/CodeSolution";
 
 export const CodeExerciseService = {
   async getCodingExerciseDetail(exerciseId: string, { showError, showSuccess }: AuthConfig) {
-    return ApiService.get<IResponseData<ExerciseCodeResponse>>(`/exercises/${exerciseId}`, "", { showError, showSuccess })
+    return ApiService.get<IResponseData<ExerciseCodeResponse>>(`/exercises/${exerciseId}/code`, "", { showError, showSuccess })
   },
 
   async getListGeneratedCodeExercisesBrief(moduleId: string, { showError, showSuccess }: AuthConfig) {
@@ -35,8 +36,22 @@ export const CodeExerciseService = {
     // Generate a new coding exercise, in the case it doesn't exist, return the brief of the generated exercise, which includes
     // the id and name
     // the ID is used to redirect to the exercise detail page
-    return ApiService.post<IResponseData<GeneratedCodeExerciseBrief>>(
+    return ApiService.post<IResponseData<ExerciseCodeResponse>>(
       `/ai/generate-code-exercise`, { "module_id": moduleID }, { showError, showSuccess }
+    )
+  },
+
+  async deleteAIGenCodeExercise(exerciseID: string, { showError, showSuccess }: ApiCallConfig) {
+    return ApiService.delete<IResponseData<DeleteCodeExerciseResponse>>(
+      `/exercises/${exerciseID}/ai-generated`, { showError, showSuccess }
+    )
+  },
+
+  async getAIGeneratedSolution(exerciseId: string, languageId: number, { showError, showSuccess }: AuthConfig) {
+    return ApiService.post<IResponseData<CodeSolution>>(
+      `/exercises/${exerciseId}/code-solution/${languageId}`,
+      {},
+      { showError, showSuccess }
     )
   }
 }

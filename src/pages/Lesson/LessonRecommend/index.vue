@@ -57,7 +57,43 @@
           </v-btn>
         </div>
       </div>
-
+      <!-- Overall Progress Bar -->
+      <v-divider></v-divider>
+      <div class="pa-4 bg-grey-lighten-5">
+        <div class="d-flex align-center mb-2">
+          <v-icon color="primary" class="mr-2">mdi-chart-line</v-icon>
+          <h3 class="text-subtitle-1 font-weight-bold mb-0">Overall Progress</h3>
+          <v-spacer></v-spacer>
+          <span class="text-body-2">{{ lesson.progress }}% Complete</span>
+        </div>
+        <v-progress-linear
+          :model-value="lesson.progress"
+          :color="renderStatusColor(lesson.status)"
+          height="12"
+          rounded
+          striped
+        >
+          <template v-slot:default="{ value }">
+            <span class="text-caption white--text">{{ Math.ceil(value) }}%</span>
+          </template>
+        </v-progress-linear>
+        
+        <!-- Progress Statistics -->
+        <div class="d-flex justify-space-between align-center mt-2">
+          <div class="d-flex align-center">
+            <v-icon color="grey" size="small" class="mr-1">mdi-circle-outline</v-icon>
+            <span class="text-caption">Not Started</span>
+          </div>
+          <div class="d-flex align-center">
+            <v-icon color="warning" size="small" class="mr-1">mdi-progress-clock</v-icon>
+            <span class="text-caption"> In Progress</span>
+          </div>
+          <div class="d-flex align-center">
+            <v-icon color="sucess" size="small" class="mr-1">mdi-check-circle-outline</v-icon>
+            <span class="text-caption"> Completed</span>
+          </div>
+        </div>
+      </div>
       <!-- Expected Time Section -->
       <v-divider></v-divider>
       <v-card-text class="px-6 pt-4 pb-6">

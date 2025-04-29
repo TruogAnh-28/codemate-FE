@@ -241,7 +241,7 @@
     </v-dialog>
 
     <!-- Results Dialog -->
-    <v-dialog v-model="isResultDialogOpen" max-width="500">
+    <v-dialog v-model="isResultDialogOpen" class="results-dialog" persistent max-width="600">
       <v-card class="border-card">
         <div class="card-header pa-4">
           <v-card-title class="text-h5 d-flex align-center pa-0">
@@ -269,41 +269,94 @@
             </v-chip>
           </div>
           
-          <!-- Learning Issues Section -->
-          <div v-if="quizResult && quizResult.identified_issues && quizResult.identified_issues.length > 0" class="mt-4">
-            <v-divider class="my-4"></v-divider>
+          <!-- Tabbed Interface for Issues and Achievements -->
+          <v-card class="mb-4" v-if="(quizResult && quizResult.identified_issues && quizResult.identified_issues.length > 0) || 
+                                  (quizResult && quizResult.new_achievements && quizResult.new_achievements.length > 0)">
+            <v-tabs v-model="activeTab" color="primary" grow>
+              <v-tab value="issues" :disabled="!(quizResult && quizResult.identified_issues && quizResult.identified_issues.length > 0)">
+                <v-icon start>mdi-alert-circle-outline</v-icon>
+                Areas to Improve
+              </v-tab>
+              <v-tab value="achievements" :disabled="!(quizResult && quizResult.new_achievements && quizResult.new_achievements.length > 0)">
+                <v-icon start>mdi-medal</v-icon>
+                Achievements
+              </v-tab>
+            </v-tabs>
             
-            <div class="d-flex align-center mb-3">
-              <v-icon color="warning" class="mr-2">mdi-alert-circle-outline</v-icon>
-              <h3 class="text-subtitle-1 font-weight-bold mb-0">Areas to Improve</h3>
-            </div>
-            
-            <v-list class="bg-grey-lighten-4 rounded-lg pa-0">
-              <v-list-item
-                v-for="(issue, index) in quizResult.identified_issues"
-                :key="index"
-                class="mb-2 rounded-lg border-left-warning"
-              >
-                <template v-slot:prepend>
-                  <v-avatar color="warning" size="36" class="mr-3">
-                    <v-icon color="white">{{ getIssueIcon(issue.type) }}</v-icon>
-                  </v-avatar>
-                </template>
+            <v-card-text class="px-2 pt-4 pb-0">
+              <v-window v-model="activeTab">
+                <!-- Issues Tab -->
+                <v-window-item value="issues">
+                  <div v-if="quizResult && quizResult.identified_issues && quizResult.identified_issues.length > 0">
+                    <v-sheet class="bg-grey-lighten-4 rounded-lg issues-container">
+                      <v-list class="bg-transparent pa-0">
+                        <v-list-item
+                          v-for="(issue, index) in quizResult.identified_issues"
+                          :key="`issue-${index}`"
+                          class="mb-2 rounded-lg border-left-warning"
+                        >
+                          <template v-slot:prepend>
+                            <v-avatar color="warning" size="36" class="mr-3">
+                              <v-icon color="white">{{ getIssueIcon(issue.type) }}</v-icon>
+                            </v-avatar>
+                          </template>
+                          
+                          <div class="d-flex flex-column">
+                            <div class="text-subtitle-2 font-weight-medium">
+                              {{ formatIssueType(issue.type) }}
+                            </div>
+                            
+                            <div class="text-body-2 mt-1">
+                              {{ issue.description }}
+                            </div>
+                          </div>
+                        </v-list-item>
+                      </v-list>
+                    </v-sheet>
+                  </div>
+                </v-window-item>
                 
-                <v-list-item-title class="text-subtitle-2 font-weight-medium mb-1">
-                  {{ formatIssueType(issue.type) }}
-                </v-list-item-title>
-                
-                <v-list-item-subtitle class="text-body-2">
-                  {{ issue.description }}
-                </v-list-item-subtitle>
-              </v-list-item>
-            </v-list>
-          </div>
+                <!-- Achievements Tab -->
+                <v-window-item value="achievements">
+                  <div v-if="quizResult && quizResult.new_achievements && quizResult.new_achievements.length > 0">
+                    <v-sheet class="bg-success-lighten-5 rounded-lg achievements-container">
+                      <v-list class="bg-transparent pa-0">
+                        <v-list-item
+                          v-for="(achievement, index) in quizResult.new_achievements"
+                          :key="`achievement-${index}`"
+                          class="mb-2 rounded-lg border-left-success"
+                        >
+                          <template v-slot:prepend>
+                            <v-avatar :color="getAchievementColor(achievement.type)" size="36" class="mr-3">
+                              <v-icon color="white">{{ getAchievementIcon(achievement.type) }}</v-icon>
+                            </v-avatar>
+                          </template>
+                          
+                          <div class="d-flex flex-column">
+                            <div class="text-subtitle-2 font-weight-medium">
+                              {{ achievement.description }}
+                            </div>
+                            
+                            <div class="d-flex align-center mt-1">
+                              <v-chip size="x-small" :color="getDifficultyColor(achievement.difficulty)" class="mr-2">
+                                {{ achievement.difficulty }}
+                              </v-chip>
+                              <span class="text-caption">{{ formatDate(achievement.earned_date) }}</span>
+                            </div>
+                          </div>
+                        </v-list-item>
+                      </v-list>
+                    </v-sheet>
+                  </div>
+                </v-window-item>
+              </v-window>
+            </v-card-text>
+          </v-card>
         </v-card-text>
         <v-card-actions class="pa-4 pt-0">
           <v-spacer></v-spacer>
-          <v-btn color="primary" @click="finishQuiz" prepend-icon="mdi-eye">View Detailed Results</v-btn>
+          <v-btn color="primary" @click="finishQuiz" prepend-icon="mdi-eye">View Results</v-btn>
+          <v-btn color="grey-darken-1" variant="outlined" @click="isResultDialogOpen = false">Close</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -365,6 +418,7 @@ const isConfirmDialogOpen = ref(false);
 const isResultDialogOpen = ref(false);
 const isTimeUpDialogOpen = ref(false);
 const isSubmitting = ref(false);
+const activeTab = ref('issues');
 const quizResult = ref<QuizScoreResponse | null>(null);
 const showError = inject("showError") as (message: string) => void;
 const showSuccess = inject("showSuccess") as (message: string) => void;  
@@ -396,7 +450,72 @@ const allQuestionsAnswered = computed(() => {
   // Allow submission even if not all questions are answered
   return true;
 });
+function getAchievementIcon(type: string): string {
+  // Return appropriate icon based on achievement type
+  switch (type) {
+    case "perfect_score":
+      return "mdi-crown";
+    case "high_performance":
+      return "mdi-star";
+    case "quiz_completion":
+      return "mdi-check-decagram";
+    case "issue_resolution":
+      return "mdi-thumbs-up";
+    case "concept_mastery":
+      return "mdi-school";
+    default:
+      return "mdi-medal";
+  }
+}
 
+function getAchievementColor(type: string): string {
+  // Return appropriate color based on achievement type
+  switch (type) {
+    case "perfect_score":
+      return "amber-darken-2"; // Gold
+    case "high_performance":
+      return "deep-purple";
+    case "concept_mastery":
+      return "indigo";
+    case "issue_resolution":
+      return "teal";
+    case "quiz_completion":
+      return "success";
+    default:
+      return "success";
+  }
+}
+
+// function getDifficultyColor(difficulty: string): string {
+//   switch (difficulty.toLowerCase()) {
+//     case "basic":
+//       return "success";
+//     case "intermediate":
+//       return "warning";
+//     case "advanced":
+//       return "error";
+//     default:
+//       return "primary";
+//   }
+// }
+
+function formatDate(dateString: string): string {
+  if (!dateString) return '';
+  
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return '';
+    
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    });
+  } catch (e) {
+    console.error('Error formatting date:', e);
+    return '';
+  }
+}
 // Timer Methods
 function startTimer() {
   if (!quizExercise.value?.time_limit) return;
@@ -837,5 +956,272 @@ onBeforeUnmount(() => {
 
 .issue-item:hover {
   background-color: rgba(var(--v-theme-warning), 0.1);
+}
+.border-left-success {
+  border-left: 4px solid var(--v-theme-success);
+  background-color: rgba(var(--v-theme-success), 0.05);
+}
+
+.border-left-warning {
+  border-left: 4px solid var(--v-theme-warning);
+  background-color: rgba(var(--v-theme-warning), 0.05);
+}
+
+.issues-container, .achievements-container {
+  max-height: 320px;
+  overflow-y: auto;
+  padding: 12px;
+}
+
+.issues-container::-webkit-scrollbar, 
+.achievements-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.issues-container::-webkit-scrollbar-thumb, 
+.achievements-container::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+.issues-container::-webkit-scrollbar-track, 
+.achievements-container::-webkit-scrollbar-track {
+  background-color: rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+}
+
+/* Hover effect for list items */
+.border-left-warning:hover,
+.border-left-success:hover {
+  transform: translateX(2px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  transition: all 0.2s ease;
+}
+.border-left-success {
+  border-left: 4px solid var(--v-theme-success);
+  background-color: rgba(var(--v-theme-success), 0.05);
+}
+
+.border-left-warning {
+  border-left: 4px solid var(--v-theme-warning);
+  background-color: rgba(var(--v-theme-warning), 0.05);
+}
+
+.issues-container, .achievements-container {
+  max-height: 320px;
+  overflow-y: auto;
+  padding: 12px;
+  overflow-x: hidden; /* Prevent horizontal scrolling */
+}
+
+.issues-container::-webkit-scrollbar, 
+.achievements-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.issues-container::-webkit-scrollbar-thumb, 
+.achievements-container::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+.issues-container::-webkit-scrollbar-track, 
+.achievements-container::-webkit-scrollbar-track {
+  background-color: rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+}
+
+/* Hover effect for list items */
+.border-left-warning:hover,
+.border-left-success:hover {
+  transform: translateX(2px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  transition: all 0.2s ease;
+}
+
+/* Prevent text truncation */
+:deep(.v-list-item-title),
+:deep(.v-list-item-subtitle) {
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  word-break: break-word !important;
+}
+
+:deep(.v-list-item__content) {
+  overflow: visible !important;
+}
+
+:deep(.v-list-item) {
+  overflow: visible !important;
+  min-height: auto !important;
+  padding: 8px 12px !important;
+}
+
+/* Make sure dialog content doesn't overflow horizontally */
+.v-dialog {
+  overflow-x: hidden !important;
+  max-width: 550px !important;
+  width: 100% !important;
+}
+
+.v-card-text {
+  overflow-wrap: break-word !important;
+  word-wrap: break-word !important;
+}
+
+/* Adjust list padding and spacing */
+:deep(.v-list) {
+  overflow: visible !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+/* Better spacing for items */
+:deep(.v-list-item) {
+  margin-bottom: 8px !important;
+}
+.border-left-success {
+  border-left: 4px solid var(--v-theme-success);
+  background-color: rgba(var(--v-theme-success), 0.05);
+}
+
+.border-left-warning {
+  border-left: 4px solid var(--v-theme-warning);
+  background-color: rgba(var(--v-theme-warning), 0.05);
+}
+
+.issues-container, .achievements-container {
+  max-height: 320px;
+  overflow-y: auto;
+  padding: 12px;
+  overflow-x: hidden; /* Prevent horizontal scrolling */
+}
+
+.issues-container::-webkit-scrollbar, 
+.achievements-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.issues-container::-webkit-scrollbar-thumb, 
+.achievements-container::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+.issues-container::-webkit-scrollbar-track, 
+.achievements-container::-webkit-scrollbar-track {
+  background-color: rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+}
+
+/* Hover effect for list items */
+.border-left-warning:hover,
+.border-left-success:hover {
+  transform: translateX(2px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  transition: all 0.2s ease;
+}
+
+/* Ensure text doesn't get truncated */
+:deep(.v-list-item-title),
+:deep(.v-list-item-subtitle) {
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  word-break: break-word;
+  line-height: 1.5;
+}
+
+:deep(.v-list-item__content) {
+  overflow: visible;
+  white-space: normal;
+}
+
+/* Make dialog wider to fit content better */
+.results-dialog {
+  max-width: 600px !important;
+  width: 100%;
+}
+
+/* Ensure consistent padding in list items */
+:deep(.v-list-item) {
+  padding: 12px;
+  margin-bottom: 8px;
+}
+
+/* Fix issue with v-list wrapping */
+:deep(.v-list) {
+  width: 100%;
+}
+:deep(.v-tab) {
+  min-width: 0;
+  padding: 0 12px;
+}
+
+/* Ensure content fits correctly in tab panels */
+.v-window {
+  overflow: hidden;
+  border-radius: 0 0 8px 8px;
+}
+
+.v-window-item {
+  padding-bottom: 16px;
+  overflow: visible;
+}
+
+/* Fix for list items */
+:deep(.v-list-item) {
+  display: flex;
+  align-items: flex-start;
+  padding: 12px;
+  margin-bottom: 8px;
+  min-height: auto;
+}
+
+/* Prevent text overflow and fix layout */
+:deep(.v-list-item > .v-list-item__content) {
+  overflow: visible;
+  white-space: normal;
+  flex: 1;
+}
+
+:deep(.v-list-item__prepend) {
+  align-self: flex-start;
+  margin-right: 12px;
+  margin-top: 4px;
+}
+
+/* Better text wrapping for list items */
+.d-flex.flex-column {
+  width: 100%;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
+}
+
+.text-subtitle-2,
+.text-body-2,
+.text-caption {
+  width: 100%;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
+  line-height: 1.5;
+}
+
+/* Improved containers for scrollable content */
+.issues-container, 
+.achievements-container {
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 12px;
+  overflow-x: hidden;
+  margin-bottom: 0;
+}
+
+/* Fix dialog width */
+.results-dialog {
+  max-width: 600px !important;
 }
 </style>
