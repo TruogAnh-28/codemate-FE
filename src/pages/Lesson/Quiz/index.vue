@@ -128,12 +128,20 @@
     </div>
 
     <!-- Empty state when no quizzes are available -->
-    <v-card v-if="moduleQuizzes.quizzes.length === 0" class="border-card mb-6 empty-state-card">
+    <v-card
+      v-if="moduleQuizzes.quizzes.length === 0"
+      class="border-card mb-6 empty-state-card"
+    >
       <v-card-text class="pa-6 text-center">
-        <v-icon color="primary" size="x-large" class="mb-4">mdi-information-outline</v-icon>
-        <h3 class="text-h6 font-weight-medium mb-2">No quizzes available yet</h3>
+        <v-icon color="primary" size="x-large" class="mb-4"
+          >mdi-information-outline</v-icon
+        >
+        <h3 class="text-h6 font-weight-medium mb-2">
+          No quizzes available yet
+        </h3>
         <p class="text-body-1 text-medium-emphasis mb-4">
-          There are no quizzes available for this module. Generate a new quiz to start practicing your knowledge.
+          There are no quizzes available for this module. Generate a new quiz to
+          start practicing your knowledge.
         </p>
         <v-btn
           color="primary"
@@ -182,14 +190,21 @@
 
           <!-- Card Content -->
           <v-card-text class="pa-4">
-            <h3 class="text-subtitle-1 font-weight-medium mb-2 text-truncate" :title="quiz.name">
+            <h3
+              class="text-subtitle-1 font-weight-medium mb-2 text-truncate"
+              :title="quiz.name"
+            >
               {{ quiz.name }}
             </h3>
-            
+
             <div class="d-flex flex-column gap-2">
               <!-- Status indicator -->
-              <div class="d-flex align-center text-caption text-medium-emphasis">
-                <v-icon size="small" class="mr-1">mdi-clipboard-check-outline</v-icon>
+              <div
+                class="d-flex align-center text-caption text-medium-emphasis"
+              >
+                <v-icon size="small" class="mr-1"
+                  >mdi-clipboard-check-outline</v-icon
+                >
                 <span>Status:</span>
                 <v-chip
                   size="x-small"
@@ -199,32 +214,48 @@
                   {{ formatStatus(quiz.status) }}
                 </v-chip>
               </div>
-              
+
               <!-- Question count -->
-              <div class="d-flex align-center text-caption text-medium-emphasis">
-                <v-icon size="small" class="mr-1">mdi-help-circle-outline</v-icon>
-                <span>Questions: {{ quiz.question_count || '?' }}</span>
+              <div
+                class="d-flex align-center text-caption text-medium-emphasis"
+              >
+                <v-icon size="small" class="mr-1"
+                  >mdi-help-circle-outline</v-icon
+                >
+                <span>Questions: {{ quiz.question_count || "?" }}</span>
               </div>
-              
+
               <!-- Time limit -->
-              <div v-if="quiz.time_limit" class="d-flex align-center text-caption text-medium-emphasis">
+              <div
+                v-if="quiz.time_limit"
+                class="d-flex align-center text-caption text-medium-emphasis"
+              >
                 <v-icon size="small" class="mr-1">mdi-clock-outline</v-icon>
                 <span>Time Limit: {{ quiz.time_limit }} min</span>
               </div>
-              
+
               <!-- Score (if completed) -->
               <div
                 v-if="quiz.status === 'completed' && quiz.score !== undefined"
                 class="d-flex align-center mt-2"
               >
-                <v-icon size="small" :color="getScoreColor(quiz.score, quiz.max_score)" class="mr-1">
+                <v-icon
+                  size="small"
+                  :color="getScoreColor(quiz.score, quiz.max_score)"
+                  class="mr-1"
+                >
                   {{ getScoreIcon(quiz.score, quiz.max_score) }}
                 </v-icon>
-                <span :class="getScoreTextClass(quiz.score, quiz.max_score)" class="font-weight-medium">
-                  Score: {{ formatScore(quiz.score) }}/{{ formatScore(quiz.max_score) }}
+                <span
+                  :class="getScoreTextClass(quiz.score, quiz.max_score)"
+                  class="font-weight-medium"
+                >
+                  Score: {{ formatScore(quiz.score) }}/{{
+                    formatScore(quiz.max_score)
+                  }}
                 </span>
               </div>
-              
+
               <!-- Progress bar (if in progress or completed) -->
               <div v-if="quiz.status !== 'new'" class="mt-2">
                 <v-progress-linear
@@ -257,10 +288,14 @@
               :variant="quiz.status === 'new' ? 'elevated' : 'tonal'"
               class="text-none rounded-lg"
               @click="doQuiz(quiz.id, quiz.status)"
-              :prepend-icon="quiz.status === 'new' ? 'mdi-play-circle-outline' : 'mdi-play-circle'"
+              :prepend-icon="
+                quiz.status === 'new'
+                  ? 'mdi-play-circle-outline'
+                  : 'mdi-play-circle'
+              "
               block
             >
-              {{ quiz.status === 'new' ? 'Start Quiz' : 'Continue' }}
+              {{ quiz.status === "new" ? "Start Quiz" : "Continue" }}
             </v-btn>
           </v-card-actions>
         </v-card>
@@ -270,27 +305,36 @@
     <v-divider class="my-5" />
 
     <!-- Code Exercises Section -->
-    <div class="mb-4 d-flex align-center">
-      <v-icon color="primary" size="large" class="mr-2">mdi-code-tags</v-icon>
-      <h2 class="text-h5 font-weight-bold mb-0">Code Exercises</h2>
-      <v-spacer />
-      <v-btn
-        @click="handleGenerateCodeExercise"
-        color="primary"
-        :loading="isExerciseLoading"
-        :disabled="isExerciseLoading"
-      >
-        {{ isExerciseLoading ? "Generating..." : "Generate New Exercise" }}
-      </v-btn>
+    <div v-if="isCodeCourse">
+      <div class="mb-4 d-flex align-center">
+        <v-icon color="primary" size="large" class="mr-2">mdi-code-tags</v-icon>
+        <h2 class="text-h5 font-weight-bold mb-0">Code Exercises</h2>
+        <v-spacer />
+        <v-btn
+          @click="handleGenerateCodeExercise"
+          color="primary"
+          :loading="isExerciseLoading"
+          :disabled="isExerciseLoading"
+        >
+          {{ isExerciseLoading ? "Generating..." : "Generate New Exercise" }}
+        </v-btn>
+      </div>
     </div>
-
     <!-- Empty state for code exercises -->
-    <v-card v-if="codeExercises.length === 0" class="border-card mb-6 empty-state-card">
+    <v-card
+      v-if="codeExercises.length === 0"
+      class="border-card mb-6 empty-state-card"
+    >
       <v-card-text class="pa-6 text-center">
-        <v-icon color="primary" size="x-large" class="mb-4">mdi-code-braces</v-icon>
-        <h3 class="text-h6 font-weight-medium mb-2">No code exercises available</h3>
+        <v-icon color="primary" size="x-large" class="mb-4"
+          >mdi-code-braces</v-icon
+        >
+        <h3 class="text-h6 font-weight-medium mb-2">
+          No code exercises available
+        </h3>
         <p class="text-body-1 text-medium-emphasis mb-4">
-          There are no code exercises yet for this module. Generate a new exercise to start practicing your coding skills.
+          There are no code exercises yet for this module. Generate a new
+          exercise to start practicing your coding skills.
         </p>
         <v-btn
           color="primary"
@@ -300,22 +344,27 @@
           :loading="isExerciseLoading"
           :disabled="isExerciseLoading"
         >
-          {{ isExerciseLoading ? "Generating..." : "Generate Your First Exercise" }}
+          {{
+            isExerciseLoading ? "Generating..." : "Generate Your First Exercise"
+          }}
         </v-btn>
       </v-card-text>
     </v-card>
 
     <!-- Code exercises list (only shown when exercises exist) -->
-    <v-expansion-panels v-else variant="accordion" class="elevation-1 rounded-lg">
-      <v-expansion-panel
-        v-for="exercise in codeExercises"
-        :key="exercise.id"
-      >
+    <v-expansion-panels
+      v-else
+      variant="accordion"
+      class="elevation-1 rounded-lg"
+    >
+      <v-expansion-panel v-for="exercise in codeExercises" :key="exercise.id">
         <v-expansion-panel-title>
           {{ exercise.name }}
         </v-expansion-panel-title>
         <v-expansion-panel-text>
-          <v-btn color="primary" @click="goToExercise(exercise.id)">Practice</v-btn>
+          <v-btn color="primary" @click="goToExercise(exercise.id)"
+            >Practice</v-btn
+          >
         </v-expansion-panel-text>
       </v-expansion-panel>
     </v-expansion-panels>
@@ -331,6 +380,9 @@ import ReadingMaterial from "@/components/ReadingMaterial/ReadingMaterial.vue";
 import { useTimeSpentStore } from "@/stores/timeSpentStore";
 import { dashboardService } from "@/services/dashboardService";
 import { useGeneratedCodeExerciseStore } from "@/stores/generatedCodeExerciseStore";
+import { useCourseStore } from "@/stores/courseStore";
+import { coursesService } from "@/services/courseslistServices";
+import { GetAvailableCourses } from "@/types/Course";
 interface RouteParams {
   moduleId: string;
   lessonId: string;
@@ -342,7 +394,7 @@ const moduleQuizzes = ref<ModuleQuizResponse>({
   objectives: [],
   quizzes: [],
 });
-
+const availableCourse = ref<GetAvailableCourses[] | null>(null);
 const router = useRouter();
 const route = useRoute();
 const isLoading = ref(false);
@@ -358,6 +410,41 @@ if (routeState.value.breadcrumbs) {
   breadcrumbsStore.setBreadcrumbs(routeState.value.breadcrumbs);
 }
 
+const fetchAvailableCourses = async () => {
+  try {
+    const response = await coursesService.getAvailableCourses({
+      showError,
+      showSuccess,
+    });
+    if (response && "data" in response) {
+      availableCourse.value = response.data;
+      return availableCourse.value;
+    }
+  } catch (error) {
+    console.error("Error fetching available courses:", error);
+    showError("Failed to fetch available courses");
+  }
+};
+
+const isCodeCourse = computed(() => {
+  if (!availableCourse.value) return false;
+  const getCourseId = useCourseStore.getState().courseDetails;
+  if (getCourseId && "courseID" in getCourseId) {
+    // find the current course in the availableCourses list
+    return (
+      availableCourse.value.find(
+        (course) => course.courseID === getCourseId.courseID
+      )?.have_code || false
+    );
+  } else if (getCourseId && "course_courseID" in getCourseId) {
+    // find the current course in the availableCourses list
+    return (
+      availableCourse.value.find(
+        (course) => course.courseID === getCourseId.course_courseID
+      )?.have_code || false
+    );
+  }
+});
 const breadcrumbs = computed(() => breadcrumbsStore.breadcrumbs);
 const quizGenerationModalRef = ref(null);
 async function generateQuiz() {
@@ -365,63 +452,63 @@ async function generateQuiz() {
 }
 function getStatusColor(status: string) {
   switch (status) {
-    case 'completed':
-      return 'success';
-    case 'in Progress':
-      return 'warning';
+    case "completed":
+      return "success";
+    case "in Progress":
+      return "warning";
     default:
-      return 'grey';
+      return "grey";
   }
 }
 
 function formatStatus(status: string) {
   switch (status) {
-    case 'in Progress':
-      return 'In Progress';
+    case "in Progress":
+      return "In Progress";
     default:
       return status.charAt(0).toUpperCase() + status.slice(1);
   }
 }
 
 function getQuizType(name: string) {
-  if (name.toLowerCase().includes('coding')) return 'Coding';
-  if (name.toLowerCase().includes('matching')) return 'Matching';
-  if (name.toLowerCase().includes('multiple choice')) return 'Multiple Choice';
-  return 'Quiz';
+  if (name.toLowerCase().includes("coding")) return "Coding";
+  if (name.toLowerCase().includes("matching")) return "Matching";
+  if (name.toLowerCase().includes("multiple choice")) return "Multiple Choice";
+  return "Quiz";
 }
 
 function getQuizTypeColor(name: string) {
-  if (name.toLowerCase().includes('coding')) return 'indigo';
-  if (name.toLowerCase().includes('matching')) return 'teal';
-  if (name.toLowerCase().includes('multiple choice')) return 'blue';
-  return 'purple';
+  if (name.toLowerCase().includes("coding")) return "indigo";
+  if (name.toLowerCase().includes("matching")) return "teal";
+  if (name.toLowerCase().includes("multiple choice")) return "blue";
+  return "purple";
 }
 
-function getScoreColor(score:number, maxScore:number) {
+function getScoreColor(score: number, maxScore: number) {
   const percentage = (score / maxScore) * 100;
-  if (percentage >= 85) return 'success';
-  if (percentage >= 70) return 'info';
-  if (percentage >= 60) return 'warning';
-  return 'error';
+  if (percentage >= 85) return "success";
+  if (percentage >= 70) return "info";
+  if (percentage >= 60) return "warning";
+  return "error";
 }
 
-function getScoreIcon(score:number, maxScore:number) {
+function getScoreIcon(score: number, maxScore: number) {
   const percentage = (score / maxScore) * 100;
-  if (percentage >= 85) return 'mdi-star';
-  if (percentage >= 70) return 'mdi-star-half-full';
-  return 'mdi-star-outline';
+  if (percentage >= 85) return "mdi-star";
+  if (percentage >= 70) return "mdi-star-half-full";
+  return "mdi-star-outline";
 }
 
-function getScoreTextClass(score:number, maxScore:number) {
+function getScoreTextClass(score: number, maxScore: number) {
   const percentage = (score / maxScore) * 100;
-  if (percentage >= 85) return 'text-success';
-  if (percentage >= 70) return 'text-info';
-  if (percentage >= 60) return 'text-warning';
-  return 'text-error';
+  if (percentage >= 85) return "text-success";
+  if (percentage >= 70) return "text-info";
+  if (percentage >= 60) return "text-warning";
+  return "text-error";
 }
 
-function formatScore(score:number) {
-  return typeof score === 'number' ? score.toFixed(1) : score;
+function formatScore(score: number) {
+  return typeof score === "number" ? score.toFixed(1) : score;
 }
 
 function getProgressValue(score: number, maxScore: number) {
@@ -443,9 +530,9 @@ async function doQuiz(quizId: string, status: string): Promise<void> {
   } else {
     console.error("Failed to add activity");
   }
-  
+
   // Removed the clear quiz answers step for completed quizzes
-  
+
   router.push(path);
 }
 async function handleQuizGenerated() {
@@ -488,6 +575,7 @@ const fetchModuleQuizzes = async () => {
 
 onMounted(() => {
   fetchModuleQuizzes();
+  fetchAvailableCourses();
 });
 
 const timeSpentStore = useTimeSpentStore();
