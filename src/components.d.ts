@@ -42,6 +42,7 @@ declare module 'vue' {
     DialogLearningType: typeof import('./components/Lesson/DialogLearningType.vue')['default']
     ErrorAlert: typeof import('./components/ErrorAlert.vue')['default']
     EventItem: typeof import('./components/Dashboard/EventItem.vue')['default']
+    ExportUsers: typeof import('./components/File/ExportUsers.vue')['default']
     FAQs: typeof import('./components/Login/FAQs.vue')['default']
     FeatureCard: typeof import('./components/Login/FeatureCard.vue')['default']
     FeedbackCard: typeof import('./components/Dashboard/FeedbackCard.vue')['default']
