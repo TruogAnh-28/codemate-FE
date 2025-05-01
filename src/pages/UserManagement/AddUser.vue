@@ -98,6 +98,42 @@ const submitSingleUser = async () => {
   }
 };
 
+// Add a new method to handle the import submission
+const submitMultipleUsers = async () => {
+  try {
+    importLoading.value = true;
+    
+    if (previewData.value.length === 0) {
+      showSnackbar("No valid users to import", "error");
+      importLoading.value = false;
+      return;
+    }
+    
+    // Transform the data for the API
+    const usersToSubmit = previewData.value.map(user => ({
+      ...user,
+      name: user.email.split("@")[0],
+      date_of_birth: new Date("1997-01-01").toISOString(),
+    }));
+    
+    const response = await usersService.createUser(usersToSubmit, {
+      showError,
+      showSuccess,
+    });
+    
+    if (response && response.isSuccess) {
+      showSnackbar(`Successfully imported ${usersToSubmit.length} ${selectedRole.value}s`);
+      excelFile.value = null;
+      previewData.value = [];
+      showPreview.value = false;
+    }
+  } catch (error) {
+    showSnackbar(`Failed to import users: ${error}`, "error");
+  } finally {
+    importLoading.value = false;
+  }
+};
+
 // Multiple users methods
 const showSnackbar = (text: string, color: string = "success") => {
   snackbarText.value = text;
@@ -519,6 +555,7 @@ const handleDrop = (event: DragEvent) => {
                     elevation="2"
                     prepend-icon="mdi-database-import"
                     :loading="importLoading"
+                    @click="submitMultipleUsers"
                   >
                     Import {{ previewData.length }} {{ selectedRole }}s
                   </v-btn>
