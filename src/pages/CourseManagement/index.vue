@@ -113,6 +113,14 @@
               ></v-btn>
               <v-btn
                 size="small"
+                color="success"
+                variant="text"
+                icon="mdi-account-multiple-plus"
+                @click="openAddStudentsDialog(item)"
+                title="Add Students"
+              ></v-btn>
+              <v-btn
+                size="small"
                 color="error"
                 variant="text"
                 icon="mdi-delete"
@@ -303,22 +311,167 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <!-- Add Students Dialog -->
+    <v-dialog v-model="addStudentsDialog" max-width="800px" persistent>
+      <v-card class="rounded-xl">
+        <v-card-title class="text-h5 py-4 px-6">
+          Add Students to Course
+          <v-btn
+            icon="mdi-close"
+            variant="text"
+            @click="closeAddStudentsDialog"
+            class="float-right"
+          ></v-btn>
+        </v-card-title>
+        <v-divider></v-divider>
+        <v-card-text class="py-4">
+          <p class="mb-4">
+            Adding students to: <strong>{{ selectedCourse?.name }}</strong> (ID:
+            {{ selectedCourse?.courseID }})
+          </p>
+
+          <v-row>
+            <v-col cols="12">
+              <v-text-field
+                v-model="studentSearchQuery"
+                label="Search students by name or student ID"
+                placeholder="Type to search..."
+                variant="outlined"
+                density="comfortable"
+                clearable
+                prepend-inner-icon="mdi-magnify"
+                @update:model-value="searchStudents"
+                @click:clear="
+                  studentSearchQuery = '';
+                  searchStudents();
+                "
+              ></v-text-field>
+            </v-col>
+          </v-row>
+
+          <v-row>
+            <v-col cols="12">
+              <v-card variant="outlined" class="pa-0">
+                <v-card-title
+                  class="py-3 px-4 text-subtitle-1 bg-grey-lighten-4"
+                >
+                  Available Students
+                  <v-chip class="ml-2" size="small" color="primary">{{
+                    filteredStudents.length
+                  }}</v-chip>
+                </v-card-title>
+                <v-divider></v-divider>
+                <v-card-text class="px-0 pt-0 pb-0">
+                  <v-list
+                    v-if="filteredStudents.length > 0"
+                    height="300"
+                    class="overflow-y-auto"
+                  >
+                    <v-list-item
+                      v-for="student in filteredStudents"
+                      :key="student.id"
+                      :value="student.id"
+                      @click="toggleStudentSelection(student)"
+                    >
+                      <template v-slot:prepend>
+                        <v-checkbox
+                          v-model="selectedStudents"
+                          :value="student.ms"
+                          hide-details
+                          class="mr-2"
+                        ></v-checkbox>
+                      </template>
+                      <v-list-item-title>
+                        {{ student.name || student.fullname }}
+                      </v-list-item-title>
+                      <v-list-item-subtitle>
+                        Student ID: {{ student.ms }} | Email:
+                        {{ student.email }}
+                      </v-list-item-subtitle>
+                    </v-list-item>
+                  </v-list>
+                  <div v-else class="pa-4 text-center text-body-1">
+                    <span v-if="loadingStudents">Loading students...</span>
+                    <span v-else
+                      >No students found. Try a different search term.</span
+                    >
+                  </div>
+                </v-card-text>
+              </v-card>
+            </v-col>
+          </v-row>
+
+          <v-row v-if="selectedStudents.length > 0">
+            <v-col cols="12">
+              <v-card variant="outlined" class="pa-0 mt-2">
+                <v-card-title
+                  class="py-3 px-4 text-subtitle-1 bg-grey-lighten-4"
+                >
+                  Selected Students
+                  <v-chip class="ml-2" size="small" color="success">{{
+                    selectedStudents.length
+                  }}</v-chip>
+                </v-card-title>
+                <v-divider></v-divider>
+                <v-card-text class="px-0 pt-0 pb-0">
+                  <v-chip-group class="pa-4">
+                    <v-chip
+                      v-for="studentId in selectedStudents"
+                      :key="studentId"
+                      closable
+                      @click:close="removeStudentSelection(studentId)"
+                      class="ma-1"
+                    >
+                      {{ getStudentNameById(studentId) }} ({{ studentId }})
+                    </v-chip>
+                  </v-chip-group>
+                </v-card-text>
+              </v-card>
+            </v-col>
+          </v-row>
+        </v-card-text>
+        <v-divider></v-divider>
+        <v-card-actions class="pa-4">
+          <v-spacer></v-spacer>
+          <v-btn
+            color="grey-darken-1"
+            variant="text"
+            @click="closeAddStudentsDialog"
+          >
+            Cancel
+          </v-btn>
+          <v-btn
+            color="success"
+            @click="addStudentsToCourse"
+            :loading="addingStudents"
+            :disabled="selectedStudents.length === 0"
+            variant="elevated"
+          >
+            Add Students
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-layout>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch, inject } from "vue";
+import { ref, onMounted, watch, inject, computed } from "vue";
 import {
   coursesService,
   PaginationParams,
 } from "@/services/courseslistServices";
+import { usersService } from "@/services/usersServices";
 import debounce from "@/composables/useDebounce";
 import {
   CoursesAdminListResponse,
   ProfessorInformation,
   UpdateCourseRequest,
+  StudentOfCourseListModal,
 } from "@/types/Course";
 import { AuthConfig } from "@/services/authenServices";
+import { GetAllUsersResponse } from "@/types/User"; // Add this import
 import "../table.css";
 
 // Filter variables
@@ -347,6 +500,18 @@ const loadingProfessors = ref(false);
 const deleteDialog = ref(false);
 const courseToDelete = ref<CoursesAdminListResponse | null>(null);
 const deleting = ref(false);
+
+// Add Students dialog variables
+const addStudentsDialog = ref(false);
+const selectedCourse = ref<CoursesAdminListResponse | null>(null);
+const students = ref<GetAllUsersResponse[]>([]);
+const filteredStudents = ref<GetAllUsersResponse[]>([]);
+const selectedStudents = ref<string[]>([]);
+const studentSearchQuery = ref("");
+const loadingStudents = ref(false);
+const addingStudents = ref(false);
+const existingCourseStudents = ref<StudentOfCourseListModal[]>([]);
+const existingStudentIds = ref<string[]>([]);
 
 // Update headers to include actions column
 const headers = [
@@ -592,6 +757,166 @@ const deleteCourse = async () => {
     deleting.value = false;
   }
 };
+
+// Add Students functions
+const openAddStudentsDialog = async (item: CoursesAdminListResponse) => {
+  selectedCourse.value = item;
+  selectedStudents.value = []; // Reset selected students
+  addStudentsDialog.value = true;
+
+  // First, fetch students that are already in the course
+  await fetchExistingCourseStudents(item.id);
+
+  // Then fetch all students and filter out existing ones
+  await fetchStudents();
+};
+
+const closeAddStudentsDialog = () => {
+  addStudentsDialog.value = false;
+  selectedCourse.value = null;
+  selectedStudents.value = [];
+  studentSearchQuery.value = "";
+  existingCourseStudents.value = [];
+  existingStudentIds.value = [];
+};
+
+// Fetch existing students in the course
+const fetchExistingCourseStudents = async (courseId: string) => {
+  loadingStudents.value = true;
+  try {
+    const response = await coursesService.getStudentsForCourse(
+      { showError, showSuccess },
+      courseId
+    );
+
+    if (response && response.data) {
+      existingCourseStudents.value = Array.isArray(response.data)
+        ? response.data
+        : [response.data];
+      console.log("Existing course students:", existingCourseStudents.value);
+      // Extract student IDs from existing course students
+      existingStudentIds.value = existingCourseStudents.value
+        .map((student) => student.student_mssv || "")
+        .filter((id) => id !== "");
+
+      console.log("Existing students in course:", existingCourseStudents.value);
+      console.log("Existing student IDs:", existingStudentIds.value);
+    }
+  } catch (error) {
+    console.error("Error fetching existing course students:", error);
+    showError("Failed to load current course students");
+    existingCourseStudents.value = [];
+    existingStudentIds.value = [];
+  }
+};
+
+// Fetch all available students function
+const fetchStudents = async () => {
+  loadingStudents.value = true;
+  try {
+    const response = await usersService.getAllUsers(
+      { role: "student" },
+      { showError, showSuccess }
+    );
+
+    if (response && response.data) {
+      console.log("All students fetched:", response.data);
+      // Filter out students who are already in the course
+      students.value = response.data.filter(
+        (student: { ms: string }) =>
+          !existingStudentIds.value.includes(student.ms)
+      );
+
+      console.log("Available students (not yet in course):", students.value);
+      applyStudentFilter(); // Apply initial filter
+    }
+  } catch (error) {
+    console.error("Error fetching students:", error);
+    showError("Failed to load students");
+  } finally {
+    loadingStudents.value = false;
+  }
+};
+
+// Search students (with debounce)
+const searchStudents = debounce.useDebounceFn(() => {
+  applyStudentFilter();
+}, 300);
+
+// Apply student filter based on search query
+const applyStudentFilter = () => {
+  // Check if studentSearchQuery is null or undefined before using trim()
+  const query = studentSearchQuery.value?.trim?.() || "";
+
+  if (!query) {
+    // If no search query, show all students
+    filteredStudents.value = students.value;
+  } else {
+    filteredStudents.value = students.value.filter((student) => {
+      return (
+        (student.name &&
+          student.name.toLowerCase().includes(query.toLowerCase())) ||
+        (student.fullname &&
+          student.fullname.toLowerCase().includes(query.toLowerCase())) ||
+        (student.ms && student.ms.toLowerCase().includes(query.toLowerCase()))
+      );
+    });
+  }
+};
+
+// Toggle student selection
+const toggleStudentSelection = (student: GetAllUsersResponse) => {
+  const index = selectedStudents.value.findIndex((id) => id === student.ms);
+  if (index === -1) {
+    selectedStudents.value.push(student.ms);
+  } else {
+    selectedStudents.value.splice(index, 1);
+  }
+};
+
+// Remove student from selection
+const removeStudentSelection = (studentId: string) => {
+  const index = selectedStudents.value.findIndex((id) => id === studentId);
+  if (index !== -1) {
+    selectedStudents.value.splice(index, 1);
+  }
+};
+
+// Get student name by ID for display in chips
+const getStudentNameById = (studentId: string) => {
+  const student = students.value.find((s) => s.ms === studentId);
+  return student ? student.name || student.fullname : studentId;
+};
+
+// Add selected students to course
+const addStudentsToCourse = async () => {
+  if (!selectedCourse.value || selectedStudents.value.length === 0) return;
+
+  addingStudents.value = true;
+  try {
+    console.log("Adding students to course:", selectedStudents.value);
+    await coursesService.addMoreStudentsToCourse(
+      { showError, showSuccess },
+      selectedCourse.value.id,
+      selectedStudents.value
+    );
+
+    showSuccess(
+      `Successfully added ${selectedStudents.value.length} student(s) to the course`
+    );
+    closeAddStudentsDialog();
+  } catch (error) {
+    console.error("Error adding students to course:", error);
+    showError("Failed to add students to the course");
+  } finally {
+    addingStudents.value = false;
+  }
+};
+
+// Watch for changes in student search query
+watch(studentSearchQuery, () => {
+  searchStudents();
+});
 
 // Debounced fetchCourses function
 const debouncedFetchCourses = debounce.useDebounceFn(fetchCourses, 500);

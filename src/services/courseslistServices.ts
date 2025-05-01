@@ -11,6 +11,7 @@ import {
   GetAvailableCourses,
   _GetRecommendedLessonsResponse,
   UpdateCourseRequest,
+  AddStudentsToCourseResponse,
 } from "@/types/Course";
 import { AuthConfig } from "./authenServices";
 import { IResponseData } from "@/modals/apis/response";
@@ -92,7 +93,7 @@ export const coursesService = {
     { showError, showSuccess }: AuthConfig,
     course_id: string
   ) {
-    return await ApiService.get<StudentOfCourseListModal[]>(
+    return await ApiService.get<IResponseData<StudentOfCourseListModal[]>>(
       `courses/${course_id}/students`,
       "",
       { showError, showSuccess }
@@ -179,8 +180,20 @@ export const coursesService = {
     course_id: string
   ) {
     return await ApiService.delete<IResponseData<null>>(
-      `courses/${course_id}/`,
+      `courses/admin/${course_id}/`,
       { showError, showSuccess }
     );
   },
+
+  async addMoreStudentsToCourse(
+    { showError, showSuccess }: AuthConfig,
+    course_id: string,
+    student_ids: string[]
+  ) {
+    return await ApiService.post<IResponseData<AddStudentsToCourseResponse>>(
+      `courses/add-students`,
+      { course_id, student_ids },
+      { showError, showSuccess }
+    );
+  }
 };

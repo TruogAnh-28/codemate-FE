@@ -93,6 +93,7 @@ export interface StudentOfCourseListModal {
   student_name: string
   student_email: string
   student_avatar: string
+  student_mssv?: string
 }
 
 export interface ProfessorInformation {
@@ -331,3 +332,22 @@ export interface GetAvailableCourses{
   nCredit: number;
   have_code?: boolean;
 }
+
+export interface StudentCourseInfo {
+  student_id: string;
+  student_mssv?: string | null; // Optional and can be null
+  course_id: string;
+  last_accessed?: string | null; // Optional and can be null
+  completed_lessons?: number | null; // Optional and can be null
+  time_spent?: string | null; // Optional and can be null
+  percentage_done?: number | null; // Optional and can be null
+}
+
+export interface AddStudentsToCourseResponse {
+  course_id: string;
+  course_name: string;
+  added_students_count: number;
+  already_enrolled_count: number;
+  student_courses_list: StudentCourseInfo[];
+}
+
