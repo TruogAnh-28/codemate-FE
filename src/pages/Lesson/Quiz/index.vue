@@ -241,17 +241,17 @@
               >
                 <v-icon
                   size="small"
-                  :color="getScoreColor(quiz.score, quiz.max_score)"
+                  :color="getScoreColor(quiz.score, 100)"
                   class="mr-1"
                 >
-                  {{ getScoreIcon(quiz.score, quiz.max_score) }}
+                  {{ getScoreIcon(quiz.score, 100) }}
                 </v-icon>
                 <span
-                  :class="getScoreTextClass(quiz.score, quiz.max_score)"
+                  :class="getScoreTextClass(quiz.score, 100)"
                   class="font-weight-medium"
                 >
                   Score: {{ formatScore(quiz.score) }}/{{
-                    formatScore(quiz.max_score)
+                    formatScore(100)
                   }}
                 </span>
               </div>
@@ -260,8 +260,8 @@
               <div v-if="quiz.status !== 'new'" class="mt-2">
                 <v-progress-linear
                   v-if="quiz.score"
-                  :model-value="getProgressValue(quiz.score, quiz.max_score)"
-                  :color="getScoreColor(quiz.score, quiz.max_score)"
+                  :model-value="getProgressValue(quiz.score, 100)"
+                  :color="getScoreColor(quiz.score, 100)"
                   height="6"
                   rounded
                 ></v-progress-linear>

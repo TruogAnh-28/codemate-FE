@@ -238,24 +238,36 @@ const adminItems: NavigationItem[] = [
     to: "/course-management",
   },
   {
-    icon: "mdi-cog",
-    title: "Settings",
-    value: "settings",
-    children: [
-      {
-        icon: "mdi-account-cog",
-        title: "Add User",
-        value: "add-user",
-        to: "/add-user",
-      },
-      {
-        icon: "mdi-account-details",
-        title: "Add Course",
-        value: "add-course",
-        to: "/add-course",
-      },
-    ],
+    icon: "mdi-account-cog",
+    title: "Add User",
+    value: "add-user",
+    to: "/add-user",
   },
+  {
+    icon: "mdi-account-details",
+    title: "Add Course",
+    value: "add-course",
+    to: "/add-course",
+  },
+  // {
+  //   icon: "mdi-cog",
+  //   title: "Settings",
+  //   value: "settings",
+  //   children: [
+  //     {
+  //       icon: "mdi-account-cog",
+  //       title: "Add User",
+  //       value: "add-user",
+  //       to: "/add-user",
+  //     },
+      // {
+      //   icon: "mdi-account-details",
+      //   title: "Add Course",
+      //   value: "add-course",
+      //   to: "/add-course",
+      // },
+  //   ],
+  // },
   // {
   //   icon: "mdi-chart-pie",
   //   title: "Statistics",
