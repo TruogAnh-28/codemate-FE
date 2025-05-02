@@ -93,6 +93,8 @@
               variant="text"
               class="transition-all duration-200 hover:bg-gray-100"
               :to="`/professor-progress/${courseId}/students/${item.student_id}`"
+              :disabled="!item.learning_path"
+              :class="!item.learning_path ? 'opacity-50 cursor-not-allowed' : ''"
             >
               <v-icon>mdi-view-module</v-icon>
             </v-btn>
@@ -113,7 +115,6 @@ const props = defineProps<{
   loading: boolean;
 }>();
 
-const courseId = props.courseId;
 const courseHeaders = [
   { title: "Student ID", key: "student_mssv", align: "center" as const },
   { title: "Student Name", key: "student_name", align: "start" as const },

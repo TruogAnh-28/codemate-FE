@@ -30,7 +30,7 @@
               <v-icon start>mdi-view-dashboard</v-icon>
               Course Overview
             </v-btn>
-            <v-btn
+            <!-- <v-btn
               @click="viewMode = 'exercise'"
               variant="tonal"
               color="primary"
@@ -40,14 +40,14 @@
             >
               <v-icon start>mdi-file-document</v-icon>
               Exercise Details
-            </v-btn>
+            </v-btn> -->
           </div>
         </div>
       </div>
 
       <ProgressCourseGrade
         v-if="viewMode === 'course' && selectedCourseId"
-        :courseId ="selectedCourseId"
+        :courseId="selectedCourseId"
         :course-grades="courseGrades"
         :loading="loading"
       />
