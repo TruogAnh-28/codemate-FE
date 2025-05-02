@@ -1,7 +1,7 @@
 <template>
   <v-app>
     <v-main class="pt-0 pb-2 pl-4 pr-4 bg-gray-50">
-      <RecentCourses v-if="courses" :courses="courses?.content" />
+      <!-- <RecentCourses v-if="courses" :courses="courses?.content" /> -->
       <section>
         <h2 class="text-heading-4 font-semibold mb-6">My Courses</h2>
         <v-text-field
