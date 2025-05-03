@@ -42,18 +42,6 @@
           @refreshCourse="handleCourseRefresh"
         />
       </v-window-item>
-
-      <!-- <v-window-item value="exercises">
-        <CourseExercises
-          v-if="isStudent && isCourseDetailResponse(course)"
-          :course="course"
-        />
-        <CourseExercisesProfessor
-          v-else-if="isProfessor && !isCourseDetailResponse(course) && course"
-          :course="course"
-          @refreshCourse="handleCourseRefresh"
-        />
-      </v-window-item> -->
     </v-window>
   </v-card>
 </template>

@@ -102,6 +102,8 @@ const autoLogin = async () => {
           email: userInfo.email,
           name: userInfo.name,
           rememberMe: localStorage.getItem("rememberMe") || "false",
+          avatar: userInfo.avatar,
+          ms: userInfo.ms,
         });
         setAvatar(userInfo.avatar);
         setMs(userInfo.ms);
@@ -120,6 +122,8 @@ const autoLogin = async () => {
             email: userInfo.email,
             name: userInfo.name,
             rememberMe: localStorage.getItem("rememberMe") || "false",
+            avatar: userInfo.avatar,
+            ms: userInfo.ms,
           });
           redirectUser(userInfo.role);
           return;

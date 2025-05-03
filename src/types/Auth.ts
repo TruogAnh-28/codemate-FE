@@ -29,6 +29,8 @@ export interface LoginSuccessResponse {
   email: string;
   is_email_verified: boolean;
   is_active: boolean;
+  ms?: string;
+  avatar_url?: string;
 }
 export interface LoginRequestVerifyEmail {
   name: string;
