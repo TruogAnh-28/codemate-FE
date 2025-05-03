@@ -10,36 +10,20 @@
   >
     <v-spacer></v-spacer>
 
-    <!-- Notification Bell -->
-    <!-- <v-btn
-      icon="mdi-bell-outline"
-      class="mr-2"
-      :color="`hsl(var(--on-secondary))`"
-      variant="text"
-    ></v-btn> -->
-
-    <!-- Email Icon -->
-    <!-- <v-btn
-      icon="mdi-email-outline"
-      class="mr-2"
-      :color="`hsl(var(--on-secondary))`"
-      variant="text"
-    ></v-btn> -->
-
     <!-- User Menu -->
     <v-menu offset-y>
       <template v-slot:activator="{ props }">
         <v-list-item
           v-bind="props"
-          :prepend-avatar="user?.avatar"
-          :title="userInfo?.name"
-          :subtitle="userInfo?.email"
+          :prepend-avatar="currentUser?.avatar"
+          :title="currentUser?.name"
+          :subtitle="currentUser?.email"
           class="cursor-pointer pa-2"
           :style="{ color: 'hsl(var(--on-secondary))' }"
         >
           <template v-slot:prepend>
             <v-avatar size="36" class="avatar-border">
-              <v-img :src="user?.avatar" cover></v-img>
+              <v-img :src="currentUser?.avatar" cover></v-img>
             </v-avatar>
           </template>
         </v-list-item>
@@ -63,6 +47,51 @@
   </v-app-bar>
 </template>
 
+<style scoped>
+/* The CSS remains the same */
+</style>
+
+<script lang="ts" setup>
+import { useAuthStore } from "@/stores/auth";
+import { computed, ref, watch, onMounted } from "vue";
+
+const router = useRouter();
+const showSuccess = inject("showSuccess") as (message: string) => void;
+
+// Create a reactive reference to track auth store updates
+const authState = ref(useAuthStore.getState());
+
+// Create a computed property for the current user
+const currentUser = computed(() => authState.value.user);
+
+// Set up a watcher to update authState when the store changes
+const unsubscribe = useAuthStore.subscribe(
+  (state) => {
+    authState.value = state;
+  }
+);
+
+// Clean up the subscription when the component is unmounted
+onUnmounted(() => {
+  unsubscribe();
+});
+
+const handleLogout = async () => {
+  authState.value.logout();
+  router.push("/login");
+  showSuccess("Logged out successfully");
+};
+
+const handleProfile = () => {
+  const newEmail = currentUser.value?.email || "";
+  const newRole = currentUser.value?.role || "";
+  router.push({ path: "/profile", query: { email: newEmail, role: newRole } });
+};
+
+onMounted(() => {
+  console.log("Current User Info:", currentUser.value);
+});
+</script>
 <style scoped>
 .custom-app-bar {
   border-bottom: 1px solid hsl(var(--border));
@@ -95,31 +124,3 @@
   font-weight: 500;
 }
 </style>
-
-<script lang="ts" setup>
-import { useAuthStore } from "@/stores/auth";
-
-const authStore = useAuthStore;
-const router = useRouter();
-
-const { logout, user } = authStore.getState();
-const userInfo = user;
-const showSuccess = inject("showSuccess") as (message: string) => void;
-import { nextTick } from "vue";
-
-const handleLogout = async () => {
-  logout();
-  await nextTick();
-  router.push("/login");
-  showSuccess("Logged out successfully");
-};
-
-const handleProfile = (event: MouseEvent | KeyboardEvent) => {
-  const newEmail = userInfo?.email || "";
-  const newRole = userInfo?.role || "";
-  router.push({ path: "/profile", query: { email: newEmail, role: newRole } });
-};
-onMounted(() => {
-  console.log("User Info:", userInfo);
-})
-</script>

@@ -22,6 +22,7 @@ interface AuthStore {
   checkAuth: () => void
   setAvatar: (avatar: string) => void
   setMs: (ms: string) => void
+  updateUserInfo: (updates: Partial<UserInfo>) => void
 }
 
 // Create auth store with improved type safety and error handling
@@ -104,11 +105,17 @@ export const useAuthStore = create<AuthStore>()(
       setAvatar: (avatar: string) => {
         const user = get().user;
         if (user) {
+          const updatedUser = {
+            ...user,
+            avatar
+          };
+          
+          const rememberMe = user.rememberMe === 'true';
+          const storage = rememberMe ? localStorage : sessionStorage;
+          storage.setItem('user', JSON.stringify(updatedUser));
+          
           set({
-            user: {
-              ...user,
-              avatar
-            }
+            user: updatedUser
           });
         }
       },
@@ -116,11 +123,36 @@ export const useAuthStore = create<AuthStore>()(
       setMs: (ms: string) => {
         const user = get().user;
         if (user) {
+          const updatedUser = {
+            ...user,
+            ms
+          };
+          
+          const rememberMe = user.rememberMe === 'true';
+          const storage = rememberMe ? localStorage : sessionStorage;
+          storage.setItem('user', JSON.stringify(updatedUser));
+          
           set({
-            user: {
-              ...user,
-              ms
-            }
+            user: updatedUser
+          });
+        }
+      },
+      
+      // New method to update user info fields
+      updateUserInfo: (updates: Partial<UserInfo>) => {
+        const currentUser = get().user;
+        if (currentUser) {
+          const updatedUser = {
+            ...currentUser,
+            ...updates
+          };
+          
+          const rememberMe = currentUser.rememberMe === 'true';
+          const storage = rememberMe ? localStorage : sessionStorage;
+          storage.setItem('user', JSON.stringify(updatedUser));
+          
+          set({
+            user: updatedUser
           });
         }
       }
