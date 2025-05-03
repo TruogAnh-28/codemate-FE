@@ -1,5 +1,4 @@
 <script lang="ts" setup>
-import { ref, inject, computed, onMounted, nextTick } from "vue"; // Added nextTick just in case, though reset() is preferred
 import type { VForm } from "vuetify/components"; // Import VForm type
 import { CreateCourseRequest, GetAvailableCourses } from "@/types/Course";
 import { GetAllUsersResponse } from "@/types/User";

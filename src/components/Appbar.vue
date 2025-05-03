@@ -53,7 +53,6 @@
 
 <script lang="ts" setup>
 import { useAuthStore } from "@/stores/auth";
-import { computed, ref, watch, onMounted } from "vue";
 
 const router = useRouter();
 const showSuccess = inject("showSuccess") as (message: string) => void;
