@@ -509,15 +509,14 @@ const formatDate = (dateString: string | Date | undefined | null): string => {
 };
 
 const isSupplementaryModule = (module: Module) => {
-
-  // Also check if module title doesn't follow "Module X: ..." pattern
   if (module.title && typeof module.title === "string") {
-    const modulePattern = /^Module\s+\d+\s*:/i;
-    return !modulePattern.test(module.title);
+    const extraPattern = /^Extra\s*:/i;
+    return extraPattern.test(module.title);
   }
 
   return false;
 };
+
 
 // Optional: Update the existing getModuleAvatarColor function to handle supplementary modules
 const getModuleAvatarColor = (index: number) => {
