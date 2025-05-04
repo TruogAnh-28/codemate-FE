@@ -126,7 +126,7 @@ export const coursesService = {
     { showError, showSuccess }: AuthConfig,
     course: CreateCourseRequest[]
   ) {
-    return await ApiService.post<CreateCourseResponse>("courses/", course, {
+    return await ApiService.post<IResponseData<CreateCourseResponse>>("courses/", course, {
       showError,
       showSuccess,
     });

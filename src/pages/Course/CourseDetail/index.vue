@@ -56,11 +56,6 @@ const tabs = ref<Tab[]>([
     value: "lessons",
     tooltip: "Loading professor's name...",
   },
-  // {
-  //   label: "Exercises",
-  //   value: "exercises",
-  //   tooltip: "Loading professor's name...",
-  // },
 ]);
 
 const hasLearningPath = ref(false);
@@ -143,11 +138,6 @@ watch(
           label: "Lessons",
           value: "lessons",
           tooltip: `Course's lessons with documents uploaded by your Professor: ${professorName}`,
-        },
-        {
-          label: "Exercises",
-          value: "exercises",
-          tooltip: `Course's exercises uploaded by your Professor: ${professorName}`,
         },
       ];
     }

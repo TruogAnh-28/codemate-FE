@@ -84,6 +84,8 @@ export const navigationGuard: NavigationGuardWithThis<any> = async (to, from, ne
           email: userInfo.email,
           name: userInfo.name,
           rememberMe: rememberMe.toString(),
+          avatar: userInfo.avatar,
+          ms: userInfo.ms,
         });
         console.log("User authenticated successfully");
       } else {
