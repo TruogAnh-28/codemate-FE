@@ -458,6 +458,14 @@ async function saveChanges() {
         if (getUserInfo && "data" in getUserInfo) {
           userInfo.value = getUserInfo.data as GetProfileResponse;
           originalUserInfo.value = JSON.parse(JSON.stringify(userInfo.value));
+          
+          // Update auth store with the new user info
+          const { updateUserInfo } = useAuthStore.getState();
+          updateUserInfo({
+            name: userInfo.value.name,
+            avatar: userInfo.value.avatar
+          });
+          
           emit("update:userInfo", userInfo.value);
           showSuccess("Profile updated successfully!");
           isEditing.value = false;

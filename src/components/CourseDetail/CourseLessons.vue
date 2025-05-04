@@ -1,5 +1,5 @@
 <template>
-  <v-card class="p-6" v-if="lessons">
+  <v-card class="p-6" v-if="lessons && lessons.length > 0">
     <div v-for="lesson in lessons" :key="lesson.id" class="mb-6">
       <v-row class="mb-4 m-0">
         <v-col cols="12" md="8" class="border-b-2">

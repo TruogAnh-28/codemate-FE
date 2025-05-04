@@ -2,12 +2,21 @@
   <v-layout class="bg-background">
     <v-main class="px-6 py-8">
       <!-- Header Section -->
-      <div class="mx-auto mb quince8 max-w-7xl animate-fade-in">
+      <div class="mx-auto mb-8 max-w-7xl animate-fade-in">
         <div class="d-flex align-center justify-space-between">
           <h1 class="text-h4 font-weight-bold transition-all gradient-text">
             User Management
           </h1>
           <div class="d-flex align-center gap-4">
+            <v-btn
+              @click="openExportDialog"
+              color="secondary"
+              variant="tonal"
+              class="rounded-xl shadow-sm hover-scale"
+            >
+              <v-icon start>mdi-file-export</v-icon>
+              Export
+            </v-btn>
             <v-btn
               @click="toggleFilters"
               :color="activeFiltersCount > 0 ? 'primary' : 'secondary'"
@@ -128,6 +137,15 @@
         </v-card>
       </v-dialog>
 
+      <!-- Export Users Component -->
+      <export-users
+        v-model:show="showExportDialog"
+        :users="users"
+        :filters="filters"
+        @export-success="handleExportSuccess"
+        @export-error="handleExportError"
+      />
+
       <!-- Status Update Success Snackbar -->
       <v-snackbar
         v-model="statusSnackbar.show"
@@ -217,6 +235,7 @@ import "../table.css";
 const users = ref<GetAllUsersResponse[]>([]);
 const loading = ref(false);
 const showFilters = ref(false);
+const showExportDialog = ref(false);
 
 // Status update dialog state
 const statusDialog = ref({
@@ -250,6 +269,7 @@ const filters = ref<Filters>({
 const headers = [
   { title: "Name", key: "name", align: "start" as const },
   { title: "Email", key: "email", align: undefined },
+  { title: "User ID", key: "ms", align: "center" as const },
   { title: "Role", key: "role", align: "center" as const },
   { title: "Status", key: "status", align: "center" as const },
   { title: "Actions", key: "actions", align: "center" as const, sortable: false },
@@ -330,6 +350,26 @@ const openStatusDialog = (item: GetAllUsersResponse) => {
   }
   
   statusDialog.value.show = true;
+};
+
+// Open the export dialog
+const openExportDialog = () => {
+  showExportDialog.value = true;
+};
+
+// Handle export success
+const handleExportSuccess = (data: { format: string; count: number }) => {
+  statusSnackbar.value.text = `Successfully exported ${data.count} users to ${data.format.toUpperCase()} format`;
+  statusSnackbar.value.color = "success";
+  statusSnackbar.value.show = true;
+};
+
+// Handle export error
+const handleExportError = (error: any) => {
+  statusSnackbar.value.text = "Failed to export users. Please try again.";
+  statusSnackbar.value.color = "error";
+  statusSnackbar.value.show = true;
+  console.error("Export error:", error);
 };
 
 // Confirm status update

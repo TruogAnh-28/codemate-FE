@@ -159,6 +159,8 @@ const handleSuccessfulLogin = async (data: LoginSuccessResponse) => {
     email: data.email,
     name: data.name,
     rememberMe: rememberMe.value.toString(),
+    avatar: data.avatar_url,
+    ms: data.ms,
   };
 
   setUser(userInfo);
