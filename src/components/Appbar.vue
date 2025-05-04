@@ -11,20 +11,20 @@
     <v-spacer></v-spacer>
 
     <!-- Notification Bell -->
-    <v-btn
+    <!-- <v-btn
       icon="mdi-bell-outline"
       class="mr-2"
       :color="`hsl(var(--on-secondary))`"
       variant="text"
-    ></v-btn>
+    ></v-btn> -->
 
     <!-- Email Icon -->
-    <v-btn
+    <!-- <v-btn
       icon="mdi-email-outline"
       class="mr-2"
       :color="`hsl(var(--on-secondary))`"
       variant="text"
-    ></v-btn>
+    ></v-btn> -->
 
     <!-- User Menu -->
     <v-menu offset-y>

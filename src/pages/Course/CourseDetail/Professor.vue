@@ -58,11 +58,11 @@ const tabs = ref<Tab[]>([
     value: "lessons",
     tooltip: "Loading professor's name...",
   },
-  {
-    label: "Exercises",
-    value: "exercises",
-    tooltip: "Loading professor's name...",
-  },
+  // {
+  //   label: "Exercises",
+  //   value: "exercises",
+  //   tooltip: "Loading professor's name...",
+  // },
 ]);
 
 const fetchCourseDetail = async () => {

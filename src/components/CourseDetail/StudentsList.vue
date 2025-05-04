@@ -14,7 +14,7 @@
           <v-list-item-content>
             <div class="d-flex align-center justify-space-between">
               <span class="font-weight-medium text-body-2">{{ student.student_name }}</span>
-              <span class="ml-2 text-body-large-3 text-caption text-grey ">ID: {{ student.student_id }}</span>
+              <span class="ml-2 text-body-large-3 text-caption text-grey ">ID: {{ student.student_mssv }}</span>
             </div>
           </v-list-item-content>
         </v-list-item>
