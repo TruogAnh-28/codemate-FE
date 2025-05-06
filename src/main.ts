@@ -7,6 +7,7 @@
 // Plugins
 import { registerPlugins } from "@/plugins";
 import '@mdi/font/css/materialdesignicons.css';
+import { applyScrollFix } from "@/utils/scrollFix"; 
 // Components
 import App from "./App.vue";
 
@@ -24,7 +25,7 @@ ApiService.init();
 startExpirationTimer();
 const app = createApp(App);
 app.use(VueApexCharts); // Use ApexCharts plugin
-
+applyScrollFix();
 app.component('apexchart', VueApexCharts)
 app.use(vue3GoogleLogin, {
   clientId: import.meta.env.VITE_APP_CLIENT_ID,
