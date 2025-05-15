@@ -557,9 +557,15 @@ const getStatusClass = (lesson: GetRecommendedLessonsResponse): string => {
   return "dot-current";
 };
 
-// Lifecycle hooks
-onMounted(() => {
-  fetchRecommendedLessons();
+
+// Resize handler
+const handleResize = () => {
+  updateMaxScroll();
+};
+
+window.addEventListener("resize", handleResize);
+onUnmounted(() => {
+  window.removeEventListener("resize", handleResize);
 });
 
 watch(() => props.course, () => {
