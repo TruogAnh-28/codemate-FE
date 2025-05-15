@@ -226,10 +226,6 @@ const props = defineProps<{
   course: CourseDetailResponse | null;
 }>();
 
-const emit = defineEmits<{
-  "learning-path-updated": [];
-}>();
-
 const router = useRouter();
 const showError = inject("showError") as (message: string) => void;
 const showSuccess = inject("showSuccess") as (message: string) => void;
