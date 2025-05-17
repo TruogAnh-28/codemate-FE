@@ -53,15 +53,20 @@
                 <div class="d-flex align-center mb-4">
                   <v-progress-circular
                     :model-value="(evaluation.score / evaluation.max_score) * 100"
-                    :size="80"
-                    :width="8"
+                    :size="120"
+                    :width="12"
                     color="primary"
-                    class="me-4"
+                    class="me-4 position-relative"
                   >
-                    <span class="text-h6">{{ evaluation.score }}</span>
+                    <div class="score-display">
+                      <span class="text-h5 font-weight-bold">{{ evaluation.score }}</span>
+                    </div>
                   </v-progress-circular>
                   <div>
-                    <div class="text-subtitle-1 font-weight-bold">Overall Score</div>
+                    <div class="d-flex align-center">
+                      <span class="text-subtitle-1 font-weight-bold">Overall Score</span>
+                      <span class="text-caption text-grey-lighten-1 ml-2">(out of {{ evaluation.max_score }})</span>
+                    </div>
                     <div class="text-caption text-grey">{{ evaluation.summary }}</div>
                   </div>
                 </div>
@@ -79,12 +84,12 @@
                       <template v-slot:prepend>
                         <v-progress-circular
                           :model-value="(criterion.score / 10) * 100"
-                          :size="24"
-                          :width="2"
+                          :size="36"
+                          :width="3"
                           color="primary"
                           class="me-2"
                         >
-                          <span class="text-caption">{{ criterion.score }}</span>
+                          <span class="text-body-2 font-weight-medium">{{ criterion.score }}</span>
                         </v-progress-circular>
                       </template>
                       <div class="d-flex flex-column">
@@ -322,6 +327,20 @@ const getStatusColor = (status: string): string => {
 </script>
 
 <style scoped>
+.score-display {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+}
+
+.v-progress-circular {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 pre {
   white-space: pre-wrap;
   word-break: break-word;

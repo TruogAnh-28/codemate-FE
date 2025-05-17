@@ -29,6 +29,7 @@
             @submit-result="handleSubmitResult"
             @update:solution="userSolution = $event"
             @update:loading="isLoading = $event"
+            @update:submissionCount="handleSubmissionCountUpdate"
             :style="codeEditorStyle"
           />
           <Testcase
@@ -151,6 +152,14 @@ const handleSubmitResult = (result: string) => {
 
 const handleTestcaseToggle = (expanded: boolean) => {
   testcaseExpanded.value = expanded;
+};
+
+const handleSubmissionCountUpdate = (count: number) => {
+  // Manually update the submissions array length
+  if (count > submissions.value.length) {
+    // Fetch updated submissions to refresh the count
+    fetchSubmissionStats(exerciseId);
+  }
 };
 
 // Sidebar resize
