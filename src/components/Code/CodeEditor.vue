@@ -78,7 +78,7 @@
       </v-menu>
 
       <v-btn variant="tonal" color="success" class="mr-2" @click="runCode" :loading="isRunning">Run</v-btn>
-      <v-btn variant="tonal" color="primary" @click="submitCode" :loading="isSubmitting">Submit</v-btn>
+      <v-btn variant="tonal" color="primary" @click="submitCode" :loading="isSubmitting" :disabled="codeSolutionStore.isShowingAISolution(selectedLanguage)">Submit</v-btn>
     </v-toolbar>
 
     <!-- CodeMirror Editor -->
@@ -158,6 +158,7 @@ const emit = defineEmits<{
   (e: 'run-result', result: string): void;
   (e: 'submit-result', result: string): void;
   (e: 'update:loading', isLoading: boolean): void;
+  (e: 'update:submissionCount', count: number): void;
 }>();
 
 const { code, selectedLanguage } = useCodeEditorStore();
@@ -510,16 +511,20 @@ const submitCode = async (): Promise<void> => {
       onComplete: (submission) => {
         const passed = submission.test_results.filter(t => t.status === 'Accepted').length;
         const total = submission.test_results.length;
-
+        
         const summary = `
 ✅ Submission Complete
 - Status: ${submission.status}
 - Passed: ${passed}/${total}
-- Score: ${submission.score ?? 'N/A'}
         `;
         emit('submit-result', summary);
         isSubmitting.value = false;
         emit('update:loading', false);
+        
+        // Update submission count after successful submission
+        if (props.submissionCount !== undefined) {
+          emit('update:submissionCount', props.submissionCount + 1);
+        }
       },
       onError: (err) => {
         emit('submit-result', `❌ Submission failed: ${err.message}`);
